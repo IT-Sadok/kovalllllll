@@ -474,4 +474,31 @@ $RECYCLE.BIN/
 *.msp
 
 # Windows shortcuts
+
 *.lnk
+
+# Rider / IntelliJ IDEA
+.idea/
+*.sln.iml
+
+# Rider specific
+.idea/.idea.*
+.idea/.idea.*/*
+.idea/modules.xml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/httpRequests
+.idea/caches/
+.idea/shelf/
+.idea/dataSources/
+.idea/dataSources.ids
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/gradle.xml
+.idea/libraries/
+
+# JetBrains Rider user-specific files
+*.DotSettings.user
