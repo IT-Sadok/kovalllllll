@@ -399,6 +399,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/.idea/
 
 ##
 ## Visual studio for Mac
@@ -474,4 +475,5 @@ $RECYCLE.BIN/
 *.msp
 
 # Windows shortcuts
+
 *.lnk
