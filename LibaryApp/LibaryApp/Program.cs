@@ -160,7 +160,7 @@ internal class Program
         }
     }
 
-    private static void ShowBooksStatusCollection(IEnumerable<BookStatusDto> books)
+    private static void ShowBooksStatusCollection(IEnumerable<BookStatusModel> books)
     {
         if (books.Any())
         {

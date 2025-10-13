@@ -2,7 +2,7 @@
 
 namespace LibraryApp.Business.DTOs;
 
-public class BookStatusDto
+public class BookStatusModel
 {
     public string Id { get; set; }
     public string Title { get; set; }

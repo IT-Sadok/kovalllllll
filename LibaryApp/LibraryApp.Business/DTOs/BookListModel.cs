@@ -1,6 +1,6 @@
 ﻿namespace LibraryApp.Business.DTOs;
 
-public class BookListDTO
+public class BookListModel
 {
     public string Id { get; set; }
     public string Title { get; set; }
