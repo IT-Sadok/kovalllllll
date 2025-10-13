@@ -5,9 +5,9 @@ namespace LibraryApp.Business.Services;
 
 public interface ILibraryService
 {
-    List<BookListDTO> GetAllBooks();
-    List<BookStatusDto> GetAvailableBooks();
-    List<BookStatusDto> GetBorrowedBooks();
+    List<BookListModel> GetAllBooks();
+    List<BookStatusModel> GetAvailableBooks();
+    List<BookStatusModel> GetBorrowedBooks();
     bool BorrowBook(Guid bookId);
     bool ReturnBook(Guid bookId);
 }

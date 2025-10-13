@@ -7,10 +7,10 @@ namespace LibraryApp.Business.Services;
 // Consider returning separate models instead of book to reduce coupling between layers
 public class LibraryService(LibraryRepository libraryRepository) : ILibraryService
 {
-    public List<BookListDTO> GetAllBooks()
+    public List<BookListModel> GetAllBooks()
     {
         return libraryRepository.GetAllBooks()
-            .Select(b => new BookListDTO
+            .Select(b => new BookListModel
             {
                 Id = b.Id.ToString(),
                 Title = b.Title,
@@ -20,11 +20,11 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
             .ToList();
     }
 
-    public List<BookStatusDto> GetAvailableBooks()
+    public List<BookStatusModel> GetAvailableBooks()
     {
         return libraryRepository.GetAllBooks()
             .Where(b => b.Status == BookStatus.Available)
-            .Select(b => new BookStatusDto
+            .Select(b => new BookStatusModel
             {
                 Id = b.Id.ToString(),
                 Title = b.Title,
@@ -33,11 +33,11 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
             .ToList();
     }
 
-    public List<BookStatusDto> GetBorrowedBooks()
+    public List<BookStatusModel> GetBorrowedBooks()
     {
         return libraryRepository.GetAllBooks()
             .Where(b => b.Status == BookStatus.Borrowed)
-            .Select(b => new BookStatusDto
+            .Select(b => new BookStatusModel
             {
                 Id = b.Id.ToString(),
                 Title = b.Title,
