@@ -3,36 +3,85 @@ using LibraryApp.Business.Services;
 using LibraryApp.Data.Models;
 using LibraryApp.Data.Repositories;
 
-namespace LibaryApp;
+namespace LibraryApp;
 
 internal class Program
 {
-    private static readonly LibraryService LibraryService = new(new LibraryRepository());
+    private LibraryService? _libraryService;
 
-    private static readonly Dictionary<string, Action> MenuActions = new()
+    public static async Task Main(string[] args)
     {
-        { "1", AddBook },
-        { "2", DeleteBook },
-        { "3", SearchBookByAuthor },
-        { "4", SearchBookByTitle },
-        { "5", ShowAllBooks },
-        { "6", BorrowBook },
-        { "7", ReturnBook },
-        { "8", GetAllBorrowedBooks },
-        { "9", GetAllAvailableBooks },
-        { "10", Exit }
-    };
+        var app = new Program();
+        await app.RunAsync(args);
+    }
 
+    private readonly Dictionary<string, Func<Task>> _menuActions;
 
-    private static void Main(string[] args)
+    private Program()
     {
+        _menuActions = new Dictionary<string, Func<Task>>
+        {
+            { "1", AddBook },
+            { "2", DeleteBook },
+            {
+                "3", () =>
+                {
+                    SearchBookByAuthor();
+                    return Task.CompletedTask;
+                }
+            },
+            {
+                "4", () =>
+                {
+                    SearchBookByTitle();
+                    return Task.CompletedTask;
+                }
+            },
+            {
+                "5", () =>
+                {
+                    ShowAllBooks();
+                    return Task.CompletedTask;
+                }
+            },
+            { "6", BorrowBook },
+            { "7", ReturnBook },
+            {
+                "8", () =>
+                {
+                    GetAllBorrowedBooks();
+                    return Task.CompletedTask;
+                }
+            },
+            {
+                "9", () =>
+                {
+                    GetAllAvailableBooks();
+                    return Task.CompletedTask;
+                }
+            },
+            {
+                "10", () =>
+                {
+                    Exit();
+                    return Task.CompletedTask;
+                }
+            }
+        };
+    }
+
+    private async Task RunAsync(string[] args)
+    {
+        var libraryRepository = await LibraryRepository.CreateAsync();
+        _libraryService = new LibraryService(libraryRepository);
+
         while (true)
         {
             ShowMenu();
             var choice = Console.ReadLine();
-            if (choice != null && MenuActions.TryGetValue(choice, out var action))
+            if (choice != null && _menuActions.TryGetValue(choice, out var action))
             {
-                action.Invoke();
+                await action.Invoke();
             }
             else
             {
@@ -67,7 +116,7 @@ internal class Program
         Console.Write("Select an option: ");
     }
 
-    private static void AddBook()
+    private async Task AddBook()
     {
         Console.Write("Enter book title: ");
         var title = Console.ReadLine();
@@ -92,7 +141,8 @@ internal class Program
         };
         try
         {
-            LibraryService.AddBook(book);
+            await _libraryService!.AddBookAsync(book);
+            Console.WriteLine("Book added successfully.");
         }
         catch (Exception ex)
         {
@@ -101,13 +151,13 @@ internal class Program
     }
 
 
-    private static void DeleteBook()
+    private async Task DeleteBook()
     {
         Console.Write("Enter book ID to delete: ");
         var input = Console.ReadLine();
         if (Guid.TryParse(input, out var bookId))
         {
-            var success = LibraryService.DeleteBook(bookId);
+            var success = await _libraryService.DeleteBookAsync(bookId);
             Console.WriteLine(success ? "Book deleted successfully." : "Book not found.");
         }
         else
@@ -116,7 +166,7 @@ internal class Program
         }
     }
 
-    private static void SearchBookByAuthor()
+    private void SearchBookByAuthor()
     {
         Console.Write("Enter author name to search: ");
         var author = Console.ReadLine();
@@ -126,11 +176,11 @@ internal class Program
             return;
         }
 
-        var books = LibraryService.SearchBookByAuthor(author);
+        var books = _libraryService.SearchBookByAuthor(author);
         ShowBooksCollection(books);
     }
 
-    private static void SearchBookByTitle()
+    private void SearchBookByTitle()
     {
         Console.Write("Enter book title to search: ");
         var title = Console.ReadLine();
@@ -140,7 +190,7 @@ internal class Program
             return;
         }
 
-        var books = LibraryService.SearchBookByTitle(title);
+        var books = _libraryService.SearchBookByTitle(title);
         ShowBooksCollection(books);
     }
 
@@ -176,21 +226,21 @@ internal class Program
         }
     }
 
-    private static void GetAllAvailableBooks()
+    private void GetAllAvailableBooks()
     {
-        var books = LibraryService.GetAvailableBooks();
+        var books = _libraryService.GetAvailableBooks();
         ShowBooksStatusCollection(books);
     }
 
-    private static void GetAllBorrowedBooks()
+    private void GetAllBorrowedBooks()
     {
-        var books = LibraryService.GetBorrowedBooks();
+        var books = _libraryService.GetBorrowedBooks();
         ShowBooksStatusCollection(books);
     }
 
-    private static void ShowAllBooks()
+    private void ShowAllBooks()
     {
-        var books = LibraryService.GetAllBooks();
+        var books = _libraryService.GetAllBooks();
         if (books.Any())
         {
             foreach (var book in books)
@@ -205,13 +255,13 @@ internal class Program
         }
     }
 
-    private static void BorrowBook()
+    private async Task BorrowBook()
     {
         Console.Write("Enter book ID to borrow: ");
         var input = Console.ReadLine();
         if (Guid.TryParse(input, out var bookId))
         {
-            var success = LibraryService.BorrowBook(bookId);
+            var success = await _libraryService.BorrowBookAsync(bookId);
             Console.WriteLine(success ? "Book borrowed successfully." : "Book is already borrowed or not found.");
         }
         else
@@ -220,13 +270,13 @@ internal class Program
         }
     }
 
-    private static void ReturnBook()
+    private async Task ReturnBook()
     {
         Console.Write("Enter book ID to return: ");
         var input = Console.ReadLine();
         if (Guid.TryParse(input, out var bookId))
         {
-            var success = LibraryService.ReturnBook(bookId);
+            var success = await _libraryService.ReturnBookAsync(bookId);
             Console.WriteLine(success ? "Book returned successfully." : "Book is already available or not found.");
         }
         else

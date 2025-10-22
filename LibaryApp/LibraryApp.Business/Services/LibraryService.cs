@@ -4,7 +4,6 @@ using LibraryApp.Data.Repositories;
 
 namespace LibraryApp.Business.Services;
 
-// Consider returning separate models instead of book to reduce coupling between layers
 public class LibraryService(LibraryRepository libraryRepository) : ILibraryService
 {
     public List<BookListModel> GetAllBooks()
@@ -46,50 +45,54 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
             .ToList();
     }
 
-    public bool BorrowBook(Guid bookId)
+    public async Task<bool> BorrowBookAsync(Guid bookId)
     {
         var book = libraryRepository.GetBookById(bookId);
-        if (book.Status == BookStatus.Borrowed)
+        switch (book)
         {
-            return false; // Book is already borrowed
+            case { Status: BookStatus.Borrowed }:
+                return false;
+            case null:
+                return true;
         }
 
         book.Status = BookStatus.Borrowed;
-        libraryRepository.UpdateBook(book);
-        libraryRepository.Save();
+        await libraryRepository.UpdateBookAsync(book);
+
         return true;
     }
 
-    public bool ReturnBook(Guid bookId)
+    public async Task<bool> ReturnBookAsync(Guid bookId)
     {
         var book = libraryRepository.GetBookById(bookId);
-        if (book.Status == BookStatus.Available)
+        switch (book)
         {
-            return false; // Book is already available
+            case { Status: BookStatus.Available }:
+                return false;
+            case null:
+                return true;
         }
 
         book.Status = BookStatus.Available;
-        libraryRepository.UpdateBook(book);
-        libraryRepository.Save();
+        await libraryRepository.UpdateBookAsync(book);
+
         return true;
     }
 
-    public void AddBook(Book book)
+    public async Task AddBookAsync(Book book)
     {
-        libraryRepository.AddBook(book);
-        libraryRepository.Save();
+        ArgumentNullException.ThrowIfNull(book);
+        await libraryRepository.AddBookAsync(book);
     }
 
-    public bool DeleteBook(Guid bookId)
+    public async Task<bool> DeleteBookAsync(Guid bookId)
     {
-        try
-        {
-            return libraryRepository.DeleteBookById(bookId);
-        }
-        catch (Exception)
+        if (bookId == Guid.Empty)
         {
             return false;
         }
+
+        return await libraryRepository.DeleteBookByIdAsync(bookId);
     }
 
     public IEnumerable<Book> SearchBookByAuthor(string author)
