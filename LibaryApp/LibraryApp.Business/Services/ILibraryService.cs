@@ -8,6 +8,10 @@ public interface ILibraryService
     List<BookListModel> GetAllBooks();
     List<BookStatusModel> GetAvailableBooks();
     List<BookStatusModel> GetBorrowedBooks();
-    bool BorrowBook(Guid bookId);
-    bool ReturnBook(Guid bookId);
+    Task<bool> BorrowBookAsync(Guid bookId);
+    Task<bool> ReturnBookAsync(Guid bookId);
+    Task AddBookAsync(Book book);
+    Task<bool> DeleteBookAsync(Guid bookId);
+    IEnumerable<Book> SearchBookByAuthor(string author);
+    IEnumerable<Book> SearchBookByTitle(string title);
 }

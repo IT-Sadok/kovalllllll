@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using LibraryApp.Data.Models;
 
 namespace LibraryApp.Data.Repositories;
@@ -9,38 +7,61 @@ public class LibraryRepository : ILibraryRepository
 {
     private static readonly string FilePath = Path.Combine("Data", "books.json");
     private readonly List<Book> _books;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public LibraryRepository()
+    private LibraryRepository()
     {
+        _books = [];
         var directory = Path.GetDirectoryName(FilePath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }
+    }
 
+    public static async Task<LibraryRepository> CreateAsync()
+    {
+        var repository = new LibraryRepository();
+        await repository.LoadAsync();
+        return repository;
+    }
+
+    public async Task LoadAsync()
+    {
         if (File.Exists(FilePath))
         {
-            using var fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            _books = JsonSerializer.Deserialize<List<Book>>(fs) ?? new List<Book>();
-        }
-        else
-        {
-            _books = new List<Book>();
+            await using var fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var books = await JsonSerializer.DeserializeAsync<List<Book>>(fs);
+            if (books != null)
+            {
+                _books.Clear();
+                _books.AddRange(books);
+            }
         }
     }
 
     public Book GetBookById(Guid bookId)
     {
-        var book = _books.FirstOrDefault(b => b.Id == bookId);
-        return book ?? throw new Exception($"Book with ID: {bookId} not found.");
+        return _books.FirstOrDefault(b => b.Id == bookId);
     }
 
-    public bool DeleteBookById(Guid bookId)
+    public async Task<bool> DeleteBookByIdAsync(Guid bookId)
     {
-        var book = GetBookById(bookId);
-        _books.Remove(book);
-        Save();
-        return true;
+        await _semaphore.WaitAsync();
+        try
+        {
+            var book = GetBookById(bookId);
+            if (book == null)
+                return false;
+            
+            _books.Remove(book);
+            await SaveAsync();
+            return true;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public IEnumerable<Book> GetBooksByAuthor(string author)
@@ -54,20 +75,41 @@ public class LibraryRepository : ILibraryRepository
         return books;
     }
 
-    public void AddBook(Book book)
+    public async Task AddBookAsync(Book book)
     {
-        _books.Add(book);
-        Save();
+        await _semaphore.WaitAsync();
+        try
+        {
+            _books.Add(book);
+            await SaveAsync();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
-    public void UpdateBook(Book book)
+    public async Task UpdateBookAsync(Book book)
     {
-        var existingBook = GetBookById(book.Id);
-        existingBook.Title = book.Title;
-        existingBook.Author = book.Author;
-        existingBook.YearOfPublication = book.YearOfPublication;
-        existingBook.Status = book.Status;
-        Save();
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            var existingBook = GetBookById(book.Id);
+            if (existingBook == null)
+                return;
+            
+            existingBook.Title = book.Title;
+            existingBook.Author = book.Author;
+            existingBook.YearOfPublication = book.YearOfPublication;
+            existingBook.Status = book.Status;
+
+            await SaveAsync();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public IEnumerable<Book> GetAllBooks()
@@ -75,9 +117,9 @@ public class LibraryRepository : ILibraryRepository
         return _books;
     }
 
-    public void Save()
+    public async Task SaveAsync()
     {
-        using var fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        JsonSerializer.Serialize(fs, _books, new JsonSerializerOptions { WriteIndented = true });
+        await using var fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        await JsonSerializer.SerializeAsync(fs, _books, new JsonSerializerOptions { WriteIndented = true });
     }
 }

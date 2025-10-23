@@ -4,7 +4,6 @@ using LibraryApp.Data.Repositories;
 
 namespace LibraryApp.Business.Services;
 
-// Consider returning separate models instead of book to reduce coupling between layers
 public class LibraryService(LibraryRepository libraryRepository) : ILibraryService
 {
     public List<BookListModel> GetAllBooks()
@@ -46,50 +45,50 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
             .ToList();
     }
 
-    public bool BorrowBook(Guid bookId)
+    public async Task<bool> BorrowBookAsync(Guid bookId)
     {
         var book = libraryRepository.GetBookById(bookId);
+        if (book == null)
+            return false;
+        
         if (book.Status == BookStatus.Borrowed)
-        {
-            return false; // Book is already borrowed
-        }
+            return false;
 
         book.Status = BookStatus.Borrowed;
-        libraryRepository.UpdateBook(book);
-        libraryRepository.Save();
+        await libraryRepository.UpdateBookAsync(book);
+
         return true;
     }
 
-    public bool ReturnBook(Guid bookId)
+    public async Task<bool> ReturnBookAsync(Guid bookId)
     {
         var book = libraryRepository.GetBookById(bookId);
+        if (book == null)
+            return false;
+        
         if (book.Status == BookStatus.Available)
-        {
-            return false; // Book is already available
-        }
+            return false;
 
         book.Status = BookStatus.Available;
-        libraryRepository.UpdateBook(book);
-        libraryRepository.Save();
+        await libraryRepository.UpdateBookAsync(book);
+
         return true;
     }
 
-    public void AddBook(Book book)
+    public async Task AddBookAsync(Book book)
     {
-        libraryRepository.AddBook(book);
-        libraryRepository.Save();
+        ArgumentNullException.ThrowIfNull(book);
+        await libraryRepository.AddBookAsync(book);
     }
 
-    public bool DeleteBook(Guid bookId)
+    public async Task<bool> DeleteBookAsync(Guid bookId)
     {
-        try
-        {
-            return libraryRepository.DeleteBookById(bookId);
-        }
-        catch (Exception)
+        if (bookId == Guid.Empty)
         {
             return false;
         }
+
+        return await libraryRepository.DeleteBookByIdAsync(bookId);
     }
 
     public IEnumerable<Book> SearchBookByAuthor(string author)
@@ -100,5 +99,15 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
     public IEnumerable<Book> SearchBookByTitle(string title)
     {
         return libraryRepository.GetBooksByTitle(title);
+    }
+
+    public async Task DeleteBookByIdAsync(Guid bookId)
+    {
+        await libraryRepository.DeleteBookByIdAsync(bookId);
+    }
+
+    public async Task UpdateBookAsync(Book book)
+    {
+        await libraryRepository.UpdateBookAsync(book);
     }
 }

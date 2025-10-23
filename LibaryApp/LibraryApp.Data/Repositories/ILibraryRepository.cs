@@ -5,11 +5,12 @@ namespace LibraryApp.Data.Repositories;
 public interface ILibraryRepository
 {
     Book GetBookById(Guid bookId);
-    bool DeleteBookById(Guid bookId);
+    Task<bool> DeleteBookByIdAsync(Guid bookId);
     IEnumerable<Book> GetBooksByAuthor(string author);
     IEnumerable<Book> GetBooksByTitle(string title);
-    void AddBook(Book book);
-    void UpdateBook(Book book);
+    Task AddBookAsync(Book book);
+    Task UpdateBookAsync(Book book);
     IEnumerable<Book> GetAllBooks();
-    void Save();
+    Task SaveAsync();
+    Task LoadAsync();
 }
