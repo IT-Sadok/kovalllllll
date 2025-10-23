@@ -7,6 +7,7 @@ public class LibraryRepository : ILibraryRepository
 {
     private static readonly string FilePath = Path.Combine("Data", "books.json");
     private readonly List<Book> _books;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private LibraryRepository()
     {
@@ -39,17 +40,28 @@ public class LibraryRepository : ILibraryRepository
         }
     }
 
-    public Book? GetBookById(Guid bookId)
+    public Book GetBookById(Guid bookId)
     {
         return _books.FirstOrDefault(b => b.Id == bookId);
     }
 
     public async Task<bool> DeleteBookByIdAsync(Guid bookId)
     {
-        var book = GetBookById(bookId);
-        if (book != null) _books.Remove(book);
-        await SaveAsync();
-        return true;
+        await _semaphore.WaitAsync();
+        try
+        {
+            var book = GetBookById(bookId);
+            if (book == null)
+                return false;
+            
+            _books.Remove(book);
+            await SaveAsync();
+            return true;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public IEnumerable<Book> GetBooksByAuthor(string author)
@@ -65,22 +77,39 @@ public class LibraryRepository : ILibraryRepository
 
     public async Task AddBookAsync(Book book)
     {
-        _books.Add(book);
-        await SaveAsync();
+        await _semaphore.WaitAsync();
+        try
+        {
+            _books.Add(book);
+            await SaveAsync();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public async Task UpdateBookAsync(Book book)
     {
-        var existingBook = GetBookById(book.Id);
-        if (existingBook != null)
+        await _semaphore.WaitAsync();
+
+        try
         {
+            var existingBook = GetBookById(book.Id);
+            if (existingBook == null)
+                return;
+            
             existingBook.Title = book.Title;
             existingBook.Author = book.Author;
             existingBook.YearOfPublication = book.YearOfPublication;
             existingBook.Status = book.Status;
-        }
 
-        await SaveAsync();
+            await SaveAsync();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public IEnumerable<Book> GetAllBooks()

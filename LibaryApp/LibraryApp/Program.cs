@@ -61,7 +61,14 @@ internal class Program
                 }
             },
             {
-                "10", () =>
+                "10", async () =>
+                {
+                    var stressTest = new StressTest(_libraryService!);
+                    await stressTest.RunStressTest();
+                }
+            },
+            {
+                "11", () =>
                 {
                     Exit();
                     return Task.CompletedTask;
@@ -105,7 +112,8 @@ internal class Program
             { "7", "Return a book by ID" },
             { "8", "Show all borrowed books" },
             { "9", "GetAllAvailableBooks" },
-            { "10", "Exit" }
+            { "10", "Run Stress Test" },
+            { "11", "Exit" }
         };
         Console.WriteLine("Library Management System");
         foreach (var option in menuOptions)

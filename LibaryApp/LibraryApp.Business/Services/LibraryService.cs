@@ -48,13 +48,11 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
     public async Task<bool> BorrowBookAsync(Guid bookId)
     {
         var book = libraryRepository.GetBookById(bookId);
-        switch (book)
-        {
-            case { Status: BookStatus.Borrowed }:
-                return false;
-            case null:
-                return true;
-        }
+        if (book == null)
+            return false;
+        
+        if (book.Status == BookStatus.Borrowed)
+            return false;
 
         book.Status = BookStatus.Borrowed;
         await libraryRepository.UpdateBookAsync(book);
@@ -65,13 +63,11 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
     public async Task<bool> ReturnBookAsync(Guid bookId)
     {
         var book = libraryRepository.GetBookById(bookId);
-        switch (book)
-        {
-            case { Status: BookStatus.Available }:
-                return false;
-            case null:
-                return true;
-        }
+        if (book == null)
+            return false;
+        
+        if (book.Status == BookStatus.Available)
+            return false;
 
         book.Status = BookStatus.Available;
         await libraryRepository.UpdateBookAsync(book);
@@ -103,5 +99,15 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
     public IEnumerable<Book> SearchBookByTitle(string title)
     {
         return libraryRepository.GetBooksByTitle(title);
+    }
+
+    public async Task DeleteBookByIdAsync(Guid bookId)
+    {
+        await libraryRepository.DeleteBookByIdAsync(bookId);
+    }
+
+    public async Task UpdateBookAsync(Book book)
+    {
+        await libraryRepository.UpdateBookAsync(book);
     }
 }
