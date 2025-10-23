@@ -13,7 +13,7 @@ public class StressTest(LibraryService libraryService)
         var tasks = new List<Task>();
         for (var i = 0; i < 100; i++)
         {
-            tasks.Add(Task.Run(async () => { await PickRandomOperation(); }));
+            tasks.Add(PickRandomOperation());
         }
 
         await Task.WhenAll(tasks);
