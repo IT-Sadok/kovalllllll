@@ -45,50 +45,50 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
             .ToList();
     }
 
-    public async Task<bool> BorrowBookAsync(Guid bookId)
+    public async Task<bool> BorrowBookAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
         var book = libraryRepository.GetBookById(bookId);
         if (book == null)
             return false;
-        
+
         if (book.Status == BookStatus.Borrowed)
             return false;
 
         book.Status = BookStatus.Borrowed;
-        await libraryRepository.UpdateBookAsync(book);
+        await libraryRepository.UpdateBookAsync(book, cancellationToken);
 
         return true;
     }
 
-    public async Task<bool> ReturnBookAsync(Guid bookId)
+    public async Task<bool> ReturnBookAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
         var book = libraryRepository.GetBookById(bookId);
         if (book == null)
             return false;
-        
+
         if (book.Status == BookStatus.Available)
             return false;
 
         book.Status = BookStatus.Available;
-        await libraryRepository.UpdateBookAsync(book);
+        await libraryRepository.UpdateBookAsync(book, cancellationToken);
 
         return true;
     }
 
-    public async Task AddBookAsync(Book book)
+    public async Task AddBookAsync(Book book, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(book);
-        await libraryRepository.AddBookAsync(book);
+        await libraryRepository.AddBookAsync(book, cancellationToken);
     }
 
-    public async Task<bool> DeleteBookAsync(Guid bookId)
+    public async Task<bool> DeleteBookAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
         if (bookId == Guid.Empty)
         {
             return false;
         }
 
-        return await libraryRepository.DeleteBookByIdAsync(bookId);
+        return await libraryRepository.DeleteBookByIdAsync(bookId, cancellationToken);
     }
 
     public IEnumerable<Book> SearchBookByAuthor(string author)
@@ -101,13 +101,8 @@ public class LibraryService(LibraryRepository libraryRepository) : ILibraryServi
         return libraryRepository.GetBooksByTitle(title);
     }
 
-    public async Task DeleteBookByIdAsync(Guid bookId)
+    public async Task UpdateBookAsync(Book book, CancellationToken cancellationToken = default)
     {
-        await libraryRepository.DeleteBookByIdAsync(bookId);
-    }
-
-    public async Task UpdateBookAsync(Book book)
-    {
-        await libraryRepository.UpdateBookAsync(book);
+        await libraryRepository.UpdateBookAsync(book, cancellationToken);
     }
 }
