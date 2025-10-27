@@ -7,19 +7,19 @@ public class StressTest(LibraryService libraryService)
 {
     private readonly Random _random = new Random();
 
-    public async Task RunStressTest()
+    public async Task RunStressTest(CancellationToken cancellationToken = default)
     {
-        await GenerateRandomData();
+        await GenerateRandomData(cancellationToken);
         var tasks = new List<Task>();
         for (var i = 0; i < 100; i++)
         {
-            tasks.Add(PickRandomOperation());
+            tasks.Add(PickRandomOperation(cancellationToken));
         }
 
         await Task.WhenAll(tasks);
     }
 
-    private async Task GenerateRandomData()
+    private async Task GenerateRandomData(CancellationToken cancellationToken = default)
     {
         Console.WriteLine("Generating random data...");
         for (var i = 0; i < 100; i++)
@@ -32,11 +32,11 @@ public class StressTest(LibraryService libraryService)
                 YearOfPublication = $"{_random.Next(1900, 2024)}",
                 Status = (BookStatus)_random.Next(0, 2)
             };
-            await libraryService.AddBookAsync(book);
+            await libraryService.AddBookAsync(book, cancellationToken);
         }
     }
 
-    private async Task PickRandomOperation()
+    private async Task PickRandomOperation(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -58,19 +58,19 @@ public class StressTest(LibraryService libraryService)
             switch (operation)
             {
                 case 0:
-                    var borrowed = await libraryService.BorrowBookAsync(bookId);
+                    var borrowed = await libraryService.BorrowBookAsync(bookId, cancellationToken);
                     Console.WriteLine(borrowed
                         ? $"Book {bookId} borrowed successfully."
                         : $"Book {bookId} is already borrowed or not found.");
                     break;
                 case 1:
-                    var returned = await libraryService.ReturnBookAsync(bookId);
+                    var returned = await libraryService.ReturnBookAsync(bookId, cancellationToken);
                     Console.WriteLine(returned
                         ? $"Book {bookId} returned successfully."
                         : $"Book {bookId} was not borrowed or not found.");
                     break;
                 case 2:
-                    var deleted = await libraryService.DeleteBookAsync(bookId);
+                    var deleted = await libraryService.DeleteBookAsync(bookId, cancellationToken);
                     Console.WriteLine(deleted
                         ? $"Book {bookId} deleted successfully."
                         : $"Book {bookId} not found.");
@@ -85,7 +85,7 @@ public class StressTest(LibraryService libraryService)
                         Status = (BookStatus)_random.Next(0, 2)
                     };
 
-                    await libraryService.UpdateBookAsync(book);
+                    await libraryService.UpdateBookAsync(book, cancellationToken);
                     Console.WriteLine($"Book {bookId} update attempted.");
                     break;
             }

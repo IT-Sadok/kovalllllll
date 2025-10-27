@@ -19,19 +19,19 @@ public class LibraryRepository : ILibraryRepository
         }
     }
 
-    public static async Task<LibraryRepository> CreateAsync()
+    public static async Task<LibraryRepository> CreateAsync(CancellationToken cancellationToken = default)
     {
         var repository = new LibraryRepository();
-        await repository.LoadAsync();
+        await repository.LoadAsync(cancellationToken);
         return repository;
     }
 
-    public async Task LoadAsync()
+    public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
         if (File.Exists(FilePath))
         {
             await using var fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var books = await JsonSerializer.DeserializeAsync<List<Book>>(fs);
+            var books = await JsonSerializer.DeserializeAsync<List<Book>>(fs, cancellationToken: cancellationToken);
             if (books != null)
             {
                 _books.Clear();
@@ -45,9 +45,9 @@ public class LibraryRepository : ILibraryRepository
         return _books.FirstOrDefault(b => b.Id == bookId);
     }
 
-    public async Task<bool> DeleteBookByIdAsync(Guid bookId)
+    public async Task<bool> DeleteBookByIdAsync(Guid bookId, CancellationToken cancellationToken = default)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
             var book = GetBookById(bookId);
@@ -55,7 +55,7 @@ public class LibraryRepository : ILibraryRepository
                 return false;
             
             _books.Remove(book);
-            await SaveAsync();
+            await SaveAsync(cancellationToken);
             return true;
         }
         finally
@@ -75,13 +75,13 @@ public class LibraryRepository : ILibraryRepository
         return books;
     }
 
-    public async Task AddBookAsync(Book book)
+    public async Task AddBookAsync(Book book, CancellationToken cancellationToken = default)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
         try
         {
             _books.Add(book);
-            await SaveAsync();
+            await SaveAsync(cancellationToken);
         }
         finally
         {
@@ -89,9 +89,9 @@ public class LibraryRepository : ILibraryRepository
         }
     }
 
-    public async Task UpdateBookAsync(Book book)
+    public async Task UpdateBookAsync(Book book, CancellationToken cancellationToken = default)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
 
         try
         {
@@ -104,7 +104,7 @@ public class LibraryRepository : ILibraryRepository
             existingBook.YearOfPublication = book.YearOfPublication;
             existingBook.Status = book.Status;
 
-            await SaveAsync();
+            await SaveAsync(cancellationToken);
         }
         finally
         {
@@ -117,9 +117,9 @@ public class LibraryRepository : ILibraryRepository
         return _books;
     }
 
-    public async Task SaveAsync()
+    public async Task SaveAsync(CancellationToken cancellationToken = default)
     {
         await using var fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        await JsonSerializer.SerializeAsync(fs, _books, new JsonSerializerOptions { WriteIndented = true });
+        await JsonSerializer.SerializeAsync(fs, _books, new JsonSerializerOptions { WriteIndented = true }, cancellationToken);
     }
 }
