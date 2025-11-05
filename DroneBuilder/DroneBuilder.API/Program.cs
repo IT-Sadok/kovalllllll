@@ -14,11 +14,14 @@ public abstract class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true,
+            reloadOnChange: true);
+
         builder.Services.AddSwaggerGen();
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services
-            .AddIdentity<User, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+            .AddIdentity<User, IdentityRole<Guid>>(options => options.SignIn.RequireConfirmedAccount = true)
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddAuthorization();

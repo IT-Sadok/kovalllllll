@@ -503,3 +503,5 @@ $RECYCLE.BIN/
 
 # JetBrains Rider user-specific files
 *.DotSettings.user
+
+appsettings.*.json
