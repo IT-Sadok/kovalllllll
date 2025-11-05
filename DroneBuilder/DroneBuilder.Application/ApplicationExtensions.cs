@@ -18,7 +18,6 @@ public static class ApplicationExtensions
 
         services.AddScoped<ICommandHandler<SignInCommand, AuthUserModel>, SignInCommandHandler>();
 
-
         services.AddScoped<IJwtService, JwtService>();
 
         return services;

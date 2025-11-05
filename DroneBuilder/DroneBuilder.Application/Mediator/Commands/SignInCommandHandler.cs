@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Services;
 using DroneBuilder.Domain.Entities;
@@ -14,7 +15,7 @@ public class SignInCommandHandler(UserManager<User> userManager, IJwtService jwt
         var user = await userManager.FindByEmailAsync(command.Email);
         if (user == null || !await userManager.CheckPasswordAsync(user, command.Password))
         {
-            throw new Exception("Invalid email or password");
+            throw new InvalidEmailOrPasswordException("Invalid email or password.");
         }
 
         var token = await jwtService.GenerateJwtTokenAsync(user);

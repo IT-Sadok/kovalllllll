@@ -24,4 +24,8 @@
         <ProjectReference Include="..\DroneBuilder.Domain\DroneBuilder.Domain.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="EntityConfigurations\" />
+    </ItemGroup>
+
 </Project>

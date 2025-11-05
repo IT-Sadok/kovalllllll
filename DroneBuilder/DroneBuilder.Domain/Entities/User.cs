@@ -2,8 +2,6 @@
 
 namespace DroneBuilder.Domain.Entities;
 
-public class User : IdentityUser
+public class User : IdentityUser<Guid>
 {
-    public Guid AccountId { get; set; }
-    public Account Account { get; set; }
 }
