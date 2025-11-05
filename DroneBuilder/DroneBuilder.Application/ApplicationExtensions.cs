@@ -1,8 +1,6 @@
 ﻿using DroneBuilder.Application.Mediator.Commands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Services;
-using DroneBuilder.Application.Services.Impl;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DroneBuilder.Application;
@@ -17,9 +15,7 @@ public static class ApplicationExtensions
             SignUpCommandHandler>();
 
         services.AddScoped<ICommandHandler<SignInCommand, AuthUserModel>, SignInCommandHandler>();
-
-        services.AddScoped<IJwtService, JwtService>();
-
+        
         return services;
     }
 }

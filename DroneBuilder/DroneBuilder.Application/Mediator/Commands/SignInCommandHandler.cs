@@ -1,7 +1,6 @@
 ﻿using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Services;
 using DroneBuilder.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 

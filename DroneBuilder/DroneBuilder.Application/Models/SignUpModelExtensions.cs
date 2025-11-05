@@ -4,12 +4,9 @@ namespace DroneBuilder.Application.Models;
 
 public static class SignUpModelExtensions
 {
-    public static User ToEntity(this SignUpModel model)
+    public static User ToEntity(this SignUpModel model) => new()
     {
-        return new User
-        {
-            UserName = model.Email,
-            Email = model.Email
-        };
-    }
+        UserName = model.Email,
+        Email = model.Email
+    };
 }

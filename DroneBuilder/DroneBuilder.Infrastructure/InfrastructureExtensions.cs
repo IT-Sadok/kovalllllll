@@ -1,4 +1,7 @@
-﻿using DroneBuilder.Application.Repositories;
+﻿using DroneBuilder.Application;
+using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Services;
+using DroneBuilder.Application.Services.Impl;
 using DroneBuilder.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +19,8 @@ public static class InfrastructureExtensions
         });
 
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddScoped<IJwtService, JwtService>();
 
         return services;
     }
