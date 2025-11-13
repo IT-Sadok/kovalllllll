@@ -10,6 +10,7 @@ public class PropertyRepository(ApplicationDbContext dbContext) : IPropertyRepos
     public async Task AddPropertyAsync(Property property, CancellationToken cancellationToken = default)
     {
         await dbContext.Properties.AddAsync(property, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task GetPropertyByIdAsync(Guid id, CancellationToken cancellationToken = default)

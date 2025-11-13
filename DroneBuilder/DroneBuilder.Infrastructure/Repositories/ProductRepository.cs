@@ -10,6 +10,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     public async Task AddProductAsync(Product product, CancellationToken cancellationToken = default)
     {
         await dbContext.Products.AddAsync(product, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -49,22 +50,6 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         existingProduct.Price = product.Price;
 
         await dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task GetProductImagesAsync(Product product, CancellationToken cancellationToken = default)
-    {
-        var existingProduct = await GetProductAsync(product.Id, cancellationToken);
-        await dbContext.Entry(existingProduct)
-            .Collection(p => p.Images)
-            .LoadAsync(cancellationToken);
-    }
-
-    public async Task GetProductPropertiesAsync(Product product, CancellationToken cancellationToken = default)
-    {
-        var existingProduct = await GetProductAsync(product.Id, cancellationToken);
-        await dbContext.Entry(existingProduct)
-            .Collection(p => p.Properties)
-            .LoadAsync(cancellationToken);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

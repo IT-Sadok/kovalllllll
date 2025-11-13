@@ -1,5 +1,7 @@
 ﻿using DroneBuilder.Application.Mediator.Commands;
 using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Mediator.Queries;
+using DroneBuilder.Application.Mediator.Queries.ProductQueries;
 using DroneBuilder.Application.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +17,13 @@ public static class ApplicationExtensions
             SignUpCommandHandler>();
 
         services.AddScoped<ICommandHandler<SignInCommand, AuthUserModel>, SignInCommandHandler>();
-        
+        services.AddScoped<ICommandHandler<CreateProductCommand, ProductResponseModel>, CreateProductCommandHandler>();
+        services.AddScoped<ICommandHandler<UpdateProductCommand, ProductResponseModel>, UpdateProductCommandHandler>();
+        services.AddScoped<ICommandHandler<DeleteProductCommand>, DeleteProductCommandHandler>();
+
+        services.AddScoped<IQueryHandler<GetProductsQuery, ProductsResponseModel>, GetProductsQueryHandler>();
+        services.AddScoped<IQueryHandler<GetProductByIdQuery, ProductResponseModel>, GetProductByIdQueryHandler>();
+
         return services;
     }
 }

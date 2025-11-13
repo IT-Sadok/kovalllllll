@@ -10,6 +10,7 @@ public class ImageRepository(ApplicationDbContext dbContext) : IImageRepository
     public async Task AddImageAsync(Image image, CancellationToken cancellationToken = default)
     {
         await dbContext.Images.AddAsync(image, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task GetImageByIdAsync(Guid id, CancellationToken cancellationToken = default)

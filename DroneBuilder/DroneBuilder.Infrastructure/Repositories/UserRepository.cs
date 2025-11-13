@@ -8,6 +8,7 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
     public async Task AddUserAsync(User user, CancellationToken cancellationToken = default)
     {
         await dbContext.Users.AddAsync(user, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Mediator.Interfaces;
+namespace DroneBuilder.Application.Mediator.Interfaces;
 
 public interface IQueryHandler<in T>
 {

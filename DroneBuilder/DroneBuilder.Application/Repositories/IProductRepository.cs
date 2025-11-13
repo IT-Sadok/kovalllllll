@@ -10,7 +10,5 @@ public interface IProductRepository
     Task<IEnumerable<Product>> GetProductsAsync(CancellationToken cancellationToken = default);
     Task RemoveProductAsync(Product product, CancellationToken cancellationToken = default);
     Task UpdateProductAsync(Product product, CancellationToken cancellationToken = default);
-    Task GetProductImagesAsync(Product product, CancellationToken cancellationToken = default);
-    Task GetProductPropertiesAsync(Product product, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

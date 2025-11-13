@@ -10,6 +10,7 @@ public class ValueRepository(ApplicationDbContext dbContext) : IValueRepository
     public async Task AddValueAsync(Value value, CancellationToken cancellationToken = default)
     {
         await dbContext.Values.AddAsync(value, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task GetValueByIdAsync(Guid id, CancellationToken cancellationToken = default)

@@ -7,7 +7,7 @@ namespace DroneBuilder.API.Endpoints;
 
 public static class UserEndpointsExtensions
 {
-    public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
+    public static void MapUserEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapPost(ApiRoutes.Users.SignUp,
             async (IMediator mediator, SignUpModel model, CancellationToken cancellationToken) =>
@@ -21,7 +21,5 @@ public static class UserEndpointsExtensions
                     cancellationToken);
                 return Results.Ok(result);
             });
-
-        return app;
     }
 }

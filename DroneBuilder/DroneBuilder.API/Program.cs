@@ -50,6 +50,7 @@ public abstract class Program
         app.UseAuthorization();
 
         app.MapUserEndpoints();
+        app.MapProductEndpoints();
 
         app.Run();
     }
