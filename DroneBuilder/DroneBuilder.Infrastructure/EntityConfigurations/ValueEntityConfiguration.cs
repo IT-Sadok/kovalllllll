@@ -10,24 +10,11 @@ public class ValueEntityConfiguration : IEntityTypeConfiguration<Value>
     {
         builder.HasKey(v => v.Id);
 
-        builder.Property(v => v.ValueText)
+        builder.Property(v => v.Text)
             .IsRequired()
             .HasMaxLength(100);
 
         builder.HasMany(v => v.Properties)
-            .WithMany(p => p.Values)
-            .UsingEntity<Dictionary<string, object>>(
-                "PropertyValue",
-                j => j
-                    .HasOne<Property>()
-                    .WithMany()
-                    .HasForeignKey("PropertyId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne<Value>()
-                    .WithMany()
-                    .HasForeignKey("ValueId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => { j.HasKey("PropertyId", "ValueId"); });
+            .WithMany(p => p.Values);
     }
 }

@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Repositories;
 
@@ -10,6 +11,11 @@ public class GetProductsQueryHandler(IProductRepository productRepository)
     public async Task<ProductsResponseModel> ExecuteAsync(GetProductsQuery query, CancellationToken cancellationToken)
     {
         var products = await productRepository.GetProductsAsync(cancellationToken);
+
+        if (products is null)
+        {
+            throw new NotFoundException("No products found.");
+        }
 
         var response = new ProductsResponseModel
         {

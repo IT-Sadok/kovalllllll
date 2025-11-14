@@ -5,10 +5,13 @@ namespace DroneBuilder.Application.Repositories;
 public interface IProductRepository
 {
     Task AddProductAsync(Product product, CancellationToken cancellationToken = default);
-    Task GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<Product> GetProductAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Product>> GetProductsAsync(CancellationToken cancellationToken = default);
-    Task RemoveProductAsync(Product product, CancellationToken cancellationToken = default);
-    Task UpdateProductAsync(Product product, CancellationToken cancellationToken = default);
+    Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ICollection<Product>> GetProductsAsync(CancellationToken cancellationToken = default);
+
+    Task<ICollection<Property>> GetPropertiesByProductIdAsync(Guid productId,
+        CancellationToken cancellationToken = default);
+
+    void RemoveProduct(Product product);
+
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

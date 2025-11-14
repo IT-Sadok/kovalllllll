@@ -1,7 +1,6 @@
 ﻿using DroneBuilder.API.Endpoints.Routes;
-using DroneBuilder.Application.Mediator.Commands;
+using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Mediator.Queries;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
 using DroneBuilder.Application.Models;
 
@@ -52,6 +51,17 @@ public static class ProductEndpointsExtensions
                 var result = await mediator.ExecuteQueryAsync<GetProductByIdQuery, ProductResponseModel>(
                     new GetProductByIdQuery(productId),
                     cancellationToken);
+                return Results.Ok(result);
+            });
+
+
+        app.MapGet(ApiRoutes.Products.GetPropertiesByProductId,
+            async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
+            {
+                var result =
+                    await mediator.ExecuteQueryAsync<GetPropertiesByProductIdQuery, ProductPropertiesResponseModel>(
+                        new GetPropertiesByProductIdQuery(productId),
+                        cancellationToken);
                 return Results.Ok(result);
             });
     }

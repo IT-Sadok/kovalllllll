@@ -3,7 +3,7 @@ using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 
-namespace DroneBuilder.Application.Mediator.Commands;
+namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
 public class CreateProductCommandHandler(IProductRepository productRepository)
     : ICommandHandler<CreateProductCommand, ProductResponseModel>
@@ -20,6 +20,7 @@ public class CreateProductCommandHandler(IProductRepository productRepository)
         };
 
         await productRepository.AddProductAsync(product, cancellationToken);
+        await productRepository.SaveChangesAsync(cancellationToken);
 
         return new ProductResponseModel()
         {

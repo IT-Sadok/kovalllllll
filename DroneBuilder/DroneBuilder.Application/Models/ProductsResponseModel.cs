@@ -2,5 +2,5 @@
 
 public class ProductsResponseModel
 {
-    public IEnumerable<ProductResponseModel> Products { get; set; } = null!;
+    public IEnumerable<ProductResponseModel> Products { get; set; } = [];
 }

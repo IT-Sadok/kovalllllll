@@ -15,19 +15,6 @@ public class PropertyEntityConfiguration : IEntityTypeConfiguration<Property>
             .HasMaxLength(100);
 
         builder.HasMany(p => p.Values)
-            .WithMany(v => v.Properties)
-            .UsingEntity<Dictionary<string, object>>(
-                "PropertyValue",
-                j => j
-                    .HasOne<Value>()
-                    .WithMany()
-                    .HasForeignKey("ValueId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne<Property>()
-                    .WithMany()
-                    .HasForeignKey("PropertyId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => { j.HasKey("PropertyId", "ValueId"); });
+            .WithMany(v => v.Properties);
     }
 }

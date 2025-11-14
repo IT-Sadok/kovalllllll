@@ -19,5 +19,6 @@ public abstract class ApiRoutes
         public const string Create = BaseRoute;
         public const string Update = BaseRoute + "/{productId}";
         public const string Delete = BaseRoute + "/{productId}";
+        public const string GetPropertiesByProductId = BaseRoute + "/{productId}/properties";
     }
 }

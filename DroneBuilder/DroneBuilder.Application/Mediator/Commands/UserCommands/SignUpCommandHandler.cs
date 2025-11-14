@@ -3,7 +3,7 @@ using DroneBuilder.Application.Models;
 using DroneBuilder.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
-namespace DroneBuilder.Application.Mediator.Commands;
+namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
 
 public class SignUpCommandHandler(UserManager<User> userManager)
     : ICommandHandler<SignUpUserCommand>

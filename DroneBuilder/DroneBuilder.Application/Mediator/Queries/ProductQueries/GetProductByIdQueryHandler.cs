@@ -9,7 +9,12 @@ public class GetProductByIdQueryHandler(IProductRepository productRepository)
 {
     public async Task<ProductResponseModel> ExecuteAsync(GetProductByIdQuery query, CancellationToken cancellationToken)
     {
-        var product = await productRepository.GetProductAsync(query.ProductId, cancellationToken);
+        var product = await productRepository.GetProductByIdAsync(query.ProductId, cancellationToken);
+
+        if (product is null)
+        {
+            throw new KeyNotFoundException($"Product with id {query.ProductId} not found.");
+        }
 
         return new ProductResponseModel
         {

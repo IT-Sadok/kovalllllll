@@ -2,7 +2,7 @@
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Repositories;
 
-namespace DroneBuilder.Application.Mediator.Commands;
+namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
 public class UpdateProductCommandHandler(IProductRepository productRepository)
     : ICommandHandler<UpdateProductCommand, ProductResponseModel>
@@ -10,18 +10,22 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
     public async Task<ProductResponseModel> ExecuteCommandAsync(UpdateProductCommand command,
         CancellationToken cancellationToken)
     {
-        var product = await productRepository.GetProductAsync(command.ProductId, cancellationToken);
-
-        product.Name = command.RequestModel.Name ?? product.Name;
-        product.Price = command.RequestModel.Price ?? product.Price;
-
-        await productRepository.UpdateProductAsync(product, cancellationToken);
-
-        return new ProductResponseModel()
+        var existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
+        if (existingProduct is null)
         {
-            Id = product.Id,
-            Name = product.Name,
-            Price = product.Price
+            throw new KeyNotFoundException($"Product with id {command.ProductId} not found.");
+        }
+
+        existingProduct.Name = command.RequestModel.Name ?? existingProduct.Name;
+        existingProduct.Price = command.RequestModel.Price ?? existingProduct.Price;
+
+        await productRepository.SaveChangesAsync(cancellationToken);
+
+        return new ProductResponseModel
+        {
+            Id = existingProduct.Id,
+            Name = existingProduct.Name,
+            Price = existingProduct.Price
         };
     }
 }

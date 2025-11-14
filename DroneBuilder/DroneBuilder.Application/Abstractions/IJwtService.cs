@@ -1,6 +1,6 @@
 ﻿using DroneBuilder.Domain.Entities;
 
-namespace DroneBuilder.Application;
+namespace DroneBuilder.Application.Abstractions;
 
 public interface IJwtService
 {

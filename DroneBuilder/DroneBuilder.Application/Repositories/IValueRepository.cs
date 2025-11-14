@@ -5,14 +5,13 @@ namespace DroneBuilder.Application.Repositories;
 public interface IValueRepository
 {
     Task AddValueAsync(Value value, CancellationToken cancellationToken = default);
-    Task GetValueByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<Value> GetValueAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Value>> GetValuesAsync(CancellationToken cancellationToken = default);
-    Task RemoveValueAsync(Value value, CancellationToken cancellationToken = default);
-    Task UpdateValueAsync(Value value, CancellationToken cancellationToken = default);
+    Task<Value?> GetValueByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ICollection<Value>> GetValuesAsync(CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<Value>> GetValuesByPropertyIdAsync(Guid propertyId,
+    Task<ICollection<Value>> GetValuesByPropertyIdAsync(Guid propertyId,
         CancellationToken cancellationToken = default);
+
+    void RemoveValue(Value value);
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

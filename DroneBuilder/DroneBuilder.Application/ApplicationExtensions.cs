@@ -1,4 +1,6 @@
 ﻿using DroneBuilder.Application.Mediator.Commands;
+using DroneBuilder.Application.Mediator.Commands.ProductCommands;
+using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
@@ -23,6 +25,8 @@ public static class ApplicationExtensions
 
         services.AddScoped<IQueryHandler<GetProductsQuery, ProductsResponseModel>, GetProductsQueryHandler>();
         services.AddScoped<IQueryHandler<GetProductByIdQuery, ProductResponseModel>, GetProductByIdQueryHandler>();
+        services.AddScoped<IQueryHandler<GetPropertiesByProductIdQuery, ProductPropertiesResponseModel>,
+            GetPropertiesByProductIdQueryHandler>();
 
         return services;
     }

@@ -4,7 +4,6 @@ using DroneBuilder.Application;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace DroneBuilder.API;
 

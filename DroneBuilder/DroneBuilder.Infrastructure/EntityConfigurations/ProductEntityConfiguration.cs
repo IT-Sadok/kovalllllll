@@ -24,19 +24,6 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(p => p.Properties)
-            .WithMany(pr => pr.Products)
-            .UsingEntity<Dictionary<string, object>>(
-                "ProductProperty",
-                j => j
-                    .HasOne<Property>()
-                    .WithMany()
-                    .HasForeignKey("PropertyId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne<Product>()
-                    .WithMany()
-                    .HasForeignKey("ProductId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => { j.HasKey("ProductId", "PropertyId"); });
+            .WithMany(pr => pr.Products);
     }
 }

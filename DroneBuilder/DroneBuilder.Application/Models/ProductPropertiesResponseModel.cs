@@ -2,11 +2,9 @@
 
 namespace DroneBuilder.Application.Models;
 
-public class ProductResponseModel
+public class ProductPropertiesResponseModel
 {
     public Guid Id { get; set; }
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-    public ICollection<Image> Images { get; set; } = [];
+    public string Name { get; set; } = string.Empty;
     public ICollection<Property> Properties { get; set; } = [];
 }
