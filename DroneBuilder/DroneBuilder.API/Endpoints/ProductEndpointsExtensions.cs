@@ -8,7 +8,7 @@ namespace DroneBuilder.API.Endpoints;
 
 public static class ProductEndpointsExtensions
 {
-    public static void MapProductEndpoints(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapProductEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapPost(ApiRoutes.Products.Create,
             async (IMediator mediator, CreateProductRequestModel requestModel, CancellationToken cancellationToken) =>
@@ -64,5 +64,7 @@ public static class ProductEndpointsExtensions
                         cancellationToken);
                 return Results.Ok(result);
             });
+
+        return app;
     }
 }

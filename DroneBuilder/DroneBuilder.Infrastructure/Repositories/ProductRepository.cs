@@ -18,13 +18,16 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
     public async Task<ICollection<Product>> GetProductsAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Products.ToListAsync(cancellationToken);
+        return await dbContext.Products
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<ICollection<Property>> GetPropertiesByProductIdAsync(Guid productId,
         CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
+            .AsNoTracking()
             .Where(p => p.Id == productId)
             .SelectMany(p => p.Properties!)
             .ToListAsync(cancellationToken);

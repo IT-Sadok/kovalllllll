@@ -2,10 +2,11 @@
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Repositories;
+using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
-public class UpdateProductCommandHandler(IProductRepository productRepository)
+public class UpdateProductCommandHandler(IProductRepository productRepository, IMapper mapper)
     : ICommandHandler<UpdateProductCommand, ProductResponseModel>
 {
     public async Task<ProductResponseModel> ExecuteCommandAsync(UpdateProductCommand command,
@@ -22,12 +23,7 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
 
         await productRepository.SaveChangesAsync(cancellationToken);
 
-        return new ProductResponseModel
-        {
-            Id = existingProduct.Id,
-            Name = existingProduct.Name,
-            Price = existingProduct.Price
-        };
+        return mapper.Map<ProductResponseModel>(existingProduct);
     }
 }
 

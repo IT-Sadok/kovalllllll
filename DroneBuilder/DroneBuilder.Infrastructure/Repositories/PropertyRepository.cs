@@ -19,13 +19,16 @@ public class PropertyRepository(ApplicationDbContext dbContext) : IPropertyRepos
 
     public async Task<ICollection<Property>> GetPropertiesAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Properties.ToListAsync(cancellationToken);
+        return await dbContext.Properties
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<ICollection<Property>> GetPropertiesByValueIdAsync(Guid valueId,
         CancellationToken cancellationToken = default)
     {
         return await dbContext.Values
+            .AsNoTracking()
             .Where(v => v.Id == valueId)
             .SelectMany(v => v.Properties!)
             .ToListAsync(cancellationToken);

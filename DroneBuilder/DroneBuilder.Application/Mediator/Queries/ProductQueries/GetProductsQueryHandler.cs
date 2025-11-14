@@ -2,10 +2,11 @@
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Repositories;
+using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ProductQueries;
 
-public class GetProductsQueryHandler(IProductRepository productRepository)
+public class GetProductsQueryHandler(IProductRepository productRepository, IMapper mapper)
     : IQueryHandler<GetProductsQuery, ProductsResponseModel>
 {
     public async Task<ProductsResponseModel> ExecuteAsync(GetProductsQuery query, CancellationToken cancellationToken)
@@ -17,19 +18,7 @@ public class GetProductsQueryHandler(IProductRepository productRepository)
             throw new NotFoundException("No products found.");
         }
 
-        var response = new ProductsResponseModel
-        {
-            Products = products.Select(product => new ProductResponseModel
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Price = product.Price,
-                Images = product.Images,
-                Properties = product.Properties
-            }).ToList()
-        };
-
-        return response;
+        return mapper.Map<ProductsResponseModel>(products);
     }
 }
 

@@ -13,19 +13,23 @@ public class ImageRepository(ApplicationDbContext dbContext) : IImageRepository
 
     public async Task<Image?> GetImageByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Images.FindAsync([id],
-            cancellationToken: cancellationToken);
+        return await dbContext.Images
+            .FindAsync([id],
+                cancellationToken: cancellationToken);
     }
 
     public async Task<ICollection<Image>> GetImagesAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Images.ToListAsync(cancellationToken);
+        return await dbContext.Images
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<ICollection<Image>> GetImagesByProductIdAsync(Guid productId,
         CancellationToken cancellationToken = default)
     {
         return await dbContext.Images
+            .AsNoTracking()
             .Where(image => image.ProductId == productId)
             .ToListAsync(cancellationToken);
     }
