@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Repositories;
 
@@ -13,7 +14,7 @@ public class GetProductByIdQueryHandler(IProductRepository productRepository)
 
         if (product is null)
         {
-            throw new KeyNotFoundException($"Product with id {query.ProductId} not found.");
+            throw new NotFoundException($"Product with id {query.ProductId} not found.");
         }
 
         return new ProductResponseModel
