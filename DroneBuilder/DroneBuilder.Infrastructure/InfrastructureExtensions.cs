@@ -1,9 +1,7 @@
-﻿using DroneBuilder.Application;
-using DroneBuilder.Application.Abstractions;
+﻿using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Repositories;
-using DroneBuilder.Application.Services;
-using DroneBuilder.Application.Services.Impl;
 using DroneBuilder.Infrastructure.Repositories;
+using DroneBuilder.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -3,7 +3,8 @@ using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
-using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Application.Models.UserModels;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 

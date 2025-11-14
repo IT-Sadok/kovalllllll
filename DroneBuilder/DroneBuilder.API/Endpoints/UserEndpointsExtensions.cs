@@ -1,7 +1,7 @@
 ﻿using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models.UserModels;
 
 namespace DroneBuilder.API.Endpoints;
 

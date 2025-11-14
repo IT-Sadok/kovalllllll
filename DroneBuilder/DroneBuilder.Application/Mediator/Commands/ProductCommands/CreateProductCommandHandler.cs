@@ -1,5 +1,6 @@
 ﻿using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using MapsterMapper;

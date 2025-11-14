@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Models;
+﻿namespace DroneBuilder.Application.Models.UserModels;
 
 public class AuthUserModel
 {

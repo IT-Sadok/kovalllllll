@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Models;
+﻿namespace DroneBuilder.Application.Models.ProductModels;
 
 public class ProductsResponseModel
 {

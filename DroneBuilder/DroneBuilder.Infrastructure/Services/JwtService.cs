@@ -2,12 +2,12 @@
 using System.Security.Claims;
 using System.Text;
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Options;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Infrastructure.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace DroneBuilder.Application.Services.Impl;
+namespace DroneBuilder.Infrastructure.Services;
 
 public class JwtService(IOptions<JwtOptions> jwtOptions)
     : IJwtService

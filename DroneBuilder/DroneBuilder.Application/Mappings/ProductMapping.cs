@@ -1,6 +1,6 @@
 ﻿using Mapster;
 using DroneBuilder.Domain.Entities;
-using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models.ProductModels;
 
 namespace DroneBuilder.Application.Mappings;
 

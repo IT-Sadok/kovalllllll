@@ -2,6 +2,7 @@
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
