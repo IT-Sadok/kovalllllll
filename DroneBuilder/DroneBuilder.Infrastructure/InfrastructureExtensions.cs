@@ -1,4 +1,5 @@
 ﻿using DroneBuilder.Application;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.Services;
 using DroneBuilder.Application.Services.Impl;
@@ -19,6 +20,10 @@ public static class InfrastructureExtensions
         });
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IImageRepository, ImageRepository>();
+        services.AddScoped<IPropertyRepository, PropertyRepository>();
+        services.AddScoped<IValueRepository, ValueRepository>();
 
         services.AddScoped<IJwtService, JwtService>();
 

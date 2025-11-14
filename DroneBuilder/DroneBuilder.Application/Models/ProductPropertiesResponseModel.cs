@@ -1,0 +1,10 @@
+﻿using DroneBuilder.Domain.Entities;
+
+namespace DroneBuilder.Application.Models;
+
+public class ProductPropertiesResponseModel
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public ICollection<Property> Properties { get; set; } = [];
+}

@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Domain.Entities;
 using Microsoft.Extensions.Options;

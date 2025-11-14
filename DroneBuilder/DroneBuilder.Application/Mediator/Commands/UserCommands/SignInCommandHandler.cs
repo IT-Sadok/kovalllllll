@@ -1,12 +1,14 @@
-﻿using DroneBuilder.Application.Exceptions;
+﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Domain.Entities;
+using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
 
-namespace DroneBuilder.Application.Mediator.Commands;
+namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
 
-public class SignInCommandHandler(UserManager<User> userManager, IJwtService jwtService)
+public class SignInCommandHandler(UserManager<User> userManager, IJwtService jwtService, IMapper mapper)
     : ICommandHandler<SignInCommand, AuthUserModel>
 {
     public async Task<AuthUserModel> ExecuteCommandAsync(SignInCommand command, CancellationToken cancellationToken)
@@ -19,10 +21,7 @@ public class SignInCommandHandler(UserManager<User> userManager, IJwtService jwt
 
         var token = await jwtService.GenerateJwtTokenAsync(user);
 
-        return new AuthUserModel
-        {
-            AccessToken = token
-        };
+        return mapper.Map<AuthUserModel>(token);
     }
 }
 
