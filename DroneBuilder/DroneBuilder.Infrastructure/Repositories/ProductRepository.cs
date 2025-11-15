@@ -13,24 +13,31 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
     public async Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Products.FindAsync([id], cancellationToken: cancellationToken);
+        return await dbContext.Products
+            .Include(p => p.Images)
+            .Include(p => p.Properties)!
+            .ThenInclude(prop => prop.Values)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task<ICollection<Product>> GetProductsAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
             .AsNoTracking()
+            .Include(p => p.Images)
+            .Include(p => p.Properties)!
+            .ThenInclude(prop => prop.Values)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<ICollection<Property>> GetPropertiesByProductIdAsync(Guid productId,
+    public async Task<Product?> GetPropertiesByProductIdAsync(Guid productId,
         CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
             .AsNoTracking()
-            .Where(p => p.Id == productId)
-            .SelectMany(p => p.Properties!)
-            .ToListAsync(cancellationToken);
+            .Include(p => p.Properties)!
+            .ThenInclude(prop => prop.Values)
+            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
     }
 
     public void RemoveProduct(Product product)

@@ -11,7 +11,7 @@ public static class UserEndpointsExtensions
     {
         app.MapPost(ApiRoutes.Users.SignUp,
             async (IMediator mediator, SignUpModel model, CancellationToken cancellationToken) =>
-                await mediator.ExecuteCommandAsync(new SignUpUserCommand(model), cancellationToken));
+                await mediator.ExecuteCommandAsync(new SignUpUserCommand(model), cancellationToken)).WithTags("Users");
 
         app.MapPost(ApiRoutes.Users.SignIn,
             async (IMediator mediator, SignInModel model, CancellationToken cancellationToken) =>
@@ -20,7 +20,7 @@ public static class UserEndpointsExtensions
                     new SignInCommand(model.Email, model.Password),
                     cancellationToken);
                 return Results.Ok(result);
-            });
+            }).WithTags("Users");
 
         return app;
     }

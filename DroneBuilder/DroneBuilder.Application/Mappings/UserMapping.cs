@@ -3,7 +3,7 @@ using Mapster;
 
 namespace DroneBuilder.Application.Mappings;
 
-public class UserMaping : IRegister
+public class UserMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {

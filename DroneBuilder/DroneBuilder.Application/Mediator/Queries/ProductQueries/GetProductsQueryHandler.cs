@@ -23,4 +23,4 @@ public class GetProductsQueryHandler(IProductRepository productRepository, IMapp
     }
 }
 
-public record GetProductsQuery();
+public record GetProductsQuery;

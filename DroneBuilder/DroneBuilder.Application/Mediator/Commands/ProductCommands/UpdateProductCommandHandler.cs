@@ -1,6 +1,5 @@
 ﻿using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using MapsterMapper;
@@ -19,8 +18,7 @@ public class UpdateProductCommandHandler(IProductRepository productRepository, I
             throw new NotFoundException($"Product with id {command.ProductId} not found.");
         }
 
-        existingProduct.Name = command.RequestModel.Name ?? existingProduct.Name;
-        existingProduct.Price = command.RequestModel.Price ?? existingProduct.Price;
+        mapper.Map(command.Model, existingProduct);
 
         await productRepository.SaveChangesAsync(cancellationToken);
 
@@ -28,4 +26,4 @@ public class UpdateProductCommandHandler(IProductRepository productRepository, I
     }
 }
 
-public record UpdateProductCommand(Guid ProductId, UpdateProductRequestModel RequestModel);
+public record UpdateProductCommand(Guid ProductId, UpdateProductRequestModel Model);

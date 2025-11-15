@@ -8,7 +8,7 @@ public interface IProductRepository
     Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ICollection<Product>> GetProductsAsync(CancellationToken cancellationToken = default);
 
-    Task<ICollection<Property>> GetPropertiesByProductIdAsync(Guid productId,
+    Task<Product?> GetPropertiesByProductIdAsync(Guid productId,
         CancellationToken cancellationToken = default);
 
     void RemoveProduct(Product product);

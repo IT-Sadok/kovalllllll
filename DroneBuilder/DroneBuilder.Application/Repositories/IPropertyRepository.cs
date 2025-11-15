@@ -8,8 +8,7 @@ public interface IPropertyRepository
     Task<Property?> GetPropertyByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ICollection<Property>> GetPropertiesAsync(CancellationToken cancellationToken = default);
 
-    Task<ICollection<Property>>
-        GetPropertiesByValueIdAsync(Guid valueId, CancellationToken cancellationToken = default);
+    Task<Property> GetValuesByPropertyIdAsync(Guid propertyId, CancellationToken cancellationToken = default);
 
     void RemoveProperty(Property property);
 

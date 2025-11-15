@@ -49,7 +49,8 @@ public abstract class Program
         app.UseAuthorization();
 
         app.MapUserEndpoints()
-            .MapProductEndpoints();
+            .MapProductEndpoints()
+            .MapPropertyEndpoints();
 
         app.Run();
     }

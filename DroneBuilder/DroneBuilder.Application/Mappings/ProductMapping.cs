@@ -9,8 +9,25 @@ public class ProductMapping : IRegister
     public void Register(TypeAdapterConfig config)
     {
         config.NewConfig<Product, ProductResponseModel>();
+
         config.NewConfig<ICollection<Product>, ProductsResponseModel>()
             .Map(dest => dest.Products, src => src);
-        config.NewConfig<Product, ProductPropertiesResponseModel>();
+        config.NewConfig<Product, ProductPropertiesResponseModel>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Name, src => src.Name)
+            .Map(dest => dest.Properties, src => src.Properties);
+
+        config.NewConfig<CreateProductModel, Product>()
+            .Map(dest => dest.Name, src => src.Name)
+            .Map(dest => dest.Price, src => src.Price)
+            .Ignore(dest => dest.Properties)
+            .Ignore(dest => dest.Images)
+            .Ignore(dest => dest.Id);
+
+        config.NewConfig<UpdateProductRequestModel, Product>()
+            .IgnoreNullValues(true)
+            .Ignore(dest => dest.Id)
+            .Ignore(dest => dest.Images)
+            .Ignore(dest => dest.Properties);
     }
 }

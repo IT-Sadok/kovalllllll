@@ -13,13 +13,19 @@ public class CreateProductCommandHandler(IProductRepository productRepository, I
     public async Task<ProductResponseModel> ExecuteCommandAsync(CreateProductCommand command,
         CancellationToken cancellationToken)
     {
-        var product = mapper.Map<Product>(command.RequestModel);
+        var product = mapper.Map<Product>(command.Model);
+
+        var property = mapper.Map<Property>(command.Model.Properties);
+
+        product.Properties?.Add(property);
 
         await productRepository.AddProductAsync(product, cancellationToken);
         await productRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<ProductResponseModel>(product);
+        var createdProduct = await productRepository.GetProductByIdAsync(product.Id, cancellationToken);
+
+        return mapper.Map<ProductResponseModel>(createdProduct!);
     }
 }
 
-public record CreateProductCommand(CreateProductRequestModel RequestModel);
+public record CreateProductCommand(CreateProductModel Model);
