@@ -2,5 +2,5 @@
 
 public class ProductsResponseModel
 {
-    public IEnumerable<ProductResponseModel> Products { get; set; } = [];
+    public ICollection<ProductResponseModel> Products { get; set; } = [];
 }
