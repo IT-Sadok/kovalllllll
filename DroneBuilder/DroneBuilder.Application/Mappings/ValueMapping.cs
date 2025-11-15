@@ -16,5 +16,13 @@ public class ValueMapping : IRegister
             .Map(dest => dest.Text, src => src.Text)
             .Ignore(dest => dest.Id)
             .Ignore(dest => dest.Properties);
+
+        config.NewConfig<UpdateValueModel, Value>()
+            .IgnoreNullValues(true)
+            .Ignore(dest => dest.Id)
+            .Ignore(dest => dest.Properties);
+
+        config.NewConfig<ICollection<Value>, ValuesResponseModel>()
+            .Map(dest => dest.Values, src => src);
     }
 }

@@ -2,9 +2,11 @@
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
+using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
 using DroneBuilder.Application.Mediator.Queries.PropertyQueries;
+using DroneBuilder.Application.Mediator.Queries.ValueQueries;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Models.UserModels;
 using Mapster;
@@ -33,6 +35,12 @@ public static class ApplicationExtensions
         services.AddScoped<ICommandHandler<DeletePropertyCommand>, DeletePropertyCommandHandler>();
         services
             .AddScoped<ICommandHandler<AddPropertyToProductCommand>, AddPropertyToProductCommandHandler>();
+        services.AddScoped<ICommandHandler<AddPropertyToProductCommand>, AddPropertyToProductCommandHandler>();
+        services
+            .AddScoped<ICommandHandler<CreateValueCommand, ValueResponseModel>, CreateValueCommandHandler>();
+        services.AddScoped<ICommandHandler<DeleteValueCommand>, DeleteValueCommandHandler>();
+        services.AddScoped<ICommandHandler<UpdateValueCommand, ValueResponseModel>, UpdateValueCommandHandler>();
+
 
         services.AddScoped<IQueryHandler<GetProductsQuery, ProductsResponseModel>, GetProductsQueryHandler>();
         services.AddScoped<IQueryHandler<GetProductByIdQuery, ProductResponseModel>, GetProductByIdQueryHandler>();
@@ -41,6 +49,8 @@ public static class ApplicationExtensions
         services.AddScoped<IQueryHandler<GetPropertiesQuery, PropertiesResponseModel>, GetPropertiesQueryHandler>();
         services.AddScoped<IQueryHandler<GetValuesByPropertyIdQuery, PropertyResponseModel>,
             GetValuesByPropertyIdQueryHandler>();
+        services.AddScoped<IQueryHandler<GetValuesQuery, ValuesResponseModel>, GetValuesQueryHandler>();
+        services.AddScoped<IQueryHandler<GetPropertyByIdQuery, PropertyResponseModel>, GetPropertyByIdQueryHandler>();
 
 
         services.AddSingleton(MapsterConfig.Configure());

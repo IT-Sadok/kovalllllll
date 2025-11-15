@@ -31,5 +31,16 @@ public abstract class ApiRoutes
         public const string Delete = BaseRoute + "/{propertyId}";
         public const string GetAll = BaseRoute;
         public const string GetValuesByPropertyId = BaseRoute + "/{propertyId}/values";
+        public const string AssignValueToProperty = BaseRoute + "/{propertyId}/values/{valueId}";
+    }
+
+    public static class Values
+    {
+        private const string BaseRoute = Base + "/values";
+        public const string Create = BaseRoute;
+        public const string Update = BaseRoute + "/{valueId}";
+        public const string Delete = BaseRoute + "/{valueId}";
+        public const string GetAll = BaseRoute;
+        public const string GetById = BaseRoute + "/{valueId}";
     }
 }

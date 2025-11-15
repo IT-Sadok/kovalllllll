@@ -50,7 +50,8 @@ public abstract class Program
 
         app.MapUserEndpoints()
             .MapProductEndpoints()
-            .MapPropertyEndpoints();
+            .MapPropertyEndpoints()
+            .MapValueEndpoints();
 
         app.Run();
     }

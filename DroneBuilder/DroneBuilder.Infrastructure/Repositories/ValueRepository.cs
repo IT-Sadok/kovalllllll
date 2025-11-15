@@ -23,16 +23,6 @@ public class ValueRepository(ApplicationDbContext dbContext) : IValueRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<ICollection<Value>> GetValuesByPropertyIdAsync(Guid propertyId,
-        CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Properties
-            .AsNoTracking()
-            .Where(p => p.Id == propertyId)
-            .SelectMany(p => p.Values!)
-            .ToListAsync(cancellationToken);
-    }
-
     public void RemoveValue(Value value)
     {
         dbContext.Values.Remove(value);

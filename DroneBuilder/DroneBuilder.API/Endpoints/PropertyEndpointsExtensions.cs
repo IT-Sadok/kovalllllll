@@ -56,6 +56,13 @@ public static class PropertyEndpointsExtensions
                 return Results.Ok(result);
             }).WithTags("Properties");
 
+        app.Map(ApiRoutes.Properties.AssignValueToProperty, async (IMediator mediator, Guid propertyId, Guid valueId,
+            CancellationToken cancellationToken) =>
+        {
+            await mediator.ExecuteCommandAsync(new AddValueToPropertyCommand(propertyId, valueId), cancellationToken);
+            return Results.NoContent();
+        }).WithTags("Properties");
+
         return app;
     }
 }
