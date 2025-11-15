@@ -157,7 +157,7 @@ namespace DroneBuilder.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ValueText")
+                    b.Property<string>("Text")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -299,30 +299,30 @@ namespace DroneBuilder.Infrastructure.Migrations
 
             modelBuilder.Entity("ProductProperty", b =>
                 {
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid>("ProductsId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("PropertyId")
+                    b.Property<Guid>("PropertiesId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("ProductId", "PropertyId");
+                    b.HasKey("ProductsId", "PropertiesId");
 
-                    b.HasIndex("PropertyId");
+                    b.HasIndex("PropertiesId");
 
                     b.ToTable("ProductProperty");
                 });
 
             modelBuilder.Entity("PropertyValue", b =>
                 {
-                    b.Property<Guid>("PropertyId")
+                    b.Property<Guid>("PropertiesId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ValueId")
+                    b.Property<Guid>("ValuesId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("PropertyId", "ValueId");
+                    b.HasKey("PropertiesId", "ValuesId");
 
-                    b.HasIndex("ValueId");
+                    b.HasIndex("ValuesId");
 
                     b.ToTable("PropertyValue");
                 });
@@ -393,13 +393,13 @@ namespace DroneBuilder.Infrastructure.Migrations
                 {
                     b.HasOne("DroneBuilder.Domain.Entities.Product", null)
                         .WithMany()
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("ProductsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DroneBuilder.Domain.Entities.Property", null)
                         .WithMany()
-                        .HasForeignKey("PropertyId")
+                        .HasForeignKey("PropertiesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -408,13 +408,13 @@ namespace DroneBuilder.Infrastructure.Migrations
                 {
                     b.HasOne("DroneBuilder.Domain.Entities.Property", null)
                         .WithMany()
-                        .HasForeignKey("PropertyId")
+                        .HasForeignKey("PropertiesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DroneBuilder.Domain.Entities.Value", null)
                         .WithMany()
-                        .HasForeignKey("ValueId")
+                        .HasForeignKey("ValuesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

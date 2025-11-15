@@ -2,7 +2,6 @@
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
-using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
 
 namespace DroneBuilder.API.Endpoints;

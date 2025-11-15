@@ -1,7 +1,6 @@
 ﻿using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Domain.Entities;
 using MapsterMapper;
@@ -22,7 +21,8 @@ public class SignInCommandHandler(UserManager<User> userManager, IJwtService jwt
 
         var token = await jwtService.GenerateJwtTokenAsync(user);
 
-        return mapper.Map<AuthUserModel>(token);
+        var authUserModel = mapper.Map<AuthUserModel>(token);
+        return authUserModel;
     }
 }
 

@@ -6,9 +6,11 @@ public static class MapsterConfig
 {
     public static TypeAdapterConfig Configure()
     {
-        var config = new TypeAdapterConfig();
+        var config = TypeAdapterConfig.GlobalSettings;
 
         config.Scan(typeof(MapsterConfig).Assembly);
+        config.Scan(typeof(ProductMapping).Assembly);
+        config.Scan(typeof(UserMaping).Assembly);
 
         return config;
     }
