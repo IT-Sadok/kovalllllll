@@ -1,9 +1,11 @@
 ﻿using DroneBuilder.Application.Mappings;
+using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Mediator.Queries.ImageQueries;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
 using DroneBuilder.Application.Mediator.Queries.PropertyQueries;
 using DroneBuilder.Application.Mediator.Queries.ValueQueries;
@@ -35,11 +37,12 @@ public static class ApplicationExtensions
         services.AddScoped<ICommandHandler<DeletePropertyCommand>, DeletePropertyCommandHandler>();
         services
             .AddScoped<ICommandHandler<AddPropertyToProductCommand>, AddPropertyToProductCommandHandler>();
-        services.AddScoped<ICommandHandler<AddPropertyToProductCommand>, AddPropertyToProductCommandHandler>();
         services
             .AddScoped<ICommandHandler<CreateValueCommand, ValueResponseModel>, CreateValueCommandHandler>();
         services.AddScoped<ICommandHandler<DeleteValueCommand>, DeleteValueCommandHandler>();
         services.AddScoped<ICommandHandler<UpdateValueCommand, ValueResponseModel>, UpdateValueCommandHandler>();
+        services.AddScoped<ICommandHandler<UploadImageCommand, ImageResponseModel>, UploadImageCommandHandler>();
+        services.AddScoped<ICommandHandler<DeleteImageCommand>, DeleteImageCommandHandler>();
 
 
         services.AddScoped<IQueryHandler<GetProductsQuery, ProductsResponseModel>, GetProductsQueryHandler>();
@@ -51,6 +54,10 @@ public static class ApplicationExtensions
             GetValuesByPropertyIdQueryHandler>();
         services.AddScoped<IQueryHandler<GetValuesQuery, ValuesResponseModel>, GetValuesQueryHandler>();
         services.AddScoped<IQueryHandler<GetPropertyByIdQuery, PropertyResponseModel>, GetPropertyByIdQueryHandler>();
+        services.AddScoped<IQueryHandler<GetImagesQuery, ImagesResponseModel>, GetImagesQueryHandler>();
+        services.AddScoped<IQueryHandler<GetImagesByProductIdQuery, ProductImagesResponseModel>,
+            GetImagesByProductIdQueryHandler>();
+        services.AddScoped<IQueryHandler<GetImageByIdQuery, ImageResponseModel>, GetImageByIdQueryHandler>();
 
 
         services.AddSingleton(MapsterConfig.Configure());

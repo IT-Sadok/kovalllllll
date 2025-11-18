@@ -43,4 +43,14 @@ public abstract class ApiRoutes
         public const string GetAll = BaseRoute;
         public const string GetById = BaseRoute + "/{valueId}";
     }
+
+    public static class Images
+    {
+        private const string BaseRoute = Base + "/images";
+        public const string Upload = BaseRoute + "/upload";
+        public const string Delete = BaseRoute + "/{imageId}";
+        public const string GetById = BaseRoute + "/{imageId}";
+        public const string GetAll = BaseRoute;
+        public const string GetImagesByProductId = BaseRoute + "/product/{productId}";
+    }
 }

@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
@@ -15,6 +16,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.10" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
         <PackageReference Include="Npgsql" Version="9.0.4"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
     </ItemGroup>
@@ -22,10 +24,6 @@
     <ItemGroup>
         <ProjectReference Include="..\DroneBuilder.Application\DroneBuilder.Application.csproj"/>
         <ProjectReference Include="..\DroneBuilder.Domain\DroneBuilder.Domain.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Exceptions\" />
     </ItemGroup>
 
 </Project>
