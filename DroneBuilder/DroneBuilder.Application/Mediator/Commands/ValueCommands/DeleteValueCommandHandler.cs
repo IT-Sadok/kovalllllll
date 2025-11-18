@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
 
 namespace DroneBuilder.Application.Mediator.Commands.ValueCommands;
@@ -10,7 +11,7 @@ public class DeleteValueCommandHandler(IValueRepository valueRepository) : IComm
         var value = valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken).Result;
         if (value is null)
         {
-            throw new Exception($"Value with id {command.ValueId} not found.");
+            throw new NotFoundException($"Value with id {command.ValueId} not found.");
         }
 
         valueRepository.RemoveValue(value);

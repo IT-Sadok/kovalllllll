@@ -19,14 +19,15 @@ public static class ProductEndpointsExtensions
                 return Results.Ok(result);
             }).WithTags("Products");
 
-        app.MapPatch(ApiRoutes.Products.Update, async (IMediator mediator, UpdateProductRequestModel requestModel,
-            Guid productId, CancellationToken cancellationToken) =>
-        {
-            var result = await mediator.ExecuteCommandAsync<UpdateProductCommand, ProductResponseModel>(
-                new UpdateProductCommand(productId, requestModel),
-                cancellationToken);
-            return Results.Ok(result);
-        }).WithTags("Products");
+        app.MapPatch(ApiRoutes.Products.Update,
+            async (Guid productId, UpdateProductRequestModel requestModel,
+                IMediator mediator, CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.ExecuteCommandAsync<UpdateProductCommand, ProductResponseModel>(
+                    new UpdateProductCommand(productId, requestModel),
+                    cancellationToken);
+                return Results.Ok(result);
+            }).WithTags("Products");
 
         app.MapDelete(ApiRoutes.Products.Delete, async (IMediator mediator, Guid productId,
             CancellationToken cancellationToken) =>

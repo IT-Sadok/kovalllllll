@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Repositories;
+﻿using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -45,49 +46,41 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         dbContext.Products.Remove(product);
     }
 
-    public async Task<ICollection<Product>> GetByCategoryAsync(string category, CancellationToken cancellationToken)
+    public async Task<ICollection<Product>> GetByFilterAsync(ProductFilterModel filter,
+        CancellationToken cancellationToken = default)
     {
-        return await dbContext.Products
+        var query = dbContext.Products
             .AsNoTracking()
-            .Where(p => p.Category == category)
-            .Include(p => p.Images)
-            .Include(p => p.Properties)!
-            .ThenInclude(prop => prop.Values)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<ICollection<Product>> GetByPriceAsync(decimal? minPrice, decimal? maxPrice,
-        CancellationToken cancellationToken)
-    {
-        var query = dbContext.Products.AsNoTracking()
             .Include(p => p.Images)
             .Include(p => p.Properties)!
             .ThenInclude(prop => prop.Values)
             .AsQueryable();
 
-        if (minPrice.HasValue)
+        if (!string.IsNullOrWhiteSpace(filter.Name))
         {
-            query = query.Where(p => p.Price >= minPrice.Value);
+            var name = filter.Name.Trim().ToLower();
+            query = query.Where(p => p.Name.ToLower().Contains(name));
         }
 
-        if (maxPrice.HasValue)
+        if (filter.MinPrice.HasValue)
         {
-            query = query.Where(p => p.Price <= maxPrice.Value);
+            query = query.Where(p => p.Price >= filter.MinPrice.Value);
+        }
+
+        if (filter.MaxPrice.HasValue)
+        {
+            query = query.Where(p => p.Price <= filter.MaxPrice.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Category))
+        {
+            var category = filter.Category.Trim().ToLower();
+            query = query.Where(p => p.Category.ToLower() == category);
         }
 
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<ICollection<Product>> GetByNameAsync(string name, CancellationToken cancellationToken)
-    {
-        return await dbContext.Products
-            .AsNoTracking()
-            .Where(p => p.Name.Contains(name))
-            .Include(p => p.Images)
-            .Include(p => p.Properties)!
-            .ThenInclude(prop => prop.Values)
-            .ToListAsync(cancellationToken);
-    }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {

@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Abstractions;
+﻿using System.ComponentModel.DataAnnotations;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
@@ -17,14 +18,19 @@ public class UploadImageCommandHandler(
     public async Task<ImageResponseModel> ExecuteCommandAsync(UploadImageCommand command,
         CancellationToken cancellationToken)
     {
-        var blobUrl = await azureStorageService.UploadFileAsync(command.File);
+        var (success, url) = await azureStorageService.UploadFileAsync(command.File, cancellationToken);
+
+        if (!success)
+        {
+            throw new ValidationException("Failed to upload image to storage.");
+        }
 
         var image = new Image
         {
+            ProductId = command.ProductId,
+            Url = url,
             FileName = command.File.FileName,
-            Url = blobUrl,
-            UploadedAt = DateTime.UtcNow,
-            ProductId = command.ProductId
+            UploadedAt = DateTime.UtcNow
         };
 
         await imageRepository.AddImageAsync(image, cancellationToken);

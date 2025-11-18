@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using MapsterMapper;
@@ -15,10 +16,11 @@ public class UpdatePropertyCommandHandler(IPropertyRepository propertyRepository
 
         if (property is null)
         {
-            throw new Exception($"Property with id {command.PropertyId} not found.");
+            throw new NotFoundException($"Property with id {command.PropertyId} not found.");
         }
 
-        mapper.Map(command.Model, property);
+        if (command.Model.Name is not null)
+            property.Name = command.Model.Name;
 
         await propertyRepository.SaveChangesAsync(cancellationToken);
 

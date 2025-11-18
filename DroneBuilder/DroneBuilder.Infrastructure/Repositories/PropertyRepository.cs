@@ -39,6 +39,11 @@ public class PropertyRepository(ApplicationDbContext dbContext) : IPropertyRepos
         dbContext.Properties.Remove(property);
     }
 
+    public void UpdateProperty(Property property)
+    {
+        dbContext.Properties.Update(property);
+    }
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.SaveChangesAsync(cancellationToken);

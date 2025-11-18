@@ -4,6 +4,6 @@ namespace DroneBuilder.Application.Abstractions;
 
 public interface IAzureStorageService
 {
-    Task<string> UploadFileAsync(IFormFile file);
-    Task DeleteFileAsync(string blobUrl);
+    Task<(bool success, string url)> UploadFileAsync(IFormFile file, CancellationToken cancellationToken = default);
+    Task DeleteFileAsync(string blobUrl, CancellationToken cancellationToken = default);
 }

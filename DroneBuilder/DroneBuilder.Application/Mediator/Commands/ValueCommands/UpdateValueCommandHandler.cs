@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using MapsterMapper;
@@ -15,10 +16,11 @@ public class UpdateValueCommandHandler(IValueRepository valueRepository, IMapper
 
         if (value is null)
         {
-            throw new Exception($"Value with id {command.ValueId} not found.");
+            throw new NotFoundException($"Value with id {command.ValueId} not found.");
         }
 
-        mapper.Map(command.Model, value);
+        if (command.Model.Text is not null)
+            value.Text = command.Model.Text;
 
         await valueRepository.SaveChangesAsync(cancellationToken);
 

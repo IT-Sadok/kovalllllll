@@ -11,25 +11,32 @@ public class AzureStorageService(IOptions<AzureStorageConfig> config) : IAzureSt
     private readonly BlobServiceClient _blobServiceClient = new(config.Value.ConnectionString);
     private readonly string _containerName = config.Value.ContainerName;
 
-    public async Task<string> UploadFileAsync(IFormFile file)
+    public async Task<(bool success, string url)> UploadFileAsync(IFormFile file,
+        CancellationToken cancellationToken = default)
     {
-        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-        await containerClient.CreateIfNotExistsAsync();
-        var blobClient = containerClient.GetBlobClient(Guid.NewGuid() + Path.GetExtension(file.FileName));
-
-        await using (var stream = file.OpenReadStream())
+        try
         {
-            await blobClient.UploadAsync(stream, true);
-        }
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            await containerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
-        return blobClient.Uri.ToString();
+            var blobClient = containerClient.GetBlobClient(file.FileName);
+
+            await using var stream = file.OpenReadStream();
+            await blobClient.UploadAsync(stream, overwrite: true, cancellationToken);
+
+            return (true, blobClient.Uri.ToString());
+        }
+        catch
+        {
+            return (false, string.Empty);
+        }
     }
 
-    public async Task DeleteFileAsync(string blobUrl)
+    public async Task DeleteFileAsync(string blobUrl, CancellationToken cancellationToken = default)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
         var blobName = new Uri(blobUrl).Segments.Last();
         var blobClient = containerClient.GetBlobClient(blobName);
-        await blobClient.DeleteIfExistsAsync();
+        await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
     }
 }

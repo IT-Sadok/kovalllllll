@@ -59,12 +59,9 @@ public static class ApplicationExtensions
         services.AddScoped<IQueryHandler<GetImagesByProductIdQuery, ProductImagesResponseModel>,
             GetImagesByProductIdQueryHandler>();
         services.AddScoped<IQueryHandler<GetImageByIdQuery, ImageResponseModel>, GetImageByIdQueryHandler>();
-        services.AddScoped<IQueryHandler<GetProductsByCategoryQuery, ProductsResponseModel>,
-            GetProductsByCategoryQueryHandler>();
-        services.AddScoped<IQueryHandler<GetProductsByPriceQuery, ProductsResponseModel>,
-            GetProductsByPriceQueryHandler>();
-        services.AddScoped<IQueryHandler<GetProductsByNameQuery, ProductsResponseModel>,
-            GetProductsByNameQueryHandler>();
+        services.AddScoped<IQueryHandler<GetFilteredProductsQuery, ProductsResponseModel>,
+            GetFilteredProductsQueryHandler>();
+        services.AddScoped<IQueryHandler<GetValueByIdQuery , ValueResponseModel>, GetValueByIdQueryHandler>();
 
         services.AddSingleton(MapsterConfig.Configure());
         services.AddScoped<IMapper, ServiceMapper>();

@@ -18,7 +18,14 @@ public class UpdateProductCommandHandler(IProductRepository productRepository, I
             throw new NotFoundException($"Product with id {command.ProductId} not found.");
         }
 
-        mapper.Map(command.Model, existingProduct);
+        if (command.Model.Name is not null)
+            existingProduct.Name = command.Model.Name;
+
+        if (command.Model.Price.HasValue)
+            existingProduct.Price = command.Model.Price.Value;
+
+        if (command.Model.Category is not null)
+            existingProduct.Category = command.Model.Category;
 
         await productRepository.SaveChangesAsync(cancellationToken);
 
