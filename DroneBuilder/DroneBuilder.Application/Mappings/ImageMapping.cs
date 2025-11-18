@@ -24,6 +24,7 @@ public class ImageMapping : IRegister
         config.NewConfig<Product, ProductImagesResponseModel>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Name, src => src.Name)
-            .Map(dest => dest.Images, src => src.Images);
+            .Map(dest => dest.Images, src => src.Images)
+            .Map(dest => dest.Category, src => src.Category);
     }
 }

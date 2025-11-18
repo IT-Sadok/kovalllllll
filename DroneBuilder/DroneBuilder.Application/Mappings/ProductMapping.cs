@@ -15,11 +15,14 @@ public class ProductMapping : IRegister
         config.NewConfig<Product, ProductPropertiesResponseModel>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Name, src => src.Name)
+            .Map(dest => dest.Category, src => src.Category)
+            .Map(dest => dest.Price, src => src.Price)
             .Map(dest => dest.Properties, src => src.Properties);
 
         config.NewConfig<CreateProductModel, Product>()
             .Map(dest => dest.Name, src => src.Name)
             .Map(dest => dest.Price, src => src.Price)
+            .Map(dest => dest.Category, src => src.Category)
             .Ignore(dest => dest.Properties)
             .Ignore(dest => dest.Images)
             .Ignore(dest => dest.Id);

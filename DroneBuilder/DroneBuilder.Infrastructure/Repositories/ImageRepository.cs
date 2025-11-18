@@ -29,7 +29,6 @@ public class ImageRepository(ApplicationDbContext dbContext) : IImageRepository
         CancellationToken cancellationToken = default)
     {
         return await dbContext.Images
-            .AsNoTracking()
             .Where(image => image.ProductId == productId)
             .ToListAsync(cancellationToken);
     }

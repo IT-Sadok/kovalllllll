@@ -6,7 +6,9 @@ using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ImageQueries;
 
-public class GetImagesByProductIdQueryHandler(IProductRepository productRepository, IMapper mapper)
+public class GetImagesByProductIdQueryHandler(
+    IProductRepository productRepository,
+    IMapper mapper)
     : IQueryHandler<GetImagesByProductIdQuery, ProductImagesResponseModel>
 {
     public async Task<ProductImagesResponseModel> ExecuteAsync(GetImagesByProductIdQuery query,
@@ -19,7 +21,7 @@ public class GetImagesByProductIdQueryHandler(IProductRepository productReposito
             throw new NotFoundException($"Product with id {query.ProductId} not found.");
         }
 
-        return mapper.Map<ProductImagesResponseModel>(product.Images);
+        return mapper.Map<ProductImagesResponseModel>(product);
     }
 }
 
