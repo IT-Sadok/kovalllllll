@@ -5,6 +5,7 @@ using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Mediator.Queries.Filters;
 using DroneBuilder.Application.Mediator.Queries.ImageQueries;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
 using DroneBuilder.Application.Mediator.Queries.PropertyQueries;
@@ -58,7 +59,12 @@ public static class ApplicationExtensions
         services.AddScoped<IQueryHandler<GetImagesByProductIdQuery, ProductImagesResponseModel>,
             GetImagesByProductIdQueryHandler>();
         services.AddScoped<IQueryHandler<GetImageByIdQuery, ImageResponseModel>, GetImageByIdQueryHandler>();
-
+        services.AddScoped<IQueryHandler<GetProductsByCategoryQuery, ProductsResponseModel>,
+            GetProductsByCategoryQueryHandler>();
+        services.AddScoped<IQueryHandler<GetProductsByPriceQuery, ProductsResponseModel>,
+            GetProductsByPriceQueryHandler>();
+        services.AddScoped<IQueryHandler<GetProductsByNameQuery, ProductsResponseModel>,
+            GetProductsByNameQueryHandler>();
 
         services.AddSingleton(MapsterConfig.Configure());
         services.AddScoped<IMapper, ServiceMapper>();

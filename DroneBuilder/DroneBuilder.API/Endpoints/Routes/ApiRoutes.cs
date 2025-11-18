@@ -53,4 +53,11 @@ public abstract class ApiRoutes
         public const string GetAll = BaseRoute;
         public const string GetImagesByProductId = BaseRoute + "/product/{productId}";
     }
+
+    public static class Filters
+    {
+        public const string GetProductsByCategory = Base + "/products/category/{category}";
+        public const string GetProductsByPrice = Base + "/products/price";
+        public const string GetProductsByName = Base + "/products/name";
+    }
 }
