@@ -9,9 +9,9 @@ namespace DroneBuilder.Application.Mediator.Queries.ImageQueries;
 public class GetImagesByProductIdQueryHandler(
     IProductRepository productRepository,
     IMapper mapper)
-    : IQueryHandler<GetImagesByProductIdQuery, ProductImagesResponseModel>
+    : IQueryHandler<GetImagesByProductIdQuery, ICollection<ImageModel>>
 {
-    public async Task<ProductImagesResponseModel> ExecuteAsync(GetImagesByProductIdQuery query,
+    public async Task<ICollection<ImageModel>> ExecuteAsync(GetImagesByProductIdQuery query,
         CancellationToken cancellationToken)
     {
         var product = await productRepository.GetProductByIdAsync(query.ProductId, cancellationToken);
@@ -21,7 +21,7 @@ public class GetImagesByProductIdQueryHandler(
             throw new NotFoundException($"Product with id {query.ProductId} not found.");
         }
 
-        return mapper.Map<ProductImagesResponseModel>(product);
+        return mapper.Map<ICollection<ImageModel>>(product.Images);
     }
 }
 

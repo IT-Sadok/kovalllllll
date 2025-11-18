@@ -1,6 +1,6 @@
 ﻿namespace DroneBuilder.Application.Models.ProductModels;
 
-public class ImageResponseModel
+public class ImageModel
 {
     public Guid Id { get; set; }
     public string Url { get; set; }

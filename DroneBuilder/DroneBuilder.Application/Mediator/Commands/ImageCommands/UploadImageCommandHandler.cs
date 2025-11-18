@@ -13,9 +13,9 @@ public class UploadImageCommandHandler(
     IImageRepository imageRepository,
     IAzureStorageService azureStorageService,
     IMapper mapper)
-    : ICommandHandler<UploadImageCommand, ImageResponseModel>
+    : ICommandHandler<UploadImageCommand, ImageModel>
 {
-    public async Task<ImageResponseModel> ExecuteCommandAsync(UploadImageCommand command,
+    public async Task<ImageModel> ExecuteCommandAsync(UploadImageCommand command,
         CancellationToken cancellationToken)
     {
         var (success, url) = await azureStorageService.UploadFileAsync(command.File, cancellationToken);
@@ -36,7 +36,7 @@ public class UploadImageCommandHandler(
         await imageRepository.AddImageAsync(image, cancellationToken);
         await imageRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<ImageResponseModel>(image);
+        return mapper.Map<ImageModel>(image);
     }
 }
 

@@ -6,14 +6,14 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Queries.Filters;
 
 public class GetFilteredProductsQueryHandler(IProductRepository productRepository, IMapper mapper)
-    : IQueryHandler<GetFilteredProductsQuery, ProductsResponseModel>
+    : IQueryHandler<GetFilteredProductsQuery, ICollection<ProductModel>>
 {
-    public async Task<ProductsResponseModel> ExecuteAsync(GetFilteredProductsQuery query,
+    public async Task<ICollection<ProductModel>> ExecuteAsync(GetFilteredProductsQuery query,
         CancellationToken cancellationToken)
     {
         var products = await productRepository.GetByFilterAsync(query.Filter, cancellationToken);
 
-        return mapper.Map<ProductsResponseModel>(products);
+        return mapper.Map<ICollection<ProductModel>>(products);
     }
 }
 

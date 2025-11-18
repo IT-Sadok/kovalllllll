@@ -13,7 +13,7 @@ public static class ValueEndpointExtensions
         app.MapPost(ApiRoutes.Values.Create,
                 async (IMediator mediator, CreateValueModel model, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteCommandAsync<CreateValueCommand, ValueResponseModel>(
+                    var result = await mediator.ExecuteCommandAsync<CreateValueCommand, ValueModel>(
                         new CreateValueCommand(model),
                         cancellationToken);
                     return Results.Ok(result);
@@ -30,7 +30,7 @@ public static class ValueEndpointExtensions
         app.MapPatch(ApiRoutes.Values.Update, async (IMediator mediator, Guid valueId,
             UpdateValueModel model, CancellationToken cancellationToken) =>
         {
-            var result = await mediator.ExecuteCommandAsync<UpdateValueCommand, ValueResponseModel>(
+            var result = await mediator.ExecuteCommandAsync<UpdateValueCommand, ValueModel>(
                 new UpdateValueCommand(valueId, model),
                 cancellationToken);
             return Results.Ok(result);
@@ -39,7 +39,7 @@ public static class ValueEndpointExtensions
         app.MapGet(ApiRoutes.Values.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetValuesQuery, ValuesResponseModel>(
+                    var result = await mediator.ExecuteQueryAsync<GetValuesQuery, ICollection<ValueModel>>(
                         new GetValuesQuery(),
                         cancellationToken);
                     return Results.Ok(result);
@@ -50,7 +50,7 @@ public static class ValueEndpointExtensions
         app.MapGet(ApiRoutes.Values.GetById,
             async (IMediator mediator, Guid valueId, CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteQueryAsync<GetValueByIdQuery, ValueResponseModel>(
+                var result = await mediator.ExecuteQueryAsync<GetValueByIdQuery, ValueModel>(
                     new GetValueByIdQuery(valueId),
                     cancellationToken);
                 return Results.Ok(result);

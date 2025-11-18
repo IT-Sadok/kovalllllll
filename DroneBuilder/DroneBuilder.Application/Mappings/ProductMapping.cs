@@ -8,16 +8,7 @@ public class ProductMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<Product, ProductResponseModel>();
-
-        config.NewConfig<ICollection<Product>, ProductsResponseModel>()
-            .Map(dest => dest.Products, src => src);
-        config.NewConfig<Product, ProductPropertiesResponseModel>()
-            .Map(dest => dest.Id, src => src.Id)
-            .Map(dest => dest.Name, src => src.Name)
-            .Map(dest => dest.Category, src => src.Category)
-            .Map(dest => dest.Price, src => src.Price)
-            .Map(dest => dest.Properties, src => src.Properties);
+        config.NewConfig<Product, ProductModel>();
 
         config.NewConfig<CreateProductModel, Product>()
             .Map(dest => dest.Name, src => src.Name)

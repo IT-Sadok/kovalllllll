@@ -13,7 +13,7 @@ public static class ProductEndpointsExtensions
         app.MapPost(ApiRoutes.Products.Create,
             async (IMediator mediator, CreateProductModel model, CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteCommandAsync<CreateProductCommand, ProductResponseModel>(
+                var result = await mediator.ExecuteCommandAsync<CreateProductCommand, ProductModel>(
                     new CreateProductCommand(model),
                     cancellationToken);
                 return Results.Ok(result);
@@ -23,7 +23,7 @@ public static class ProductEndpointsExtensions
             async (Guid productId, UpdateProductRequestModel requestModel,
                 IMediator mediator, CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteCommandAsync<UpdateProductCommand, ProductResponseModel>(
+                var result = await mediator.ExecuteCommandAsync<UpdateProductCommand, ProductModel>(
                     new UpdateProductCommand(productId, requestModel),
                     cancellationToken);
                 return Results.Ok(result);
@@ -39,7 +39,7 @@ public static class ProductEndpointsExtensions
         app.MapGet(ApiRoutes.Products.GetAll,
             async (IMediator mediator, CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteQueryAsync<GetProductsQuery, ProductsResponseModel>(
+                var result = await mediator.ExecuteQueryAsync<GetProductsQuery, ICollection<ProductModel>>(
                     new GetProductsQuery(),
                     cancellationToken);
                 return Results.Ok(result);
@@ -48,7 +48,7 @@ public static class ProductEndpointsExtensions
         app.MapGet(ApiRoutes.Products.GetById,
             async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteQueryAsync<GetProductByIdQuery, ProductResponseModel>(
+                var result = await mediator.ExecuteQueryAsync<GetProductByIdQuery, ProductModel>(
                     new GetProductByIdQuery(productId),
                     cancellationToken);
                 return Results.Ok(result);

@@ -8,5 +8,5 @@ public class ProductPropertiesResponseModel
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public string Category { get; set; } = string.Empty;
-    public ICollection<PropertyResponseModel> Properties { get; set; } = [];
+    public ICollection<PropertyModel> Properties { get; set; } = [];
 }

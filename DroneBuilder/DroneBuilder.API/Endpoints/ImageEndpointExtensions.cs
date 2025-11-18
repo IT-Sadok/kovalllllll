@@ -20,7 +20,7 @@ public static class ImageEndpointExtensions
                     var command = new UploadImageCommand(file, productId);
 
                     var result =
-                        await mediator.ExecuteCommandAsync<UploadImageCommand, ImageResponseModel>(
+                        await mediator.ExecuteCommandAsync<UploadImageCommand, ImageModel>(
                             command,
                             cancellationToken);
 
@@ -46,7 +46,7 @@ public static class ImageEndpointExtensions
                     var query = new GetImagesQuery();
 
                     var result =
-                        await mediator.ExecuteQueryAsync<GetImagesQuery, ImagesResponseModel>(
+                        await mediator.ExecuteQueryAsync<GetImagesQuery, ICollection<ImageModel>>(
                             query,
                             cancellationToken);
 
@@ -60,7 +60,7 @@ public static class ImageEndpointExtensions
                     var query = new GetImagesByProductIdQuery(productId);
 
                     var result =
-                        await mediator.ExecuteQueryAsync<GetImagesByProductIdQuery, ProductImagesResponseModel>(
+                        await mediator.ExecuteQueryAsync<GetImagesByProductIdQuery, ICollection<ImageModel>>(
                             query,
                             cancellationToken);
 
@@ -74,7 +74,7 @@ public static class ImageEndpointExtensions
                     var query = new GetImageByIdQuery(imageId);
 
                     var result =
-                        await mediator.ExecuteQueryAsync<GetImageByIdQuery, ImageResponseModel>(
+                        await mediator.ExecuteQueryAsync<GetImageByIdQuery, ImageModel>(
                             query,
                             cancellationToken);
 

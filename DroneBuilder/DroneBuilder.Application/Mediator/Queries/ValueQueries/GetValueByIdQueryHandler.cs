@@ -7,9 +7,9 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Queries.ValueQueries;
 
 public class GetValueByIdQueryHandler(IValueRepository valueRepository, IMapper mapper)
-    : IQueryHandler<GetValueByIdQuery, ValueResponseModel>
+    : IQueryHandler<GetValueByIdQuery, ValueModel>
 {
-    public async Task<ValueResponseModel> ExecuteAsync(GetValueByIdQuery query, CancellationToken cancellationToken)
+    public async Task<ValueModel> ExecuteAsync(GetValueByIdQuery query, CancellationToken cancellationToken)
     {
         var value = await valueRepository.GetValueByIdAsync(query.PropertyId, cancellationToken);
         
@@ -18,7 +18,7 @@ public class GetValueByIdQueryHandler(IValueRepository valueRepository, IMapper 
             throw new NotFoundException($"Value with id {query.PropertyId} not found.");
         }
 
-        return mapper.Map<ValueResponseModel>(value);
+        return mapper.Map<ValueModel>(value);
     }
 }
 

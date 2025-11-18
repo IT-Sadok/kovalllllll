@@ -8,9 +8,9 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Queries.ProductQueries;
 
 public class GetProductsQueryHandler(IProductRepository productRepository, IMapper mapper)
-    : IQueryHandler<GetProductsQuery, ProductsResponseModel>
+    : IQueryHandler<GetProductsQuery, ICollection<ProductModel>>
 {
-    public async Task<ProductsResponseModel> ExecuteAsync(GetProductsQuery query, CancellationToken cancellationToken)
+    public async Task<ICollection<ProductModel>> ExecuteAsync(GetProductsQuery query, CancellationToken cancellationToken)
     {
         var products = await productRepository.GetProductsAsync(cancellationToken);
 
@@ -19,7 +19,7 @@ public class GetProductsQueryHandler(IProductRepository productRepository, IMapp
             throw new NotFoundException("No products found.");
         }
 
-        return mapper.Map<ProductsResponseModel>(products);
+        return mapper.Map<ICollection<ProductModel>>(products);
     }
 }
 

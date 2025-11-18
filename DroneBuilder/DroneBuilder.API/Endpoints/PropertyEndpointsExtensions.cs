@@ -14,7 +14,7 @@ public static class PropertyEndpointsExtensions
         app.MapPost(ApiRoutes.Properties.Create,
                 async (IMediator mediator, CreatePropertyModel model, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteCommandAsync<CreatePropertyCommand, PropertyResponseModel>(
+                    var result = await mediator.ExecuteCommandAsync<CreatePropertyCommand, PropertyModel>(
                         new CreatePropertyCommand(model),
                         cancellationToken);
                     return Results.Ok(result);
@@ -31,7 +31,7 @@ public static class PropertyEndpointsExtensions
         app.MapPatch(ApiRoutes.Properties.Update, async (IMediator mediator, Guid propertyId,
             UpdatePropertyModel model, CancellationToken cancellationToken) =>
         {
-            var result = await mediator.ExecuteCommandAsync<UpdatePropertyCommand, PropertyResponseModel>(
+            var result = await mediator.ExecuteCommandAsync<UpdatePropertyCommand, PropertyModel>(
                 new UpdatePropertyCommand(propertyId, model),
                 cancellationToken);
             return Results.Ok(result);
@@ -40,7 +40,7 @@ public static class PropertyEndpointsExtensions
         app.MapGet(ApiRoutes.Properties.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetPropertiesQuery, PropertiesResponseModel>(
+                    var result = await mediator.ExecuteQueryAsync<GetPropertiesQuery, ICollection<PropertyModel>>(
                         new GetPropertiesQuery(),
                         cancellationToken);
                     return Results.Ok(result);
@@ -50,7 +50,7 @@ public static class PropertyEndpointsExtensions
         app.MapGet(ApiRoutes.Properties.GetValuesByPropertyId,
             async (IMediator mediator, Guid propertyId, CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteQueryAsync<GetValuesByPropertyIdQuery, PropertyResponseModel>(
+                var result = await mediator.ExecuteQueryAsync<GetValuesByPropertyIdQuery, PropertyModel>(
                     new GetValuesByPropertyIdQuery(propertyId),
                     cancellationToken);
                 return Results.Ok(result);

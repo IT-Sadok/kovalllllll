@@ -7,9 +7,9 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Commands.ValueCommands;
 
 public class UpdateValueCommandHandler(IValueRepository valueRepository, IMapper mapper) :
-    ICommandHandler<UpdateValueCommand, ValueResponseModel>
+    ICommandHandler<UpdateValueCommand, ValueModel>
 {
-    public async Task<ValueResponseModel> ExecuteCommandAsync(UpdateValueCommand command,
+    public async Task<ValueModel> ExecuteCommandAsync(UpdateValueCommand command,
         CancellationToken cancellationToken)
     {
         var value = await valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken);
@@ -24,7 +24,7 @@ public class UpdateValueCommandHandler(IValueRepository valueRepository, IMapper
 
         await valueRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<ValueResponseModel>(value);
+        return mapper.Map<ValueModel>(value);
     }
 }
 

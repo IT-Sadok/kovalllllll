@@ -8,7 +8,7 @@ public class ValueMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<Value, ValueResponseModel>()
+        config.NewConfig<Value, ValueModel>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Text, src => src.Text);
 
@@ -21,8 +21,5 @@ public class ValueMapping : IRegister
             .IgnoreNullValues(true)
             .Ignore(dest => dest.Id)
             .Ignore(dest => dest.Properties);
-
-        config.NewConfig<ICollection<Value>, ValuesResponseModel>()
-            .Map(dest => dest.Values, src => src);
     }
 }

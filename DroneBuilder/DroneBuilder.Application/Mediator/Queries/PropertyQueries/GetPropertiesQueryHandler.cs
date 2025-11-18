@@ -7,9 +7,9 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Queries.PropertyQueries;
 
 public class GetPropertiesQueryHandler(IPropertyRepository propertyRepository, IMapper mapper)
-    : IQueryHandler<GetPropertiesQuery, PropertiesResponseModel>
+    : IQueryHandler<GetPropertiesQuery, ICollection<PropertyModel>>
 {
-    public async Task<PropertiesResponseModel> ExecuteAsync(GetPropertiesQuery query,
+    public async Task<ICollection<PropertyModel>> ExecuteAsync(GetPropertiesQuery query,
         CancellationToken cancellationToken)
     {
         var properties = await propertyRepository.GetPropertiesAsync(cancellationToken);
@@ -19,7 +19,7 @@ public class GetPropertiesQueryHandler(IPropertyRepository propertyRepository, I
             throw new NotFoundException("No properties found.");
         }
 
-        return mapper.Map<PropertiesResponseModel>(properties);
+        return mapper.Map<ICollection<PropertyModel>>(properties);
     }
 }
 

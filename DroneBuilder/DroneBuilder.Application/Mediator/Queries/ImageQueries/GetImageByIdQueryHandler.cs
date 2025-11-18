@@ -7,9 +7,9 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Queries.ImageQueries;
 
 public class GetImageByIdQueryHandler(IImageRepository imageRepository, IMapper mapper)
-    : IQueryHandler<GetImageByIdQuery, ImageResponseModel>
+    : IQueryHandler<GetImageByIdQuery, ImageModel>
 {
-    public async Task<ImageResponseModel> ExecuteAsync(GetImageByIdQuery query, CancellationToken cancellationToken)
+    public async Task<ImageModel> ExecuteAsync(GetImageByIdQuery query, CancellationToken cancellationToken)
     {
         var image = await imageRepository.GetImageByIdAsync(query.ImageId, cancellationToken);
 
@@ -18,7 +18,7 @@ public class GetImageByIdQueryHandler(IImageRepository imageRepository, IMapper 
             throw new NotFoundException($"Image with id {query.ImageId} not found.");
         }
 
-        return mapper.Map<ImageResponseModel>(image);
+        return mapper.Map<ImageModel>(image);
     }
 }
 

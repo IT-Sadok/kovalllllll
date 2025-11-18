@@ -7,9 +7,9 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
 public class UpdateProductCommandHandler(IProductRepository productRepository, IMapper mapper)
-    : ICommandHandler<UpdateProductCommand, ProductResponseModel>
+    : ICommandHandler<UpdateProductCommand, ProductModel>
 {
-    public async Task<ProductResponseModel> ExecuteCommandAsync(UpdateProductCommand command,
+    public async Task<ProductModel> ExecuteCommandAsync(UpdateProductCommand command,
         CancellationToken cancellationToken)
     {
         var existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
@@ -29,7 +29,7 @@ public class UpdateProductCommandHandler(IProductRepository productRepository, I
 
         await productRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<ProductResponseModel>(existingProduct);
+        return mapper.Map<ProductModel>(existingProduct);
     }
 }
 

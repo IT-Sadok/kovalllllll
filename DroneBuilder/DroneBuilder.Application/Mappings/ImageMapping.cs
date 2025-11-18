@@ -8,7 +8,7 @@ public class ImageMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<Image, ImageResponseModel>();
+        config.NewConfig<Image, ImageModel>();
 
         config.NewConfig<UploadImageModel, Image>()
             .Map(dest => dest.UploadedAt, src => DateTime.UtcNow)
@@ -17,9 +17,6 @@ public class ImageMapping : IRegister
             .Ignore(dest => dest.Product)
             .Ignore(dest => dest.Url)
             .Ignore(dest => dest.FileName);
-
-        config.NewConfig<ICollection<Image>, ImagesResponseModel>()
-            .Map(dest => dest.Images, src => src);
 
         config.NewConfig<Product, ProductImagesResponseModel>()
             .Map(dest => dest.Id, src => src.Id)

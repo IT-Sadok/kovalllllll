@@ -6,14 +6,14 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Queries.ImageQueries;
 
 public class GetImagesQueryHandler(IImageRepository imageRepository, IMapper mapper)
-    : IQueryHandler<GetImagesQuery, ImagesResponseModel>
+    : IQueryHandler<GetImagesQuery, ICollection<ImageModel>>
 {
-    public async Task<ImagesResponseModel> ExecuteAsync(GetImagesQuery query, CancellationToken cancellationToken)
+    public async Task<ICollection<ImageModel>> ExecuteAsync(GetImagesQuery query, CancellationToken cancellationToken)
     {
         var images = await imageRepository.GetImagesAsync(cancellationToken);
         
 
-        return mapper.Map<ImagesResponseModel>(images);
+        return mapper.Map<ICollection<ImageModel>>(images);
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿namespace DroneBuilder.Application.Models.ProductModels;
 
-public class ValueResponseModel
+public class ValueModel
 {
     public Guid Id { get; set; }
     public string Text { get; set; }

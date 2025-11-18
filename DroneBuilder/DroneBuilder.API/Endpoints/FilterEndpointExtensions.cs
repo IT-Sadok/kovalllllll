@@ -16,7 +16,7 @@ public static class FilterEndpointExtensions
                     CancellationToken cancellationToken) =>
                 {
                     var query = new GetFilteredProductsQuery(filter);
-                    var result = await mediator.ExecuteQueryAsync<GetFilteredProductsQuery, ProductsResponseModel>(
+                    var result = await mediator.ExecuteQueryAsync<GetFilteredProductsQuery, ICollection<ProductModel>>(
                         query, cancellationToken);
 
                     return Results.Ok(result);

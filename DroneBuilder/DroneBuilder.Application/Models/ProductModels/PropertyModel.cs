@@ -1,8 +1,8 @@
 ﻿namespace DroneBuilder.Application.Models.ProductModels;
 
-public class PropertyResponseModel
+public class PropertyModel
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
-    public ICollection<ValueResponseModel> Values { get; set; } = [];
+    public ICollection<ValueModel> Values { get; set; } = [];
 }

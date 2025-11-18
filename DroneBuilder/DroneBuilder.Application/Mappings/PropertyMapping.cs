@@ -8,7 +8,7 @@ public class PropertyMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<Property, PropertyResponseModel>()
+        config.NewConfig<Property, PropertyModel>()
             .Map(dest => dest.Values, src => src.Values);
 
         config.NewConfig<CreatePropertyModel, Property>()
@@ -23,12 +23,7 @@ public class PropertyMapping : IRegister
             .Ignore(dest => dest.Values)
             .Ignore(dest => dest.Products);
 
-        config.NewConfig<ICollection<Property>, PropertiesResponseModel>()
-            .Map(dest => dest.Properties, src => src);
 
-        config.NewConfig<Property, PropertyValuesResponseModel>()
-            .Map(dest => dest.Id, src => src.Id)
-            .Map(dest => dest.Name, src => src.Name)
-            .Map(dest => dest.Values, src => src.Values);
+        config.NewConfig<Property, ICollection<PropertyModel>>();
     }
 }

@@ -7,9 +7,9 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 
 public class CreatePropertyCommandHandler(IPropertyRepository propertyRepository, IMapper mapper)
-    : ICommandHandler<CreatePropertyCommand, PropertyResponseModel>
+    : ICommandHandler<CreatePropertyCommand, PropertyModel>
 {
-    public async Task<PropertyResponseModel> ExecuteCommandAsync(CreatePropertyCommand command,
+    public async Task<PropertyModel> ExecuteCommandAsync(CreatePropertyCommand command,
         CancellationToken cancellationToken)
     {
         var property = mapper.Map<Property>(command.Model);
@@ -17,7 +17,7 @@ public class CreatePropertyCommandHandler(IPropertyRepository propertyRepository
         await propertyRepository.AddPropertyAsync(property, cancellationToken);
         await propertyRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<PropertyResponseModel>(property);
+        return mapper.Map<PropertyModel>(property);
     }
 }
 
