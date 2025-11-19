@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Repositories;
+﻿using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,30 +14,73 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
     public async Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Products.FindAsync([id], cancellationToken: cancellationToken);
+        return await dbContext.Products
+            .Include(p => p.Images)
+            .Include(p => p.Properties)!
+            .ThenInclude(prop => prop.Values)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task<ICollection<Product>> GetProductsAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
             .AsNoTracking()
+            .Include(p => p.Images)
+            .Include(p => p.Properties)!
+            .ThenInclude(prop => prop.Values)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<ICollection<Property>> GetPropertiesByProductIdAsync(Guid productId,
+    public async Task<Product?> GetPropertiesByProductIdAsync(Guid productId,
         CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
             .AsNoTracking()
-            .Where(p => p.Id == productId)
-            .SelectMany(p => p.Properties!)
-            .ToListAsync(cancellationToken);
+            .Include(p => p.Properties)!
+            .ThenInclude(prop => prop.Values)
+            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
     }
 
     public void RemoveProduct(Product product)
     {
         dbContext.Products.Remove(product);
     }
+
+    public async Task<ICollection<Product>> GetByFilterAsync(ProductFilterModel filter,
+        CancellationToken cancellationToken = default)
+    {
+        var query = dbContext.Products
+            .AsNoTracking()
+            .Include(p => p.Images)
+            .Include(p => p.Properties)!
+            .ThenInclude(prop => prop.Values)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(filter.Name))
+        {
+            var name = filter.Name.Trim().ToLower();
+            query = query.Where(p => p.Name.ToLower().Contains(name));
+        }
+
+        if (filter.MinPrice.HasValue)
+        {
+            query = query.Where(p => p.Price >= filter.MinPrice.Value);
+        }
+
+        if (filter.MaxPrice.HasValue)
+        {
+            query = query.Where(p => p.Price <= filter.MaxPrice.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Category))
+        {
+            var category = filter.Category.Trim().ToLower();
+            query = query.Where(p => p.Category.ToLower() == category);
+        }
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {

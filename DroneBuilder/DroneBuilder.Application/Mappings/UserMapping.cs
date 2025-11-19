@@ -1,14 +1,13 @@
-﻿using DroneBuilder.Application.Models;
-using DroneBuilder.Domain.Entities;
+﻿using DroneBuilder.Application.Models.UserModels;
 using Mapster;
 
 namespace DroneBuilder.Application.Mappings;
 
-public class UserMaping : IRegister
+public class UserMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
         config.NewConfig<string, AuthUserModel>()
-            .Map(dest => dest.AccessToken, src => src);
+            .MapWith(src => new AuthUserModel { AccessToken = src });
     }
 }

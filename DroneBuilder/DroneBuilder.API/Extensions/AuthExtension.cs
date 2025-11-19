@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using DroneBuilder.Application.Options;
+using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;

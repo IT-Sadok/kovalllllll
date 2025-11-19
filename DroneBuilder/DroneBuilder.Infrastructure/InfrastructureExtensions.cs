@@ -1,9 +1,8 @@
-﻿using DroneBuilder.Application;
-using DroneBuilder.Application.Abstractions;
+﻿using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Repositories;
-using DroneBuilder.Application.Services;
-using DroneBuilder.Application.Services.Impl;
+using DroneBuilder.Infrastructure.Options;
 using DroneBuilder.Infrastructure.Repositories;
+using DroneBuilder.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +18,8 @@ public static class InfrastructureExtensions
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
         });
 
+        services.Configure<AzureStorageConfig>(configuration.GetSection("AzureStorage"));
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IImageRepository, ImageRepository>();
@@ -26,6 +27,7 @@ public static class InfrastructureExtensions
         services.AddScoped<IValueRepository, ValueRepository>();
 
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IAzureStorageService, AzureStorageService>();
 
         return services;
     }

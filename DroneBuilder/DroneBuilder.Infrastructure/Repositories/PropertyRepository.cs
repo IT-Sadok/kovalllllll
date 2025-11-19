@@ -13,30 +13,35 @@ public class PropertyRepository(ApplicationDbContext dbContext) : IPropertyRepos
 
     public async Task<Property?> GetPropertyByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Properties.FindAsync([id],
-            cancellationToken: cancellationToken);
+        return await dbContext.Properties
+            .Include(p => p.Values)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task<ICollection<Property>> GetPropertiesAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Properties
             .AsNoTracking()
+            .Include(p => p.Values)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<ICollection<Property>> GetPropertiesByValueIdAsync(Guid valueId,
-        CancellationToken cancellationToken = default)
+    public Task<Property> GetValuesByPropertyIdAsync(Guid propertyId, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Values
-            .AsNoTracking()
-            .Where(v => v.Id == valueId)
-            .SelectMany(v => v.Properties!)
-            .ToListAsync(cancellationToken);
+        return dbContext.Properties
+            .Include(p => p.Values)
+            .FirstAsync(p => p.Id == propertyId, cancellationToken);
     }
+
 
     public void RemoveProperty(Property property)
     {
         dbContext.Properties.Remove(property);
+    }
+
+    public void UpdateProperty(Property property)
+    {
+        dbContext.Properties.Update(property);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -9,10 +9,10 @@ public class DeleteProductCommandHandler(IProductRepository productRepository) :
 {
     public async Task ExecuteCommandAsync(DeleteProductCommand command, CancellationToken cancellationToken)
     {
-        var existingProduct = await productRepository.GetProductByIdAsync(command.Model.Id, cancellationToken);
+        var existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
         if (existingProduct is null)
         {
-            throw new NotFoundException($"Product with id {command.Model.Id} not found.");
+            throw new NotFoundException($"Product with id {command.ProductId} not found.");
         }
 
         productRepository.RemoveProduct(existingProduct);
@@ -20,4 +20,4 @@ public class DeleteProductCommandHandler(IProductRepository productRepository) :
     }
 }
 
-public record DeleteProductCommand(Product Model);
+public record DeleteProductCommand(Guid ProductId);

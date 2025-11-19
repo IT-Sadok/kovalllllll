@@ -1,6 +1,6 @@
 ﻿using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using MapsterMapper;
 
@@ -12,7 +12,7 @@ public class GetPropertiesByProductIdQueryHandler(IProductRepository productRepo
     public async Task<ProductPropertiesResponseModel> ExecuteAsync(GetPropertiesByProductIdQuery query,
         CancellationToken cancellationToken)
     {
-        var product = await productRepository.GetProductByIdAsync(query.ProductId, cancellationToken);
+        var product = await productRepository.GetPropertiesByProductIdAsync(query.ProductId, cancellationToken);
 
         if (product is null)
         {

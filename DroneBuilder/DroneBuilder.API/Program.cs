@@ -46,10 +46,12 @@ public abstract class Program
 
         app.UseHttpsRedirection();
 
-        app.UseAuthorization();
-
         app.MapUserEndpoints()
-            .MapProductEndpoints();
+            .MapProductEndpoints()
+            .MapPropertyEndpoints()
+            .MapValueEndpoints()
+            .MapImageEndpoints()
+            .MapFilterEndpoints();
 
         app.Run();
     }
