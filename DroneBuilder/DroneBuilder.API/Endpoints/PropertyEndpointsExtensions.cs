@@ -19,14 +19,16 @@ public static class PropertyEndpointsExtensions
                         cancellationToken);
                     return Results.Ok(result);
                 })
-            .WithTags("Properties");
+            .WithTags("Properties")
+            .RequireAuthorization();
 
         app.MapDelete(ApiRoutes.Properties.Delete,
             async (IMediator mediator, Guid propertyId, CancellationToken cancellationToken) =>
             {
                 await mediator.ExecuteCommandAsync(new DeletePropertyCommand(propertyId), cancellationToken);
                 return Results.NoContent();
-            }).WithTags("Properties");
+            }).WithTags("Properties")
+            .RequireAuthorization();
 
         app.MapPatch(ApiRoutes.Properties.Update, async (IMediator mediator, Guid propertyId,
             UpdatePropertyModel model, CancellationToken cancellationToken) =>
@@ -35,7 +37,8 @@ public static class PropertyEndpointsExtensions
                 new UpdatePropertyCommand(propertyId, model),
                 cancellationToken);
             return Results.Ok(result);
-        }).WithTags("Properties");
+        }).WithTags("Properties")
+        .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Properties.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
@@ -45,7 +48,8 @@ public static class PropertyEndpointsExtensions
                         cancellationToken);
                     return Results.Ok(result);
                 })
-            .WithTags("Properties");
+            .WithTags("Properties")
+            .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Properties.GetValuesByPropertyId,
             async (IMediator mediator, Guid propertyId, CancellationToken cancellationToken) =>
@@ -54,14 +58,16 @@ public static class PropertyEndpointsExtensions
                     new GetValuesByPropertyIdQuery(propertyId),
                     cancellationToken);
                 return Results.Ok(result);
-            }).WithTags("Properties");
+            }).WithTags("Properties")
+            .RequireAuthorization();
 
         app.Map(ApiRoutes.Properties.AssignValueToProperty, async (IMediator mediator, Guid propertyId, Guid valueId,
             CancellationToken cancellationToken) =>
         {
             await mediator.ExecuteCommandAsync(new AddValueToPropertyCommand(propertyId, valueId), cancellationToken);
             return Results.NoContent();
-        }).WithTags("Properties");
+        }).WithTags("Properties")
+        .RequireAuthorization();
 
         return app;
     }

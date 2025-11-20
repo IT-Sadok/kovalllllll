@@ -21,8 +21,8 @@ public static class FilterEndpointExtensions
 
                     return Results.Ok(result);
                 })
-            .WithTags("Filters");
-
+            .WithTags("Filters")
+            .RequireAuthorization();
 
         return app;
     }

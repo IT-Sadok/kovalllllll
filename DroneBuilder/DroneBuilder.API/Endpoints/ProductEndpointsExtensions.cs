@@ -17,7 +17,8 @@ public static class ProductEndpointsExtensions
                     new CreateProductCommand(model),
                     cancellationToken);
                 return Results.Ok(result);
-            }).WithTags("Products");
+            }).WithTags("Products")
+            .RequireAuthorization();
 
         app.MapPatch(ApiRoutes.Products.Update,
             async (Guid productId, UpdateProductRequestModel requestModel,
@@ -27,14 +28,16 @@ public static class ProductEndpointsExtensions
                     new UpdateProductCommand(productId, requestModel),
                     cancellationToken);
                 return Results.Ok(result);
-            }).WithTags("Products");
+            }).WithTags("Products")
+            .RequireAuthorization();
 
         app.MapDelete(ApiRoutes.Products.Delete, async (IMediator mediator, Guid productId,
             CancellationToken cancellationToken) =>
         {
             await mediator.ExecuteCommandAsync(new DeleteProductCommand(productId), cancellationToken);
             return Results.NoContent();
-        }).WithTags("Products");
+        }).WithTags("Products")
+        .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Products.GetAll,
             async (IMediator mediator, CancellationToken cancellationToken) =>
@@ -43,7 +46,8 @@ public static class ProductEndpointsExtensions
                     new GetProductsQuery(),
                     cancellationToken);
                 return Results.Ok(result);
-            }).WithTags("Products");
+            }).WithTags("Products")
+            .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Products.GetById,
             async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
@@ -52,7 +56,8 @@ public static class ProductEndpointsExtensions
                     new GetProductByIdQuery(productId),
                     cancellationToken);
                 return Results.Ok(result);
-            }).WithTags("Products");
+            }).WithTags("Products")
+            .RequireAuthorization();
 
 
         app.MapGet(ApiRoutes.Products.GetPropertiesByProductId,
@@ -63,7 +68,8 @@ public static class ProductEndpointsExtensions
                         new GetPropertiesByProductIdQuery(productId),
                         cancellationToken);
                 return Results.Ok(result);
-            }).WithTags("Products");
+            }).WithTags("Products")
+            .RequireAuthorization();
 
         app.MapPost(ApiRoutes.Products.AssignPropertyToProduct,
             async (IMediator mediator, Guid productId, Guid propertyId, CancellationToken cancellationToken) =>
@@ -72,7 +78,8 @@ public static class ProductEndpointsExtensions
                     new AddPropertyToProductCommand(productId, propertyId),
                     cancellationToken);
                 return Results.NoContent();
-            }).WithTags("Products");
+            }).WithTags("Products")
+            .RequireAuthorization();
 
         return app;
     }

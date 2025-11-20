@@ -27,7 +27,8 @@ public static class ImageEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Images")
-            .DisableAntiforgery();
+            .DisableAntiforgery()
+            .RequireAuthorization();
 
         app.MapDelete(ApiRoutes.Images.Delete,
                 async (IMediator mediator, Guid imageId, CancellationToken cancellationToken) =>
@@ -38,7 +39,8 @@ public static class ImageEndpointExtensions
 
                     return Results.NoContent();
                 })
-            .WithTags("Images");
+            .WithTags("Images")
+            .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Images.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
@@ -52,7 +54,8 @@ public static class ImageEndpointExtensions
 
                     return Results.Ok(result);
                 })
-            .WithTags("Images");
+            .WithTags("Images")
+            .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Images.GetImagesByProductId,
                 async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
@@ -66,7 +69,8 @@ public static class ImageEndpointExtensions
 
                     return Results.Ok(result);
                 })
-            .WithTags("Images");
+            .WithTags("Images")
+            .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Images.GetById,
                 async (IMediator mediator, Guid imageId, CancellationToken cancellationToken) =>
@@ -80,7 +84,8 @@ public static class ImageEndpointExtensions
 
                     return Results.Ok(result);
                 })
-            .WithTags("Images");
+            .WithTags("Images")
+            .RequireAuthorization();
 
         return app;
     }
