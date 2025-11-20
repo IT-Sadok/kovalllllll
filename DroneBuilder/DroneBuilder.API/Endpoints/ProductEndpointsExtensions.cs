@@ -1,6 +1,7 @@
 ﻿using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Mediator.Queries.Filters;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
 using DroneBuilder.Application.Models.ProductModels;
 
@@ -11,74 +12,75 @@ public static class ProductEndpointsExtensions
     public static IEndpointRouteBuilder MapProductEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapPost(ApiRoutes.Products.Create,
-            async (IMediator mediator, CreateProductModel model, CancellationToken cancellationToken) =>
-            {
-                var result = await mediator.ExecuteCommandAsync<CreateProductCommand, ProductModel>(
-                    new CreateProductCommand(model),
-                    cancellationToken);
-                return Results.Ok(result);
-            }).WithTags("Products")
+                async (IMediator mediator, CreateProductModel model, CancellationToken cancellationToken) =>
+                {
+                    var result = await mediator.ExecuteCommandAsync<CreateProductCommand, ProductModel>(
+                        new CreateProductCommand(model),
+                        cancellationToken);
+                    return Results.Ok(result);
+                }).WithTags("Products")
             .RequireAuthorization();
 
         app.MapPatch(ApiRoutes.Products.Update,
-            async (Guid productId, UpdateProductRequestModel requestModel,
-                IMediator mediator, CancellationToken cancellationToken) =>
-            {
-                var result = await mediator.ExecuteCommandAsync<UpdateProductCommand, ProductModel>(
-                    new UpdateProductCommand(productId, requestModel),
-                    cancellationToken);
-                return Results.Ok(result);
-            }).WithTags("Products")
+                async (Guid productId, UpdateProductRequestModel requestModel,
+                    IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    var result = await mediator.ExecuteCommandAsync<UpdateProductCommand, ProductModel>(
+                        new UpdateProductCommand(productId, requestModel),
+                        cancellationToken);
+                    return Results.Ok(result);
+                }).WithTags("Products")
             .RequireAuthorization();
 
         app.MapDelete(ApiRoutes.Products.Delete, async (IMediator mediator, Guid productId,
-            CancellationToken cancellationToken) =>
-        {
-            await mediator.ExecuteCommandAsync(new DeleteProductCommand(productId), cancellationToken);
-            return Results.NoContent();
-        }).WithTags("Products")
-        .RequireAuthorization();
-
-        app.MapGet(ApiRoutes.Products.GetAll,
-            async (IMediator mediator, CancellationToken cancellationToken) =>
+                CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteQueryAsync<GetProductsQuery, ICollection<ProductModel>>(
-                    new GetProductsQuery(),
-                    cancellationToken);
-                return Results.Ok(result);
+                await mediator.ExecuteCommandAsync(new DeleteProductCommand(productId), cancellationToken);
+                return Results.NoContent();
             }).WithTags("Products")
             .RequireAuthorization();
 
+        app.MapGet(ApiRoutes.Products.GetAll,
+                async (IMediator mediator, [AsParameters] ProductFilterModel filter,
+                    CancellationToken cancellationToken) =>
+                {
+                    var query = new GetFilteredProductsQuery(filter);
+                    var result = await mediator.ExecuteQueryAsync<GetFilteredProductsQuery, ICollection<ProductModel>>(
+                        query, cancellationToken);
+                    return Results.Ok(result);
+                }).WithTags("Products")
+            .RequireAuthorization();
+
         app.MapGet(ApiRoutes.Products.GetById,
-            async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
-            {
-                var result = await mediator.ExecuteQueryAsync<GetProductByIdQuery, ProductModel>(
-                    new GetProductByIdQuery(productId),
-                    cancellationToken);
-                return Results.Ok(result);
-            }).WithTags("Products")
+                async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
+                {
+                    var result = await mediator.ExecuteQueryAsync<GetProductByIdQuery, ProductModel>(
+                        new GetProductByIdQuery(productId),
+                        cancellationToken);
+                    return Results.Ok(result);
+                }).WithTags("Products")
             .RequireAuthorization();
 
 
         app.MapGet(ApiRoutes.Products.GetPropertiesByProductId,
-            async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
-            {
-                var result =
-                    await mediator.ExecuteQueryAsync<GetPropertiesByProductIdQuery, ProductPropertiesResponseModel>(
-                        new GetPropertiesByProductIdQuery(productId),
-                        cancellationToken);
-                return Results.Ok(result);
-            }).WithTags("Products")
+                async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
+                {
+                    var result =
+                        await mediator.ExecuteQueryAsync<GetPropertiesByProductIdQuery, ProductPropertiesResponseModel>(
+                            new GetPropertiesByProductIdQuery(productId),
+                            cancellationToken);
+                    return Results.Ok(result);
+                }).WithTags("Products")
             .RequireAuthorization();
 
         app.MapPost(ApiRoutes.Products.AssignPropertyToProduct,
-            async (IMediator mediator, Guid productId, Guid propertyId, CancellationToken cancellationToken) =>
-            {
-                await mediator.ExecuteCommandAsync(
-                    new AddPropertyToProductCommand(productId, propertyId),
-                    cancellationToken);
-                return Results.NoContent();
-            }).WithTags("Products")
+                async (IMediator mediator, Guid productId, Guid propertyId, CancellationToken cancellationToken) =>
+                {
+                    await mediator.ExecuteCommandAsync(
+                        new AddPropertyToProductCommand(productId, propertyId),
+                        cancellationToken);
+                    return Results.NoContent();
+                }).WithTags("Products")
             .RequireAuthorization();
 
         return app;

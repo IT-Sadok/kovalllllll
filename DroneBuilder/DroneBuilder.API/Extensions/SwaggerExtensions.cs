@@ -15,6 +15,8 @@ public static class SwaggerExtensions
                 Description = "API for managing drone products and configurations."
             });
 
+            c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -40,6 +42,7 @@ public static class SwaggerExtensions
                 }
             });
         });
+
 
         return services;
     }

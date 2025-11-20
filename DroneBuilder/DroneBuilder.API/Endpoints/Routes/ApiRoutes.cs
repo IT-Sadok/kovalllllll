@@ -56,7 +56,6 @@ public abstract class ApiRoutes
 
     public static class Filters
     {
-        private const string BaseRoute = Base + "/filters";
-        public const string GetFilteredProducts = BaseRoute + "/products";
+        public const string ProductsFilter = Base + "/products/filter";
     }
 }

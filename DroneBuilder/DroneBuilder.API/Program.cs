@@ -52,8 +52,7 @@ public abstract class Program
             .MapProductEndpoints()
             .MapPropertyEndpoints()
             .MapValueEndpoints()
-            .MapImageEndpoints()
-            .MapFilterEndpoints();
+            .MapImageEndpoints();
 
         app.Run();
     }
