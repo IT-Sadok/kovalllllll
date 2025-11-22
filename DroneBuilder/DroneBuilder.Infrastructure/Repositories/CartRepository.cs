@@ -14,8 +14,9 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
     public async Task<Cart?> GetCartByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await dbContext.Carts
-            .Include(x => x.CartItems)
-            .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+            .Include(c => c.CartItems)
+            .ThenInclude(ci => ci.Product)
+            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
     }
 
     public async Task RemoveCartItemAsync(Guid cartItemId, CancellationToken cancellationToken = default)

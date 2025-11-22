@@ -52,7 +52,8 @@ public abstract class Program
             .MapProductEndpoints()
             .MapPropertyEndpoints()
             .MapValueEndpoints()
-            .MapImageEndpoints();
+            .MapImageEndpoints()
+            .MapCartEndpoints();
 
         app.Run();
     }
