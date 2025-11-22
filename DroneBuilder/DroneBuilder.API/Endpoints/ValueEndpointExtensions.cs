@@ -18,23 +18,26 @@ public static class ValueEndpointExtensions
                         cancellationToken);
                     return Results.Ok(result);
                 })
-            .WithTags("Values");
+            .WithTags("Values")
+            .RequireAuthorization();
 
         app.MapDelete(ApiRoutes.Values.Delete,
-            async (IMediator mediator, Guid valueId, CancellationToken cancellationToken) =>
-            {
-                await mediator.ExecuteCommandAsync(new DeleteValueCommand(valueId), cancellationToken);
-                return Results.NoContent();
-            }).WithTags("Values");
+                async (IMediator mediator, Guid valueId, CancellationToken cancellationToken) =>
+                {
+                    await mediator.ExecuteCommandAsync(new DeleteValueCommand(valueId), cancellationToken);
+                    return Results.NoContent();
+                }).WithTags("Values")
+            .RequireAuthorization();
 
         app.MapPatch(ApiRoutes.Values.Update, async (IMediator mediator, Guid valueId,
-            UpdateValueModel model, CancellationToken cancellationToken) =>
-        {
-            var result = await mediator.ExecuteCommandAsync<UpdateValueCommand, ValueModel>(
-                new UpdateValueCommand(valueId, model),
-                cancellationToken);
-            return Results.Ok(result);
-        }).WithTags("Values");
+                UpdateValueModel model, CancellationToken cancellationToken) =>
+            {
+                var result = await mediator.ExecuteCommandAsync<UpdateValueCommand, ValueModel>(
+                    new UpdateValueCommand(valueId, model),
+                    cancellationToken);
+                return Results.Ok(result);
+            }).WithTags("Values")
+            .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Values.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
@@ -44,17 +47,19 @@ public static class ValueEndpointExtensions
                         cancellationToken);
                     return Results.Ok(result);
                 })
-            .WithTags("Values");
+            .WithTags("Values")
+            .RequireAuthorization();
 
 
         app.MapGet(ApiRoutes.Values.GetById,
-            async (IMediator mediator, Guid valueId, CancellationToken cancellationToken) =>
-            {
-                var result = await mediator.ExecuteQueryAsync<GetValueByIdQuery, ValueModel>(
-                    new GetValueByIdQuery(valueId),
-                    cancellationToken);
-                return Results.Ok(result);
-            }).WithTags("Values");
+                async (IMediator mediator, Guid valueId, CancellationToken cancellationToken) =>
+                {
+                    var result = await mediator.ExecuteQueryAsync<GetValueByIdQuery, ValueModel>(
+                        new GetValueByIdQuery(valueId),
+                        cancellationToken);
+                    return Results.Ok(result);
+                }).WithTags("Values")
+            .RequireAuthorization();
 
         return app;
     }
