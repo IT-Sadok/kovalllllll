@@ -19,6 +19,8 @@ public abstract class Program
 
         builder.Services.AddSwaggerGen();
 
+        builder.Services.AddHttpContextAccessor();
+
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services

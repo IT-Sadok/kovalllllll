@@ -6,7 +6,7 @@ using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.CartQueries;
 
-public class GetCartByUserIdQueryHandler(ICartRepository cartRepository, IMapper mapper)
+public class GetCartQueryHandler(ICartRepository cartRepository, IMapper mapper)
     : IQueryHandler<GetCartByUserIdQuery, CartModel>
 {
     public async Task<CartModel> ExecuteAsync(GetCartByUserIdQuery query, CancellationToken cancellationToken)

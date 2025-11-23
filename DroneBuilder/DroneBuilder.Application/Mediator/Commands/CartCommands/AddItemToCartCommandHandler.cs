@@ -14,6 +14,11 @@ public class AddItemToCartCommandHandler(
     public async Task ExecuteCommandAsync(AddItemToCartCommand command,
         CancellationToken cancellationToken)
     {
+        if (command.Quantity <= 0)
+        {
+            throw new BadRequestException("Quantity must be greater than zero.");
+        }
+
         var existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
         if (existingProduct == null)
         {
@@ -27,14 +32,7 @@ public class AddItemToCartCommandHandler(
             cart = new Cart
             {
                 UserId = command.UserId,
-                CartItems = new List<CartItem>
-                {
-                    new()
-                    {
-                        ProductId = command.ProductId,
-                        Quantity = command.Quantity
-                    }
-                }
+                CartItems = new List<CartItem>()
             };
             await cartRepository.CreateCartAsync(cart, cancellationToken);
         }

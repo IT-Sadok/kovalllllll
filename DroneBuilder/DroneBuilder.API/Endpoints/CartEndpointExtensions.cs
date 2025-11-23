@@ -1,9 +1,10 @@
-﻿using System.Security.Claims;
-using DroneBuilder.API.Endpoints.Routes;
+﻿using DroneBuilder.API.Endpoints.Routes;
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.CartQueries;
 using DroneBuilder.Application.Models.CartModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DroneBuilder.API.Endpoints;
 
@@ -12,16 +13,10 @@ public static class CartEndpointExtensions
     public static IEndpointRouteBuilder MapCartEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapPost(ApiRoutes.Cart.AddItemToCart,
-                async (ClaimsPrincipal user, IMediator mediator, CreateCartItemModel model,
+                async ([FromServices] UserContext userContext, IMediator mediator, [FromBody] CreateCartItemModel model,
                     CancellationToken cancellationToken) =>
                 {
-                    var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (!Guid.TryParse(userIdString, out var userId))
-                    {
-                        return Results.Unauthorized();
-                    }
-
-                    var command = new AddItemToCartCommand(userId, model.ProductId, model.Quantity);
+                    var command = new AddItemToCartCommand(userContext.UserId, model.ProductId, model.Quantity);
 
                     await mediator.ExecuteCommandAsync(command, cancellationToken);
                     return Results.Ok();
@@ -30,49 +25,34 @@ public static class CartEndpointExtensions
             .RequireAuthorization();
 
         app.MapDelete(ApiRoutes.Cart.ClearCart,
-                async (ClaimsPrincipal user, IMediator mediator, CancellationToken cancellationToken) =>
+                async ([FromServices] UserContext userContext, IMediator mediator,
+                    CancellationToken cancellationToken) =>
                 {
-                    var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (!Guid.TryParse(userIdString, out var userId))
-                    {
-                        return Results.Unauthorized();
-                    }
-
-                    var command = new ClearCartCommand(userId);
+                    var command = new ClearCartCommand(userContext.UserId);
 
                     await mediator.ExecuteCommandAsync(command, cancellationToken);
                     return Results.NoContent();
                 })
             .WithTags("Cart")
             .RequireAuthorization();
-
         app.MapDelete(ApiRoutes.Cart.RemoveItemFromCart,
-                async (ClaimsPrincipal user, IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
+                async ([FromServices] UserContext userContext, IMediator mediator, Guid productId,
+                    CancellationToken cancellationToken) =>
                 {
-                    var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (!Guid.TryParse(userIdString, out var userId))
-                    {
-                        return Results.Unauthorized();
-                    }
-
-                    var command = new RemoveItemFromCartCommand(userId, productId);
+                    var command = new RemoveItemFromCartCommand(userContext.UserId, productId);
 
                     await mediator.ExecuteCommandAsync(command, cancellationToken);
                     return Results.NoContent();
                 })
             .WithTags("Cart")
             .RequireAuthorization();
+
 
         app.MapGet(ApiRoutes.Cart.GetCartItems,
-                async (ClaimsPrincipal user, IMediator mediator, CancellationToken cancellationToken) =>
+                async ([FromServices] UserContext userContext, IMediator mediator,
+                    CancellationToken cancellationToken) =>
                 {
-                    var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (!Guid.TryParse(userIdString, out var userId))
-                    {
-                        return Results.Unauthorized();
-                    }
-
-                    var query = new GetCartItemsQuery(userId);
+                    var query = new GetCartItemsQuery(userContext.UserId);
                     var cartItems = await mediator.ExecuteQueryAsync<GetCartItemsQuery, ICollection<CartItemModel>>(
                         query,
                         cancellationToken);
@@ -82,15 +62,10 @@ public static class CartEndpointExtensions
             .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Cart.GetCartByUserId,
-                async (ClaimsPrincipal user, IMediator mediator, CancellationToken cancellationToken) =>
+                async ([FromServices] UserContext userContext, IMediator mediator,
+                    CancellationToken cancellationToken) =>
                 {
-                    var userIdString = user.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (!Guid.TryParse(userIdString, out var userId))
-                    {
-                        return Results.Unauthorized();
-                    }
-
-                    var query = new GetCartByUserIdQuery(userId);
+                    var query = new GetCartByUserIdQuery(userContext.UserId);
                     var cart = await mediator.ExecuteQueryAsync<GetCartByUserIdQuery, CartModel>(query,
                         cancellationToken);
                     return Results.Ok(cart);

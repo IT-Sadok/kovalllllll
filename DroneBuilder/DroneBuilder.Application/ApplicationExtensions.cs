@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Mappings;
+﻿using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using MapsterMapper;
@@ -12,6 +13,7 @@ public static class ApplicationExtensions
     {
         services.AddScoped<IMediator, Mediator.Mediator>();
         services.AddScoped<IMapper, ServiceMapper>();
+        services.AddScoped<IUserContext, UserContext>();
         services.AddSingleton(MapsterConfig.Configure());
 
         services.Scan(scan => scan
