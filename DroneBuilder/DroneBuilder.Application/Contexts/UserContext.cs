@@ -6,8 +6,19 @@ namespace DroneBuilder.Application.Contexts;
 public class UserContext(IHttpContextAccessor contextAccessor) : IUserContext
 {
     public Guid UserId
-        => Guid.Parse(contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                      Guid.Empty.ToString());
+    {
+        get
+        {
+            var userIdClaim = contextAccessor.HttpContext?.User
+                .FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim?.Value == null)
+                throw new UnauthorizedAccessException("User is not authenticated or NameIdentifier claim missing");
+
+            return Guid.Parse(userIdClaim.Value);
+        }
+    }
+
 
     public string UserEmail
         => contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;

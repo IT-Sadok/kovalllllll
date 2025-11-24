@@ -58,7 +58,7 @@ public abstract class ApiRoutes
     {
         private const string BaseRoute = Base + "/cart";
         public const string AddItemToCart = BaseRoute + "/items";
-        public const string GetCartByUserId = BaseRoute;
+        public const string GetCart = BaseRoute;
         public const string GetCartItems = BaseRoute + "/items";
         public const string RemoveItemFromCart = BaseRoute + "/items/{itemId}";
         public const string ClearCart = BaseRoute + "/clear";
