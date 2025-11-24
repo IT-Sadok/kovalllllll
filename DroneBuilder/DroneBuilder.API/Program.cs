@@ -4,6 +4,7 @@ using DroneBuilder.Application;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
 
 namespace DroneBuilder.API;
 
@@ -17,6 +18,9 @@ public abstract class Program
             reloadOnChange: true);
 
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddHttpContextAccessor();
+
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services
@@ -51,7 +55,7 @@ public abstract class Program
             .MapPropertyEndpoints()
             .MapValueEndpoints()
             .MapImageEndpoints()
-            .MapFilterEndpoints();
+            .MapCartEndpoints();
 
         app.Run();
     }

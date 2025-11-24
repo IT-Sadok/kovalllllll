@@ -54,9 +54,13 @@ public abstract class ApiRoutes
         public const string GetImagesByProductId = BaseRoute + "/product/{productId}";
     }
 
-    public static class Filters
+    public static class Cart
     {
-        private const string BaseRoute = Base + "/filters";
-        public const string GetFilteredProducts = BaseRoute + "/products";
+        private const string BaseRoute = Base + "/cart";
+        public const string AddItemToCart = BaseRoute + "/items";
+        public const string GetCart = BaseRoute;
+        public const string GetCartItems = BaseRoute + "/items";
+        public const string RemoveItemFromCart = BaseRoute + "/items/{itemId}";
+        public const string ClearCart = BaseRoute + "/clear";
     }
 }
