@@ -18,6 +18,10 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired()
             .HasColumnType("decimal(18,2)");
 
+        builder.Property(p => p.Category)
+            .IsRequired()
+            .HasMaxLength(100);
+
         builder.HasMany(p => p.Images)
             .WithOne(i => i.Product)
             .HasForeignKey(i => i.ProductId)

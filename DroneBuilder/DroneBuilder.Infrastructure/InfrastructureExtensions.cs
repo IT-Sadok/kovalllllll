@@ -27,6 +27,7 @@ public static class InfrastructureExtensions
         services.AddScoped<IValueRepository, ValueRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAzureStorageService, AzureStorageService>();
