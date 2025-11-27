@@ -2,15 +2,14 @@
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Repositories;
-using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 
-public class UpdateWarehouseItemCommandHandler(IWarehouseRepository warehouseRepository, IMapper mapper)
-    : ICommandHandler<UpdateWarehouseItemCommand, WarehouseItemModel>
+public class AddQuantityToWarehouseItemCommandHandler(IWarehouseRepository warehouseRepository, IMapper mapper)
+    : ICommandHandler<AddQuantityToWarehouseItemCommand, WarehouseItemModel>
 {
-    public async Task<WarehouseItemModel> ExecuteCommandAsync(UpdateWarehouseItemCommand command,
+    public async Task<WarehouseItemModel> ExecuteCommandAsync(AddQuantityToWarehouseItemCommand command,
         CancellationToken cancellationToken)
     {
         var warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
@@ -27,9 +26,11 @@ public class UpdateWarehouseItemCommandHandler(IWarehouseRepository warehouseRep
             throw new NotFoundException($"Warehouse item with id {command.WarehouseItemId} not found.");
         }
 
-        if (command.Model.Quantity.HasValue)
-            warehouseItem.Quantity = command.Model.Quantity.Value;
+        if (command.Model.QuantityToAdd <= 0)
+            throw new BadRequestException("Quantity to add must be greater than 0.");
 
+        warehouseItem.Quantity += command.Model.QuantityToAdd;
+        warehouseItem.AvailableQuantity += command.Model.QuantityToAdd;
 
         await warehouseRepository.SaveChangesAsync(cancellationToken);
 
@@ -37,4 +38,4 @@ public class UpdateWarehouseItemCommandHandler(IWarehouseRepository warehouseRep
     }
 }
 
-public record UpdateWarehouseItemCommand(Guid WarehouseItemId, UpdateWarehouseItemModel Model);
+public record AddQuantityToWarehouseItemCommand(Guid WarehouseItemId, AddQuantityModel Model);

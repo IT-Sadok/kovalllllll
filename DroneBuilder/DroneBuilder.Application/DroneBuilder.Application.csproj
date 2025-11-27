@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Mediator\Commands\OrderConmmands\" />
+      <Folder Include="Mediator\Commands\OrderCommands\" />
     </ItemGroup>
 
 </Project>

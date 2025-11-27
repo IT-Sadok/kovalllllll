@@ -23,7 +23,7 @@ public class WarehouseMapping : IRegister
             .Map(dest => dest.ProductId, src => src.ProductId)
             .Map(dest => dest.Quantity, src => src.Quantity)
             .Map(dest => dest.ReservedQuantity, src => src.ReservedQuantity)
-            .Map(dest => dest.AvailableQuantity, src => Math.Max(0, src.Quantity - src.ReservedQuantity));
+            .Map(dest => dest.AvailableQuantity, src => src.AvailableQuantity);
 
         config.NewConfig<Warehouse, ICollection<WarehouseItemModel>>()
             .Map(dest => dest, src => src);

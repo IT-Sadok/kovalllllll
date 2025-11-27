@@ -1,6 +1,7 @@
 ﻿using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
@@ -33,11 +34,10 @@ public class AddItemToCartCommandHandler(
             throw new BadRequestException("Quantity must be greater than zero.");
         }
 
-        if (warehouseItem.Quantity < command.Quantity)
-        {
-            throw new BadRequestException("Insufficient stock in warehouse.");
-        }
+        WarehouseValidation.ValidateState(warehouseItem);
 
+        if (command.Quantity > warehouseItem.AvailableQuantity)
+            throw new BadRequestException("Cannot add more than available quantity.");
 
         var cart = await cartRepository.GetCartByUserIdAsync(command.UserId, cancellationToken);
 
@@ -71,12 +71,10 @@ public class AddItemToCartCommandHandler(
             existingCartItem.Quantity += command.Quantity;
         }
 
-        var available = warehouseItem.Quantity - warehouseItem.ReservedQuantity;
-        if (command.Quantity > available)
-            throw new BadRequestException("Insufficient stock in warehouse.");
-
-
         warehouseItem.ReservedQuantity += command.Quantity;
+        warehouseItem.AvailableQuantity -= command.Quantity;
+
+        WarehouseValidation.ValidateState(warehouseItem);
 
         await cartRepository.SaveChangesAsync(cancellationToken);
     }

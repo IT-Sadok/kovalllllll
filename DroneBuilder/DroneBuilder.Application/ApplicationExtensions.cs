@@ -1,6 +1,5 @@
 ﻿using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mappings;
-using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
