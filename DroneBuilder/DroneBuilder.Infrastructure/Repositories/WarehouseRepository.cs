@@ -38,9 +38,4 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
     {
         await dbContext.SaveChangesAsync(cancellationToken);
     }
-
-    public async Task ReloadAsync(WarehouseItem warehouseItem, CancellationToken cancellationToken)
-    {
-        await dbContext.Entry(warehouseItem).ReloadAsync(cancellationToken);
-    }
 }

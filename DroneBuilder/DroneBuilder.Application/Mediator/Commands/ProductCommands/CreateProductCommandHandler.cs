@@ -32,8 +32,6 @@ public class CreateProductCommandHandler(
 
         await productRepository.AddProductAsync(product, cancellationToken);
 
-        await productRepository.SaveChangesAsync(cancellationToken);
-
         var warehouseItem = new WarehouseItem
         {
             WarehouseId = warehouse.Id,
@@ -41,7 +39,7 @@ public class CreateProductCommandHandler(
         };
 
         await warehouseRepository.AddWarehouseItemAsync(warehouseItem, cancellationToken);
-        await warehouseRepository.SaveChangesAsync(cancellationToken);
+        await productRepository.SaveChangesAsync(cancellationToken);
 
         var createdProduct = await productRepository.GetProductByIdAsync(product.Id, cancellationToken);
 

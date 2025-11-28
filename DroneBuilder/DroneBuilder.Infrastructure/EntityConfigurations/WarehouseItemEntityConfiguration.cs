@@ -13,12 +13,6 @@ public class WarehouseItemEntityConfiguration : IEntityTypeConfiguration<Warehou
         builder.Property(wi => wi.Quantity)
             .IsRequired();
 
-        builder.Property(wi => wi.ReservedQuantity)
-            .IsRequired();
-
-        builder.Property(wi => wi.AvailableQuantity)
-            .IsRequired();
-
         builder.HasOne(wi => wi.Warehouse)
             .WithMany(w => w.WarehouseItems)
             .HasForeignKey(wi => wi.WarehouseId)

@@ -36,8 +36,6 @@ public class AddItemToCartCommandHandler(
 
         WarehouseValidation.ValidateState(warehouseItem);
 
-        if (command.Quantity > warehouseItem.AvailableQuantity)
-            throw new BadRequestException("Cannot add more than available quantity.");
 
         var cart = await cartRepository.GetCartByUserIdAsync(command.UserId, cancellationToken);
 
@@ -71,8 +69,7 @@ public class AddItemToCartCommandHandler(
             existingCartItem.Quantity += command.Quantity;
         }
 
-        warehouseItem.ReservedQuantity += command.Quantity;
-        warehouseItem.AvailableQuantity -= command.Quantity;
+        warehouseItem.Quantity -= command.Quantity;
 
         WarehouseValidation.ValidateState(warehouseItem);
 

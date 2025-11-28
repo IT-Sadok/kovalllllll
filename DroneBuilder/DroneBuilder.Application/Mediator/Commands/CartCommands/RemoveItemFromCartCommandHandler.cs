@@ -44,14 +44,7 @@ public class RemoveItemFromCartCommandHandler(
 
         WarehouseValidation.ValidateState(warehouseItem);
 
-        if (cartItem.Quantity > warehouseItem.ReservedQuantity)
-        {
-            throw new ValidationException(
-                $"Cart reserved quantity ({cartItem.Quantity}) is greater than warehouse reserved ({warehouseItem.ReservedQuantity}).");
-        }
-
-        warehouseItem.ReservedQuantity -= cartItem.Quantity;
-        warehouseItem.AvailableQuantity = warehouseItem.Quantity - warehouseItem.ReservedQuantity;
+        warehouseItem.Quantity += cartItem.Quantity;
 
         WarehouseValidation.ValidateState(warehouseItem);
 

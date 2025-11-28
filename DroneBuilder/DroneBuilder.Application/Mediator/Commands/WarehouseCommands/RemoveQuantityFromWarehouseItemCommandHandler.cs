@@ -2,6 +2,7 @@
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
@@ -15,6 +16,9 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
     public async Task<WarehouseItemModel> ExecuteCommandAsync(RemoveQuantityFromWarehouseItemCommand command,
         CancellationToken cancellationToken)
     {
+        if (command.Model.QuantityToRemove <= 0)
+            throw new BadRequestException("Quantity to remove must be greater than 0.");
+
         var warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
         if (warehouse == null)
         {
@@ -29,36 +33,15 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
             throw new NotFoundException($"Warehouse item with id {command.WarehouseItemId} not found.");
         }
 
-        if (command.Model.QuantityToRemove <= 0)
-            throw new BadRequestException("Quantity to remove must be greater than 0.");
-
-        ValidateWarehouseState(warehouseItem);
-
-        if (command.Model.QuantityToRemove > warehouseItem.AvailableQuantity)
-            throw new BadRequestException("Cannot remove more than available quantity.");
+        WarehouseValidation.ValidateState(warehouseItem);
 
         warehouseItem.Quantity -= command.Model.QuantityToRemove;
-        warehouseItem.AvailableQuantity -= command.Model.QuantityToRemove;
 
-        ValidateWarehouseState(warehouseItem);
+        WarehouseValidation.ValidateState(warehouseItem);
 
         await warehouseRepository.SaveChangesAsync(cancellationToken);
 
         return mapper.Map<WarehouseItemModel>(warehouseItem);
-    }
-
-    private static void ValidateWarehouseState(WarehouseItem item)
-    {
-        if (item.Quantity < 0 ||
-            item.ReservedQuantity < 0 ||
-            item.AvailableQuantity < 0)
-            throw new ValidationException("Warehouse quantities cannot be negative.");
-
-        if (item.AvailableQuantity + item.ReservedQuantity != item.Quantity)
-            throw new ValidationException("Invalid warehouse state: Available + Reserved != Total.");
-
-        if (item.ReservedQuantity > item.Quantity)
-            throw new ValidationException("Reserved exceeds total quantity.");
     }
 }
 

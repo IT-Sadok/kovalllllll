@@ -30,15 +30,8 @@ public class ClearCartCommandHandler(ICartRepository cartRepository, IWarehouseR
             }
 
             WarehouseValidation.ValidateState(warehouseItem);
-
-            if (cartItem.Quantity > warehouseItem.ReservedQuantity)
-            {
-                throw new ValidationException(
-                    $"Cart reserved quantity ({cartItem.Quantity}) is greater than warehouse reserved ({warehouseItem.ReservedQuantity}).");
-            }
-
-            warehouseItem.ReservedQuantity -= cartItem.Quantity;
-            warehouseItem.AvailableQuantity = warehouseItem.Quantity - warehouseItem.ReservedQuantity;
+            
+            warehouseItem.Quantity += cartItem.Quantity;
 
             WarehouseValidation.ValidateState(warehouseItem);
         }
@@ -46,7 +39,6 @@ public class ClearCartCommandHandler(ICartRepository cartRepository, IWarehouseR
         await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
 
         await cartRepository.SaveChangesAsync(cancellationToken);
-        await warehouseRepository.SaveChangesAsync(cancellationToken);
     }
 }
 

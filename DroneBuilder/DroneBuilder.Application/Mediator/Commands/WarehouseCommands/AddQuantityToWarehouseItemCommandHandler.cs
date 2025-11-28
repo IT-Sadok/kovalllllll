@@ -12,6 +12,9 @@ public class AddQuantityToWarehouseItemCommandHandler(IWarehouseRepository wareh
     public async Task<WarehouseItemModel> ExecuteCommandAsync(AddQuantityToWarehouseItemCommand command,
         CancellationToken cancellationToken)
     {
+        if (command.Model.QuantityToAdd <= 0)
+            throw new BadRequestException("Quantity to add must be greater than 0.");
+        
         var warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
         if (warehouse == null)
         {
@@ -26,11 +29,7 @@ public class AddQuantityToWarehouseItemCommandHandler(IWarehouseRepository wareh
             throw new NotFoundException($"Warehouse item with id {command.WarehouseItemId} not found.");
         }
 
-        if (command.Model.QuantityToAdd <= 0)
-            throw new BadRequestException("Quantity to add must be greater than 0.");
-
         warehouseItem.Quantity += command.Model.QuantityToAdd;
-        warehouseItem.AvailableQuantity += command.Model.QuantityToAdd;
 
         await warehouseRepository.SaveChangesAsync(cancellationToken);
 
