@@ -12,7 +12,15 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        builder.Entity<Warehouse>().HasData(new Warehouse
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+            Name = "Main Warehouse",
+            CreatedAt = DateTime.UtcNow
+        });
     }
+
 
     public DbSet<Product> Products { get; set; }
     public DbSet<Image> Images { get; set; }
@@ -22,4 +30,6 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
+    public DbSet<Warehouse> Warehouses { get; set; }
+    public DbSet<WarehouseItem> WarehouseItems { get; set; }
 }

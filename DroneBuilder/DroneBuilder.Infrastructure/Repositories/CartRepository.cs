@@ -34,6 +34,11 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
             .ForEachAsync(ci => dbContext.CartItems.Remove(ci), cancellationToken);
     }
 
+    public async Task AddCartItemAsync(CartItem cartItem, CancellationToken cancellationToken = default)
+    {
+        await dbContext.CartItems.AddAsync(cartItem, cancellationToken);
+    }
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.SaveChangesAsync(cancellationToken);

@@ -56,11 +56,21 @@ public abstract class ApiRoutes
 
     public static class Cart
     {
-        private const string BaseRoute = Base + "/cart";
+        private const string BaseRoute = Base + "/carts";
         public const string AddItemToCart = BaseRoute + "/items";
         public const string GetCart = BaseRoute;
         public const string GetCartItems = BaseRoute + "/items";
         public const string RemoveItemFromCart = BaseRoute + "/items/{itemId}";
         public const string ClearCart = BaseRoute + "/clear";
+    }
+
+    public static class Warehouses
+    {
+        private const string BaseRoute = Base + "/warehouse";
+        public const string Get = BaseRoute;
+        public const string UpdateWarehouseItem = BaseRoute + "/items/{itemId}";
+        public const string GetItemById = BaseRoute + "/items/{itemId}";
+        public const string AddQuantityToItem = BaseRoute + "/items/{itemId}";
+        public const string RemoveQuantityFromItem = BaseRoute + "/items/{itemId}";
     }
 }

@@ -3,6 +3,7 @@ using System;
 using DroneBuilder.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DroneBuilder.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251125181550_add_warehouse")]
+    partial class add_warehouse
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -301,7 +304,7 @@ namespace DroneBuilder.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            CreatedAt = new DateTime(2025, 11, 28, 11, 50, 29, 850, DateTimeKind.Utc).AddTicks(8348),
+                            CreatedAt = new DateTime(2025, 11, 25, 18, 15, 49, 888, DateTimeKind.Utc).AddTicks(8392),
                             Name = "Main Warehouse"
                         });
                 });
@@ -312,10 +315,16 @@ namespace DroneBuilder.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("AvailableQuantity")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReservedQuantity")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("WarehouseId")
@@ -513,7 +522,7 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.HasOne("DroneBuilder.Domain.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Cart");

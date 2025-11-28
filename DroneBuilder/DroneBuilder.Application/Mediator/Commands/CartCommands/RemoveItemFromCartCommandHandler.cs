@@ -1,10 +1,14 @@
 ﻿using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Validation;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
-public class RemoveItemFromCartCommandHandler(ICartRepository cartRepository, IProductRepository productRepository)
+public class RemoveItemFromCartCommandHandler(
+    ICartRepository cartRepository,
+    IProductRepository productRepository,
+    IWarehouseRepository warehouseRepository)
     : ICommandHandler<RemoveItemFromCartCommand>
 {
     public async Task ExecuteCommandAsync(RemoveItemFromCartCommand command, CancellationToken cancellationToken)
@@ -29,6 +33,20 @@ public class RemoveItemFromCartCommandHandler(ICartRepository cartRepository, IP
         {
             throw new NotFoundException($"Product with ID {command.ProductId} not found in the cart.");
         }
+
+        var warehouseItem =
+            await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
+
+        if (warehouseItem == null)
+        {
+            throw new NotFoundException($"Warehouse item for Product ID {command.ProductId} not found.");
+        }
+
+        WarehouseValidation.ValidateState(warehouseItem);
+
+        warehouseItem.Quantity += cartItem.Quantity;
+
+        WarehouseValidation.ValidateState(warehouseItem);
 
         await cartRepository.RemoveCartItemAsync(cartItem.Id, cancellationToken);
         await cartRepository.SaveChangesAsync(cancellationToken);
