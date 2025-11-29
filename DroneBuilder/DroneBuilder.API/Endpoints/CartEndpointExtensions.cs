@@ -13,7 +13,8 @@ public static class CartEndpointExtensions
     public static IEndpointRouteBuilder MapCartEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapPost(ApiRoutes.Cart.AddItemToCart,
-                async ([FromServices] IUserContext userContext, IMediator mediator, [FromBody] CreateCartItemModel model,
+                async ([FromServices] IUserContext userContext, IMediator mediator,
+                    [FromBody] CreateCartItemModel model,
                     CancellationToken cancellationToken) =>
                 {
                     var command = new AddItemToCartCommand(userContext.UserId, model.ProductId, model.Quantity);

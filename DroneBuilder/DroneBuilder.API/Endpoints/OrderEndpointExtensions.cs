@@ -12,21 +12,21 @@ public static class OrderEndpointExtensions
     public static IEndpointRouteBuilder MapOrderEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapPost(ApiRoutes.Orders.CreateOrder,
-                async (IMediator mediator, IUserContext userContext, ShippingDetailsModel shippingDetails,
+                async (IMediator mediator, ShippingDetailsModel shippingDetails,
                     CancellationToken cancellationToken) =>
                 {
                     var result = await mediator.ExecuteCommandAsync<CreateOrderCommand, OrderModel>(
-                        new CreateOrderCommand(userContext.UserId, shippingDetails),
+                        new CreateOrderCommand(shippingDetails),
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Orders")
             .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Orders.GetAllOrders,
-                async (IMediator mediator, IUserContext userContext, CancellationToken cancellationToken) =>
+                async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
                     var result = await mediator.ExecuteQueryAsync<GetOrdersQuery, ICollection<OrderModel>>(
-                        new GetOrdersQuery(userContext.UserId),
+                        new GetOrdersQuery(),
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Orders")

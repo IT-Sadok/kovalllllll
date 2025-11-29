@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.OrderModels;
@@ -13,24 +14,26 @@ public class CreateOrderCommandHandler(
     ICartRepository cartRepository,
     IProductRepository productRepository,
     IWarehouseRepository warehouseRepository,
+    IUserContext userContext,
     IMapper mapper) : ICommandHandler<CreateOrderCommand, OrderModel>
 {
     public async Task<OrderModel> ExecuteCommandAsync(CreateOrderCommand command, CancellationToken cancellationToken)
     {
-        var cart = await cartRepository.GetCartByUserIdAsync(command.UserId, cancellationToken);
+        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
         if (cart is null || cart.CartItems.Count == 0)
             throw new BadRequestException("Cart is empty.");
 
+        var productIds = cart.CartItems.Select(ci => ci.ProductId).ToList();
+
+        var warehouseItem = await warehouseRepository
+            .GetAllWarehouseItemsByProductIdsAsync(productIds, cancellationToken);
+
         foreach (var item in cart.CartItems)
         {
-            var warehouseItem = await warehouseRepository
-                .GetWarehouseItemByProductIdAsync(item.ProductId, cancellationToken);
-
             if (warehouseItem is null)
                 throw new NotFoundException($"Product {item.ProductId} not found in warehouse.");
         }
 
-        var productIds = cart.CartItems.Select(ci => ci.ProductId).ToList();
         var products = await productRepository.GetProductsByIdsAsync(productIds, cancellationToken);
 
         var orderItems = cart.CartItems.Select(ci =>
@@ -47,7 +50,7 @@ public class CreateOrderCommandHandler(
 
         var order = new Order
         {
-            UserId = command.UserId,
+            UserId = userContext.UserId,
             ShippingDetails = JsonSerializer.Serialize(command.ShippingDetails),
             OrderItems = orderItems,
             TotalPrice = orderItems.Sum(i => i.PriceAtPurchase * i.Quantity)
@@ -61,4 +64,4 @@ public class CreateOrderCommandHandler(
     }
 }
 
-public record CreateOrderCommand(Guid UserId, ShippingDetailsModel ShippingDetails);
+public record CreateOrderCommand(ShippingDetailsModel ShippingDetails);
