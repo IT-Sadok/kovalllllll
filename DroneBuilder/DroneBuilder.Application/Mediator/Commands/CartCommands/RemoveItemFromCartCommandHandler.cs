@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Exceptions;
+﻿using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.Validation;
@@ -8,16 +9,17 @@ namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 public class RemoveItemFromCartCommandHandler(
     ICartRepository cartRepository,
     IProductRepository productRepository,
-    IWarehouseRepository warehouseRepository)
+    IWarehouseRepository warehouseRepository,
+    IUserContext userContext)
     : ICommandHandler<RemoveItemFromCartCommand>
 {
     public async Task ExecuteCommandAsync(RemoveItemFromCartCommand command, CancellationToken cancellationToken)
     {
-        var cart = await cartRepository.GetCartByUserIdAsync(command.UserId, cancellationToken);
+        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
         if (cart == null)
         {
-            throw new NotFoundException($"Cart for User ID {command.UserId} not found.");
+            throw new NotFoundException($"Cart for User ID {userContext.UserId} not found.");
         }
 
         var product = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
@@ -53,4 +55,4 @@ public class RemoveItemFromCartCommandHandler(
     }
 }
 
-public record RemoveItemFromCartCommand(Guid UserId, Guid ProductId);
+public record RemoveItemFromCartCommand(Guid ProductId);

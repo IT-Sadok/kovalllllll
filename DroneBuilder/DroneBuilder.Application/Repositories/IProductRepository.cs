@@ -12,8 +12,13 @@ public interface IProductRepository
     Task<Product?> GetPropertiesByProductIdAsync(Guid productId,
         CancellationToken cancellationToken = default);
 
+    Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
+        CancellationToken cancellationToken = default);
+
     void RemoveProduct(Product product);
-    Task<ICollection<Product>> GetByFilterAsync(ProductFilterModel filter, CancellationToken cancellationToken = default);
+
+    Task<ICollection<Product>> GetByFilterAsync(ProductFilterModel filter,
+        CancellationToken cancellationToken = default);
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -1,20 +1,24 @@
-﻿using DroneBuilder.Application.Exceptions;
+﻿using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.Validation;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
-public class ClearCartCommandHandler(ICartRepository cartRepository, IWarehouseRepository warehouseRepository)
+public class ClearCartCommandHandler(
+    ICartRepository cartRepository,
+    IWarehouseRepository warehouseRepository,
+    IUserContext userContext)
     : ICommandHandler<ClearCartCommand>
 {
     public async Task ExecuteCommandAsync(ClearCartCommand command, CancellationToken cancellationToken)
     {
-        var cart = await cartRepository.GetCartByUserIdAsync(command.UserId, cancellationToken);
+        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
         if (cart == null)
         {
-            throw new NotFoundException($"Cart for user ID {command.UserId} not found.");
+            throw new NotFoundException($"Cart for user ID {userContext.UserId} not found.");
         }
 
 
@@ -30,7 +34,7 @@ public class ClearCartCommandHandler(ICartRepository cartRepository, IWarehouseR
             }
 
             WarehouseValidation.ValidateState(warehouseItem);
-            
+
             warehouseItem.Quantity += cartItem.Quantity;
 
             WarehouseValidation.ValidateState(warehouseItem);
@@ -42,4 +46,4 @@ public class ClearCartCommandHandler(ICartRepository cartRepository, IWarehouseR
     }
 }
 
-public record ClearCartCommand(Guid UserId);
+public record ClearCartCommand();

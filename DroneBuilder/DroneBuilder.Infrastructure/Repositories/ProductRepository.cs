@@ -41,6 +41,15 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
     }
 
+    public async Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .AsNoTracking()
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public void RemoveProduct(Product product)
     {
         dbContext.Products.Remove(product);

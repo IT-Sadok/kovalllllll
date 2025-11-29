@@ -1,9 +1,9 @@
-﻿using DroneBuilder.Application.Exceptions;
+﻿using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
-using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
@@ -11,7 +11,7 @@ public class AddItemToCartCommandHandler(
     ICartRepository cartRepository,
     IWarehouseRepository warehouseRepository,
     IProductRepository productRepository,
-    IMapper mapper) : ICommandHandler<AddItemToCartCommand>
+    IUserContext userContext) : ICommandHandler<AddItemToCartCommand>
 {
     public async Task ExecuteCommandAsync(AddItemToCartCommand command,
         CancellationToken cancellationToken)
@@ -37,13 +37,13 @@ public class AddItemToCartCommandHandler(
         WarehouseValidation.ValidateState(warehouseItem);
 
 
-        var cart = await cartRepository.GetCartByUserIdAsync(command.UserId, cancellationToken);
+        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
         if (cart == null)
         {
             cart = new Cart
             {
-                UserId = command.UserId,
+                UserId = userContext.UserId,
                 CartItems = new List<CartItem>()
             };
             await cartRepository.CreateCartAsync(cart, cancellationToken);
@@ -77,4 +77,4 @@ public class AddItemToCartCommandHandler(
     }
 }
 
-public record AddItemToCartCommand(Guid UserId, Guid ProductId, int Quantity);
+public record AddItemToCartCommand(Guid ProductId, int Quantity);
