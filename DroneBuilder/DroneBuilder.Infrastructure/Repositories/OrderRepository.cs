@@ -23,8 +23,7 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
 
     public async Task<PagedResult<Order>> GetOrdersByUserIdAsync(
         Guid userId,
-        int page,
-        int pageSize,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         var query = dbContext.Orders
@@ -35,16 +34,16 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);
 
         return new PagedResult<Order>
         {
             Items = items,
             TotalCount = totalCount,
-            Page = page,
-            PageSize = pageSize
+            Page = pagination.Page,
+            PageSize = pagination.PageSize
         };
     }
 

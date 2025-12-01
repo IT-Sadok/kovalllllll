@@ -13,8 +13,7 @@ public class GetOrdersQueryHandler(IOrderRepository orderRepository, IMapper map
     public async Task<PagedResult<OrderModel>> ExecuteAsync(GetOrdersQuery query, CancellationToken cancellationToken)
     {
         var orders =
-            await orderRepository.GetOrdersByUserIdAsync(userContext.UserId, query.Page, query.PageSize,
-                cancellationToken);
+            await orderRepository.GetOrdersByUserIdAsync(userContext.UserId, query.Pagination, cancellationToken);
 
         return new PagedResult<OrderModel>
         {
@@ -26,4 +25,4 @@ public class GetOrdersQueryHandler(IOrderRepository orderRepository, IMapper map
     }
 }
 
-public record GetOrdersQuery(int Page = 1, int PageSize = 20);
+public record GetOrdersQuery(PaginationParams Pagination);

@@ -26,8 +26,10 @@ public static class OrderEndpointExtensions
         app.MapGet(ApiRoutes.Orders.GetAllOrders,
                 async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
                 {
+                    var pagination = new PaginationParams(page, pageSize);
+
                     var result = await mediator.ExecuteQueryAsync<GetOrdersQuery, PagedResult<OrderModel>>(
-                        new GetOrdersQuery(page, pageSize),
+                        new GetOrdersQuery(pagination),
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Orders")

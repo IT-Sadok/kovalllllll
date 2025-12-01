@@ -11,8 +11,7 @@ public interface IOrderRepository
 
     Task<PagedResult<Order>> GetOrdersByUserIdAsync(
         Guid userId,
-        int page,
-        int pageSize,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default);
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
