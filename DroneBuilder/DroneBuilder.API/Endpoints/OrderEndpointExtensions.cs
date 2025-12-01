@@ -3,6 +3,7 @@ using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.OrderCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.OrderQueries;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.OrderModels;
 
 namespace DroneBuilder.API.Endpoints;
@@ -23,10 +24,10 @@ public static class OrderEndpointExtensions
             .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Orders.GetAllOrders,
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+                async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetOrdersQuery, ICollection<OrderModel>>(
-                        new GetOrdersQuery(),
+                    var result = await mediator.ExecuteQueryAsync<GetOrdersQuery, PagedResult<OrderModel>>(
+                        new GetOrdersQuery(page, pageSize),
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Orders")

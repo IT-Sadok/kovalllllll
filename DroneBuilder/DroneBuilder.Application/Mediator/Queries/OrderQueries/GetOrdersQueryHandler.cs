@@ -1,6 +1,6 @@
-﻿using System.Windows.Input;
-using DroneBuilder.Application.Contexts;
+﻿using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Repositories;
 using MapsterMapper;
@@ -8,14 +8,22 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Queries.OrderQueries;
 
 public class GetOrdersQueryHandler(IOrderRepository orderRepository, IMapper mapper, IUserContext userContext)
-    : IQueryHandler<GetOrdersQuery, ICollection<OrderModel>>
+    : IQueryHandler<GetOrdersQuery, PagedResult<OrderModel>>
 {
-    public async Task<ICollection<OrderModel>> ExecuteAsync(GetOrdersQuery query, CancellationToken cancellationToken)
+    public async Task<PagedResult<OrderModel>> ExecuteAsync(GetOrdersQuery query, CancellationToken cancellationToken)
     {
-        var orders = await orderRepository.GetOrdersByUserIdAsync(userContext.UserId, cancellationToken);
+        var orders =
+            await orderRepository.GetOrdersByUserIdAsync(userContext.UserId, query.Page, query.PageSize,
+                cancellationToken);
 
-        return mapper.Map<ICollection<OrderModel>>(orders);
+        return new PagedResult<OrderModel>
+        {
+            Items = mapper.Map<IEnumerable<OrderModel>>(orders.Items),
+            TotalCount = orders.TotalCount,
+            Page = orders.Page,
+            PageSize = orders.PageSize
+        };
     }
 }
 
-public record GetOrdersQuery();
+public record GetOrdersQuery(int Page = 1, int PageSize = 20);
