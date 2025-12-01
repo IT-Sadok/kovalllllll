@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Repositories;
+﻿using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,6 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
     public async Task<Warehouse?> GetWarehouseAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Warehouses
-            .Include(w => w.WarehouseItems)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -32,6 +32,29 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
         return await dbContext.WarehouseItems
             .Include(wi => wi.Product)
             .FirstOrDefaultAsync(wi => wi.ProductId == productId, cancellationToken);
+    }
+
+    public async Task<PagedResult<WarehouseItem>> GetWarehouseItemsAsync(PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+    {
+        var query = dbContext.WarehouseItems
+            .Include(wi => wi.Product)
+            .OrderBy(wi => wi.Product!.Name);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<WarehouseItem>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = pagination.Page,
+            PageSize = pagination.PageSize
+        };
     }
 
     public async Task<ICollection<WarehouseItem>> GetAllWarehouseItemsByProductIdsAsync(ICollection<Guid> productIds,

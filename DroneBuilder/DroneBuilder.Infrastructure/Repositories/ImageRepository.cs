@@ -25,14 +25,6 @@ public class ImageRepository(ApplicationDbContext dbContext) : IImageRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<ICollection<Image>> GetImagesByProductIdAsync(Guid productId,
-        CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Images
-            .Where(image => image.ProductId == productId)
-            .ToListAsync(cancellationToken);
-    }
-
     public void RemoveImage(Image image)
     {
         dbContext.Images.Remove(image);

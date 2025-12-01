@@ -68,6 +68,7 @@ public abstract class ApiRoutes
     {
         private const string BaseRoute = Base + "/warehouse";
         public const string Get = BaseRoute;
+        public const string GetAllItems = BaseRoute + "/items";
         public const string UpdateWarehouseItem = BaseRoute + "/items/{itemId}";
         public const string GetItemById = BaseRoute + "/items/{itemId}";
         public const string AddQuantityToItem = BaseRoute + "/items/{itemId}";

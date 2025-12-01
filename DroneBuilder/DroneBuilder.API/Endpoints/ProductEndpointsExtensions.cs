@@ -1,8 +1,8 @@
 ﻿using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Mediator.Queries.Filters;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
 
 namespace DroneBuilder.API.Endpoints;
@@ -41,12 +41,14 @@ public static class ProductEndpointsExtensions
             .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Products.GetAll,
-                async (IMediator mediator, [AsParameters] ProductFilterModel filter,
+                async (int page, int pageSize, IMediator mediator, [AsParameters] ProductFilterModel filter,
                     CancellationToken cancellationToken) =>
                 {
-                    var query = new GetFilteredProductsQuery(filter);
-                    var result = await mediator.ExecuteQueryAsync<GetFilteredProductsQuery, ICollection<ProductModel>>(
-                        query, cancellationToken);
+                    var pagination = new PaginationParams(page, pageSize);
+                    var query = new GetProductsQuery(pagination, filter);
+                    var result = await mediator.ExecuteQueryAsync<GetProductsQuery, PagedResult<ProductModel>>(
+                        query,
+                        cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Products")
             .RequireAuthorization();

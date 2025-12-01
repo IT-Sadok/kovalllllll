@@ -2,6 +2,7 @@
 using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.WarehouseModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -56,6 +57,19 @@ public static class WarehouseEndpointExtensions
                         cancellationToken);
                 return Results.Ok(result);
             })
+            .WithTags("Warehouse")
+            .RequireAuthorization();
+
+        app.MapGet(ApiRoutes.Warehouses.GetAllItems,
+                async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    var pagination = new PaginationParams(page, pageSize);
+                    var result =
+                        await mediator.ExecuteQueryAsync<GetWarehouseItemsQuery, PagedResult<WarehouseItemModel>>(
+                            new GetWarehouseItemsQuery(pagination),
+                            cancellationToken);
+                    return Results.Ok(result);
+                })
             .WithTags("Warehouse")
             .RequireAuthorization();
 

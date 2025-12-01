@@ -12,15 +12,6 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
         await dbContext.Orders.AddAsync(order, cancellationToken);
     }
 
-    public async Task<ICollection<Order>> GetOrdersByUserIdAsync(Guid userId,
-        CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Orders
-            .Where(o => o.UserId == userId)
-            .Include(o => o.OrderItems)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<PagedResult<Order>> GetOrdersByUserIdAsync(
         Guid userId,
         PaginationParams pagination,
