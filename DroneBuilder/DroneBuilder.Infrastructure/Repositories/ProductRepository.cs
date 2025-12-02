@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Models.ProductModels;
+﻿using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -41,12 +42,8 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
     }
 
-    public void RemoveProduct(Product product)
-    {
-        dbContext.Products.Remove(product);
-    }
-
-    public async Task<ICollection<Product>> GetByFilterAsync(ProductFilterModel filter,
+    public async Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
+        ProductFilterModel filter,
         CancellationToken cancellationToken = default)
     {
         var query = dbContext.Products
@@ -78,7 +75,34 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             query = query.Where(p => p.Category.ToLower() == category);
         }
 
-        return await query.ToListAsync(cancellationToken);
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Product>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = pagination.Page,
+            PageSize = pagination.PageSize
+        };
+    }
+
+    public async Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .AsNoTracking()
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+    }
+
+    public void RemoveProduct(Product product)
+    {
+        dbContext.Products.Remove(product);
     }
 
 

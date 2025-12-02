@@ -13,10 +13,11 @@ public static class CartEndpointExtensions
     public static IEndpointRouteBuilder MapCartEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapPost(ApiRoutes.Cart.AddItemToCart,
-                async ([FromServices] IUserContext userContext, IMediator mediator, [FromBody] CreateCartItemModel model,
+                async (IMediator mediator,
+                    [FromBody] CreateCartItemModel model,
                     CancellationToken cancellationToken) =>
                 {
-                    var command = new AddItemToCartCommand(userContext.UserId, model.ProductId, model.Quantity);
+                    var command = new AddItemToCartCommand(model.ProductId, model.Quantity);
 
                     await mediator.ExecuteCommandAsync(command, cancellationToken);
                     return Results.Ok();
@@ -25,10 +26,10 @@ public static class CartEndpointExtensions
             .RequireAuthorization();
 
         app.MapDelete(ApiRoutes.Cart.ClearCart,
-                async ([FromServices] IUserContext userContext, IMediator mediator,
+                async (IMediator mediator,
                     CancellationToken cancellationToken) =>
                 {
-                    var command = new ClearCartCommand(userContext.UserId);
+                    var command = new ClearCartCommand();
 
                     await mediator.ExecuteCommandAsync(command, cancellationToken);
                     return Results.NoContent();
@@ -36,10 +37,10 @@ public static class CartEndpointExtensions
             .WithTags("Cart")
             .RequireAuthorization();
         app.MapDelete(ApiRoutes.Cart.RemoveItemFromCart,
-                async ([FromServices] IUserContext userContext, IMediator mediator, Guid productId,
+                async (IMediator mediator, Guid productId,
                     CancellationToken cancellationToken) =>
                 {
-                    var command = new RemoveItemFromCartCommand(userContext.UserId, productId);
+                    var command = new RemoveItemFromCartCommand(productId);
 
                     await mediator.ExecuteCommandAsync(command, cancellationToken);
                     return Results.NoContent();
@@ -49,10 +50,10 @@ public static class CartEndpointExtensions
 
 
         app.MapGet(ApiRoutes.Cart.GetCartItems,
-                async ([FromServices] IUserContext userContext, IMediator mediator,
+                async (IMediator mediator,
                     CancellationToken cancellationToken) =>
                 {
-                    var query = new GetCartItemsQuery(userContext.UserId);
+                    var query = new GetCartItemsQuery();
                     var cartItems = await mediator.ExecuteQueryAsync<GetCartItemsQuery, ICollection<CartItemModel>>(
                         query,
                         cancellationToken);
@@ -62,10 +63,10 @@ public static class CartEndpointExtensions
             .RequireAuthorization();
 
         app.MapGet(ApiRoutes.Cart.GetCart,
-                async ([FromServices] IUserContext userContext, IMediator mediator,
+                async (IMediator mediator,
                     CancellationToken cancellationToken) =>
                 {
-                    var query = new GetCartByUserIdQuery(userContext.UserId);
+                    var query = new GetCartByUserIdQuery();
                     var cart = await mediator.ExecuteQueryAsync<GetCartByUserIdQuery, CartModel>(query,
                         cancellationToken);
                     return Results.Ok(cart);

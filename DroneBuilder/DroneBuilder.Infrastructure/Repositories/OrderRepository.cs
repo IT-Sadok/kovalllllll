@@ -1,4 +1,5 @@
-﻿using DroneBuilder.Application.Repositories;
+﻿using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,14 +12,32 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
         await dbContext.Orders.AddAsync(order, cancellationToken);
     }
 
-    public async Task<ICollection<Order>> GetOrdersByUserIdAsync(Guid userId,
+    public async Task<PagedResult<Order>> GetOrdersByUserIdAsync(
+        Guid userId,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
-        return await dbContext.Orders
+        var query = dbContext.Orders
             .Where(o => o.UserId == userId)
             .Include(o => o.OrderItems)
+            .OrderBy(o => o.CreatedAt);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);
+
+        return new PagedResult<Order>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = pagination.Page,
+            PageSize = pagination.PageSize
+        };
     }
+
 
     public async Task<Order?> GetOrderByIdAsync(Guid orderId, CancellationToken cancellationToken = default)
     {

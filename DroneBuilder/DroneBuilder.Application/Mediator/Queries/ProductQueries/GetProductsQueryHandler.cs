@@ -8,19 +8,29 @@ using MapsterMapper;
 namespace DroneBuilder.Application.Mediator.Queries.ProductQueries;
 
 public class GetProductsQueryHandler(IProductRepository productRepository, IMapper mapper)
-    : IQueryHandler<GetProductsQuery, ICollection<ProductModel>>
+    : IQueryHandler<GetProductsQuery, PagedResult<ProductModel>>
 {
-    public async Task<ICollection<ProductModel>> ExecuteAsync(GetProductsQuery query, CancellationToken cancellationToken)
+    public async Task<PagedResult<ProductModel>> ExecuteAsync(GetProductsQuery query,
+        CancellationToken cancellationToken)
     {
-        var products = await productRepository.GetProductsAsync(cancellationToken);
+        var products = await productRepository.GetFilteredPagedProductsAsync(
+            query.Pagination,
+            query.Filter,
+            cancellationToken);
 
         if (products is null)
         {
             throw new NotFoundException("No products found.");
         }
 
-        return mapper.Map<ICollection<ProductModel>>(products);
+        return new PagedResult<ProductModel>
+        {
+            Items = mapper.Map<IEnumerable<ProductModel>>(products.Items),
+            TotalCount = products.TotalCount,
+            Page = products.Page,
+            PageSize = products.PageSize
+        };
     }
 }
 
-public record GetProductsQuery;
+public record GetProductsQuery(PaginationParams Pagination, ProductFilterModel Filter);

@@ -27,7 +27,6 @@ public class WarehouseMapping : IRegister
 
         config.NewConfig<Warehouse, WarehouseModel>()
             .Map(dest => dest.Name, src => src.Name)
-            .Map(dest => dest.WarehouseItems, src => src.WarehouseItems)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt);
     }
 }
