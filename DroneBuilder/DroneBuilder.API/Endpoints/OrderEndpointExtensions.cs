@@ -35,6 +35,14 @@ public static class OrderEndpointExtensions
                 }).WithTags("Orders")
             .RequireAuthorization();
 
+        app.MapPatch(ApiRoutes.Orders.PayForOrder,
+                async (IMediator mediator, Guid orderId, CancellationToken cancellationToken) =>
+                {
+                    await mediator.ExecuteCommandAsync(new PayForOrderCommand(orderId), cancellationToken);
+                    return Results.NoContent();
+                }).WithTags("Orders")
+            .RequireAuthorization();
+
         return app;
     }
 }

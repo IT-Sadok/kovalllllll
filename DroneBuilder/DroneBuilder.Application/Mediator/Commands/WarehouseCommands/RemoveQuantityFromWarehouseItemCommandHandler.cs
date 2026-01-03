@@ -25,9 +25,8 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
             throw new NotFoundException("Warehouse not found.");
         }
 
-        var warehouseItem = warehouse.WarehouseItems
-            .FirstOrDefault(wi => wi.Id == command.WarehouseItemId);
-
+        var warehouseItem = await warehouseRepository.GetWarehouseItemByIdAsync(command.WarehouseItemId, cancellationToken);
+        
         if (warehouseItem == null)
         {
             throw new NotFoundException($"Warehouse item with id {command.WarehouseItemId} not found.");
