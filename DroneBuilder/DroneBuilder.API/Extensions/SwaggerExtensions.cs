@@ -1,4 +1,6 @@
-﻿using Microsoft.OpenApi.Models;
+﻿﻿using DroneBuilder.API.Filters;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Models;
 
 namespace DroneBuilder.API.Extensions;
 
@@ -16,6 +18,31 @@ public static class SwaggerExtensions
             });
 
             c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+
+            c.MapType<ProblemDetails>(() => new OpenApiSchema
+            {
+                Type = "object",
+                Properties = new Dictionary<string, OpenApiSchema>
+                {
+                    ["type"] = new() { Type = "string", Nullable = true },
+                    ["title"] = new() { Type = "string", Nullable = true },
+                    ["status"] = new() { Type = "integer", Format = "int32", Nullable = true },
+                    ["detail"] = new() { Type = "string", Nullable = true },
+                    ["instance"] = new() { Type = "string", Nullable = true },
+                    ["errors"] = new()
+                    {
+                        Type = "object",
+                        Nullable = true,
+                        AdditionalProperties = new OpenApiSchema
+                        {
+                            Type = "array",
+                            Items = new OpenApiSchema { Type = "string" }
+                        }
+                    }
+                }
+            });
+
+            c.OperationFilter<GlobalExceptionOperationFilter>();
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {

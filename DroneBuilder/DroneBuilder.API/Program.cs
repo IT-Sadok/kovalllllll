@@ -1,5 +1,6 @@
 using DroneBuilder.API.Endpoints;
 using DroneBuilder.API.Extensions;
+using DroneBuilder.API.Middleware;
 using DroneBuilder.Application;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure;
@@ -30,11 +31,16 @@ public abstract class Program
 
         builder.Services.AddOpenApi();
 
+        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+        builder.Services.AddProblemDetails();
+
         builder.Services.AddApplication()
             .AddInfrastructure(builder.Configuration)
             .AddAuth(builder.Configuration);
 
         var app = builder.Build();
+
+        app.UseExceptionHandler();
 
         if (app.Environment.IsDevelopment())
         {

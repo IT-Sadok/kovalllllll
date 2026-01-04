@@ -46,6 +46,27 @@ public static class AuthExtension
                 ValidateLifetime = false,
                 ValidateIssuerSigningKey = true
             };
+
+            o.Events = new JwtBearerEvents
+            {
+                OnChallenge = context =>
+                {
+                    context.HandleResponse();
+
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    context.Response.ContentType = "application/problem+json";
+
+                    var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+                    {
+                        Status = StatusCodes.Status401Unauthorized,
+                        Title = "Unauthorized",
+                        Detail = "Authentication is required to access this resource.",
+                        Instance = context.Request.Path
+                    };
+
+                    return context.Response.WriteAsJsonAsync(problemDetails);
+                }
+            };
         });
 
         services.Configure<JwtOptions>(
