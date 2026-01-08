@@ -8,22 +8,24 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.10" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
-        <PackageReference Include="Npgsql" Version="9.0.4"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
+        <PackageReference Include="Npgsql" Version="9.0.4" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+        <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DroneBuilder.Application\DroneBuilder.Application.csproj"/>
-        <ProjectReference Include="..\DroneBuilder.Domain\DroneBuilder.Domain.csproj"/>
+        <ProjectReference Include="..\DroneBuilder.Application\DroneBuilder.Application.csproj" />
+        <ProjectReference Include="..\DroneBuilder.Domain\DroneBuilder.Domain.csproj" />
     </ItemGroup>
 
 </Project>

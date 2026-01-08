@@ -1,5 +1,7 @@
 ﻿using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Infrastructure.MessageBroker.Configuration;
+using DroneBuilder.Infrastructure.MessageBroker.Services;
 using DroneBuilder.Infrastructure.Options;
 using DroneBuilder.Infrastructure.Repositories;
 using DroneBuilder.Infrastructure.Services;
@@ -20,6 +22,10 @@ public static class InfrastructureExtensions
 
         services.Configure<AzureStorageConfig>(configuration.GetSection("AzureStorage"));
 
+        var rabbitMqSettings = new RabbitMqConfiguration();
+        configuration.GetSection("RabbitMQ").Bind(rabbitMqSettings);
+        services.AddSingleton(rabbitMqSettings);
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IImageRepository, ImageRepository>();
@@ -31,6 +37,10 @@ public static class InfrastructureExtensions
 
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAzureStorageService, AzureStorageService>();
+
+        services.AddScoped<INotificationService, OutboxNotificationService>();
+        services.AddHostedService<OutboxProcessorHostedService>();
+        // services.AddHostedService<NotificationConsumerHostedService>();
 
         return services;
     }
