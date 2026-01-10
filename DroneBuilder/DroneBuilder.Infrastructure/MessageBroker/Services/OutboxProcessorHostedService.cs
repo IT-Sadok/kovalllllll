@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json;
-using DroneBuilder.Application.Models.NotificationModels;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,22 +16,22 @@ public class OutboxProcessorHostedService(
     private IConnection? _connection;
     private IChannel? _channel;
 
-    protected override async Task ExecuteAsync(CancellationToken canceletionToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await InitializeRabbitMqAsync(canceletionToken);
+        await InitializeRabbitMqAsync(stoppingToken);
 
-        while (!canceletionToken.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                await ProcessOutboxMessagesAsync(canceletionToken);
+                await ProcessOutboxMessagesAsync(stoppingToken);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error processing outbox messages");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5), canceletionToken);
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
     }
 
@@ -52,35 +50,7 @@ public class OutboxProcessorHostedService(
         _connection = await factory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
-        await _channel.ExchangeDeclareAsync(
-            exchange: settings.NotificationExchange,
-            type: ExchangeType.Topic,
-            durable: true,
-            autoDelete: false,
-            cancellationToken: cancellationToken
-        );
-
-        await _channel.QueueDeclareAsync(
-            queue: settings.NotificationQueueName,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            cancellationToken: cancellationToken
-        );
-
-        await _channel.QueueBindAsync(
-            queue: settings.NotificationQueueName,
-            exchange: settings.NotificationExchange,
-            routingKey: settings.NotificationRoutingKey,
-            cancellationToken: cancellationToken
-        );
-
-        logger.LogInformation(
-            "RabbitMQ initialized: Exchange={Exchange}, Queue={Queue}, RoutingKey={RoutingKey}",
-            settings.NotificationExchange,
-            settings.NotificationQueueName,
-            settings.NotificationRoutingKey
-        );
+        logger.LogInformation("RabbitMQ Producer initialized");
     }
 
     private async Task ProcessOutboxMessagesAsync(CancellationToken cancellationToken)
@@ -103,53 +73,40 @@ public class OutboxProcessorHostedService(
         {
             try
             {
-                var notification = JsonSerializer.Deserialize<NotificationMessageModel>(message.Payload);
-                if (notification == null) continue;
-                await PublishToRabbitMqAsync(notification, cancellationToken);
-                message.ProcessedAt = DateTime.UtcNow;
+                var body = Encoding.UTF8.GetBytes(message.Payload);
 
+                await _channel.BasicPublishAsync(
+                    exchange: "",
+                    routingKey: message.QueueName,
+                    mandatory: true,
+                    basicProperties: new BasicProperties
+                    {
+                        Persistent = true,
+                        MessageId = message.Id,
+                        ContentType = "application/json"
+                    },
+                    body: body,
+                    cancellationToken: cancellationToken
+                );
+
+                message.ProcessedAt = DateTime.UtcNow;
                 logger.LogInformation(
-                    "Notification sent: {Type} - {Title} for user {UserId}",
-                    notification.Type,
-                    notification.Title,
-                    notification.UserId
+                    "Event {EventType} published to queue '{QueueName}' (MessageId: {MessageId})",
+                    message.Type,
+                    message.QueueName,
+                    message.Id
                 );
             }
             catch (Exception ex)
             {
                 message.RetryCount++;
                 message.Error = ex.Message;
-                logger.LogError(ex, "Failed to process outbox message {Id}", message.Id);
+                logger.LogError(ex, "Failed to publish message {MessageId} to queue '{QueueName}'",
+                    message.Id, message.QueueName);
             }
         }
 
         await context.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task PublishToRabbitMqAsync(NotificationMessageModel notification,
-        CancellationToken cancellationToken)
-    {
-        if (_channel == null)
-            throw new InvalidOperationException("RabbitMQ channel is not initialized");
-
-        var json = JsonSerializer.Serialize(notification);
-        var body = Encoding.UTF8.GetBytes(json);
-
-        var properties = new BasicProperties
-        {
-            Persistent = true,
-            ContentType = "application/json",
-            MessageId = notification.Id
-        };
-
-        await _channel.BasicPublishAsync(
-            exchange: settings.NotificationExchange,
-            routingKey: settings.NotificationRoutingKey,
-            mandatory: false,
-            basicProperties: properties,
-            body: body,
-            cancellationToken: cancellationToken
-        );
     }
 
     public override async void Dispose()
@@ -159,11 +116,12 @@ public class OutboxProcessorHostedService(
             if (_channel != null) await _channel.CloseAsync();
             if (_connection != null) await _connection.CloseAsync();
             logger.LogInformation("OutboxProcessorHostedService disposed");
-            base.Dispose();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            logger.LogError(e, "Error disposing OutboxProcessorHostedService");
+            logger.LogError(ex, "Error disposing OutboxProcessorHostedService");
         }
+
+        base.Dispose();
     }
 }

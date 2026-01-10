@@ -38,9 +38,10 @@ public static class InfrastructureExtensions
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAzureStorageService, AzureStorageService>();
 
-        services.AddScoped<INotificationService, OutboxNotificationService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IOutboxEventService, OutboxEventService>();
         services.AddHostedService<OutboxProcessorHostedService>();
-        // services.AddHostedService<NotificationConsumerHostedService>();
+        services.AddHostedService<EventConsumerHostedService>();
 
         return services;
     }

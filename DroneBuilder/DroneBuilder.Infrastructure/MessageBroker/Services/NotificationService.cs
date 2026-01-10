@@ -5,7 +5,7 @@ using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Infrastructure.MessageBroker.Services;
 
-public class OutboxNotificationService(ApplicationDbContext context) : INotificationService
+public class NotificationService(ApplicationDbContext context) : INotificationService
 {
     public async Task SendNotificationAsync(NotificationMessageModel notification)
     {

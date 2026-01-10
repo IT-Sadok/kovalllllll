@@ -5,25 +5,30 @@ using DroneBuilder.Application.Models.NotificationModels;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Events;
 using Microsoft.AspNetCore.Identity;
 
 namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
 
-public class SignUpCommandHandler(UserManager<User> userManager, IUserRepository userRepository,INotificationService notificationService)
+public class SignUpCommandHandler(
+    UserManager<User> userManager,
+    IUserRepository userRepository,
+    IOutboxEventService outboxService)
     : ICommandHandler<SignUpUserCommand>
 {
     public async Task ExecuteCommandAsync(SignUpUserCommand command, CancellationToken cancellationToken)
     {
-        var createResult = await userManager.CreateAsync(command.Model.ToEntity(), command.Model.Password);
+        var user = command.Model.ToEntity();
+        var createResult = await userManager.CreateAsync(user, command.Model.Password);
         if (!createResult.Succeeded)
         {
             var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"User creation failed: {errors}");
         }
 
-        await notificationService.SendNotificationAsync(
-            new RegistrationNotificationModel(command.Model.Email, command.Model.Email));
-        
+        var @event = new UserSignedUpEvent(user.Id, user.Email);
+        await outboxService.PublishEventAsync(@event, "user-signed-up-queue", cancellationToken);
+
         await userRepository.SaveChangesAsync(cancellationToken);
     }
 }
