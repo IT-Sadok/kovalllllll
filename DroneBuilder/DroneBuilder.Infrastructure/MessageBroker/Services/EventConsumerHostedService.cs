@@ -2,7 +2,6 @@
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Models.NotificationModels;
-using DroneBuilder.Domain.Events;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,6 +14,7 @@ namespace DroneBuilder.Infrastructure.MessageBroker.Services;
 public class EventConsumerHostedService(
     IServiceProvider serviceProvider,
     RabbitMqConfiguration settings,
+    EventHandlerRegistry eventHandlerRegistry,
     ILogger<EventConsumerHostedService> logger) : BackgroundService
 {
     private IConnection? _connection;
@@ -102,23 +102,39 @@ public class EventConsumerHostedService(
             var body = eventArgs.Body.ToArray();
             var json = Encoding.UTF8.GetString(body);
 
-            logger.LogInformation("Event received from queue '{Queue}': {Json}", queueName, json);
+            logger.LogInformation("Event received from queue '{Queue}'", queueName);
+
+            var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("type", out var typeProperty))
+            {
+                logger.LogWarning("Event payload missing 'type' property");
+                await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
+                return;
+            }
+
+            var eventType = typeProperty.GetString();
+            if (string.IsNullOrEmpty(eventType))
+            {
+                logger.LogWarning("Event type is null or empty");
+                await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
+                return;
+            }
+
+            logger.LogInformation("Event type: {EventType}", eventType);
 
             using var scope = serviceProvider.CreateScope();
 
-            switch (queueName)
+            if (eventHandlerRegistry.CanHandle(eventType))
             {
-                case "user-signed-up-queue":
-                    await HandleUserSignedUpAsync(json, scope, cancellationToken);
-                    break;
-
-                default:
-                    logger.LogWarning("Unknown queue: {Queue}", queueName);
-                    break;
+                await eventHandlerRegistry.HandleAsync(eventType, json, scope, cancellationToken);
+                logger.LogInformation("Event processed: {EventType}", eventType);
+            }
+            else
+            {
+                logger.LogWarning("No handler registered for event type: {EventType}", eventType);
             }
 
             await _channel!.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
-            logger.LogInformation("Event processed from queue '{Queue}'", queueName);
         }
         catch (Exception ex)
         {
@@ -126,27 +142,6 @@ public class EventConsumerHostedService(
             await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
         }
     }
-
-    private async Task HandleUserSignedUpAsync(string json, IServiceScope scope, CancellationToken ct)
-    {
-        var @event = JsonSerializer.Deserialize<UserSignedUpEvent>(json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-        if (@event == null)
-        {
-            logger.LogWarning("Invalid UserSignedUpEvent");
-            return;
-        }
-
-        logger.LogInformation("UserSignedUpEvent: UserId={UserId}, Email={Email}", @event.UserId, @event.Email);
-
-        var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-        var notification = new RegistrationNotificationModel(@event.UserId.ToString(), @event.Email);
-        await notificationService.SendNotificationAsync(notification);
-
-        logger.LogInformation("Notification sent for UserSignedUpEvent");
-    }
-
 
     public override async void Dispose()
     {

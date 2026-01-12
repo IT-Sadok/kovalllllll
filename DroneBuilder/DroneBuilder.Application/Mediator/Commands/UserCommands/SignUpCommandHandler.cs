@@ -6,6 +6,7 @@ using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events;
+using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using Microsoft.AspNetCore.Identity;
 
 namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
@@ -13,7 +14,8 @@ namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
 public class SignUpCommandHandler(
     UserManager<User> userManager,
     IUserRepository userRepository,
-    IOutboxEventService outboxService)
+    IOutboxEventService outboxService,
+    MessageQueuesConfiguration queuesConfig)
     : ICommandHandler<SignUpUserCommand>
 {
     public async Task ExecuteCommandAsync(SignUpUserCommand command, CancellationToken cancellationToken)
@@ -26,8 +28,11 @@ public class SignUpCommandHandler(
             throw new InvalidOperationException($"User creation failed: {errors}");
         }
 
-        var @event = new UserSignedUpEvent(user.Id, user.Email);
-        await outboxService.PublishEventAsync(@event, "user-signed-up-queue", cancellationToken);
+        if (user.Email != null)
+        {
+            var @event = new UserSignedUpEvent(user.Id, user.Email);
+            await outboxService.PublishEventAsync(@event, queuesConfig.UserSignedUpQueue, cancellationToken);
+        }
 
         await userRepository.SaveChangesAsync(cancellationToken);
     }

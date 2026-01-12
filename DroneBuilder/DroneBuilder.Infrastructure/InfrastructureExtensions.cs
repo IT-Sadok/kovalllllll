@@ -8,6 +8,7 @@ using DroneBuilder.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace DroneBuilder.Infrastructure;
 
@@ -22,9 +23,12 @@ public static class InfrastructureExtensions
 
         services.Configure<AzureStorageConfig>(configuration.GetSection("AzureStorage"));
 
-        var rabbitMqSettings = new RabbitMqConfiguration();
-        configuration.GetSection("RabbitMQ").Bind(rabbitMqSettings);
-        services.AddSingleton(rabbitMqSettings);
+        services.Configure<RabbitMqConfiguration>(configuration.GetSection("RabbitMQ"));
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value);
+
+        services.Configure<MessageQueuesConfiguration>(configuration.GetSection("MessageQueues"));
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageQueuesConfiguration>>().Value);
+
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
@@ -38,10 +42,48 @@ public static class InfrastructureExtensions
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAzureStorageService, AzureStorageService>();
 
-        services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOutboxEventService, OutboxEventService>();
+
+        services.AddEventHandlers();
+
         services.AddHostedService<OutboxProcessorHostedService>();
         services.AddHostedService<EventConsumerHostedService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddEventHandlers(this IServiceCollection services)
+    {
+        var assembly = typeof(InfrastructureExtensions).Assembly;
+
+        var handlerTypes = assembly.GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false })
+            .Where(t => t.GetInterfaces().Any(i =>
+                i.IsGenericType &&
+                i.GetGenericTypeDefinition() == typeof(IEventHandler<>)))
+            .ToList();
+
+        foreach (var handlerType in handlerTypes)
+        {
+            services.AddScoped(handlerType);
+        }
+
+        services.AddSingleton<EventHandlerRegistry>(sp =>
+        {
+            var registry = new EventHandlerRegistry();
+
+            foreach (var handlerType in handlerTypes)
+            {
+                var eventType = handlerType.GetInterfaces()
+                    .First(i => i.IsGenericType &&
+                                i.GetGenericTypeDefinition() == typeof(IEventHandler<>))
+                    .GetGenericArguments()[0];
+
+                registry.RegisterInstance(eventType.FullName!, handlerType, eventType);
+            }
+
+            return registry;
+        });
 
         return services;
     }
