@@ -104,18 +104,9 @@ public class EventConsumerHostedService(
 
             logger.LogInformation("Event received from queue '{Queue}'", queueName);
 
-            var doc = JsonDocument.Parse(json);
-            if (!doc.RootElement.TryGetProperty("type", out var typeProperty))
+            var eventType = ExtractEventType(json);
+            if (eventType == null)
             {
-                logger.LogWarning("Event payload missing 'type' property");
-                await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
-                return;
-            }
-
-            var eventType = typeProperty.GetString();
-            if (string.IsNullOrEmpty(eventType))
-            {
-                logger.LogWarning("Event type is null or empty");
                 await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
                 return;
             }
@@ -141,6 +132,23 @@ public class EventConsumerHostedService(
             logger.LogError(ex, "Error processing event from queue '{Queue}'", queueName);
             await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
         }
+    }
+
+    private string? ExtractEventType(string json)
+    {
+        var doc = JsonDocument.Parse(json);
+        if (!doc.RootElement.TryGetProperty("type", out var typeProperty))
+        {
+            logger.LogWarning("Event payload missing 'type' property");
+            return null;
+        }
+
+        var eventType = typeProperty.GetString();
+        if (!string.IsNullOrEmpty(eventType)) return eventType;
+
+        logger.LogWarning("Event type is null or empty");
+
+        return null;
     }
 
     public override async void Dispose()
