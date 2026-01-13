@@ -38,6 +38,16 @@ public abstract class Program
             .AddInfrastructure(builder.Configuration)
             .AddAuth(builder.Configuration);
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+        });
+
         var app = builder.Build();
 
         app.UseExceptionHandler();
@@ -54,6 +64,7 @@ public abstract class Program
         app.UseAuthorization();
 
         app.UseHttpsRedirection();
+        app.UseCors("AllowAll");
 
         app.MapUserEndpoints()
             .MapProductEndpoints()

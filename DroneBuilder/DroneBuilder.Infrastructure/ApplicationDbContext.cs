@@ -21,7 +21,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         });
     }
 
-
+    public DbSet<Message> Messages { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Image> Images { get; set; }
     public DbSet<Property> Properties { get; set; }
