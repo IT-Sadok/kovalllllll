@@ -14,7 +14,6 @@ namespace DroneBuilder.Infrastructure.MessageBroker.Services;
 public class EventConsumerHostedService(
     IServiceProvider serviceProvider,
     RabbitMqConfiguration settings,
-    EventHandlerRegistry eventHandlerRegistry,
     ILogger<EventConsumerHostedService> logger) : BackgroundService
 {
     private IConnection? _connection;
@@ -115,15 +114,19 @@ public class EventConsumerHostedService(
 
             using var scope = serviceProvider.CreateScope();
 
-            if (eventHandlerRegistry.CanHandle(eventType))
+            var handlers = scope.ServiceProvider.GetServices<IEventHandler>();
+            var handler = handlers.FirstOrDefault(h => h.EventType == eventType);
+
+            if (handler == null)
             {
-                await eventHandlerRegistry.HandleAsync(eventType, json, scope, cancellationToken);
-                logger.LogInformation("Event processed: {EventType}", eventType);
+                logger.LogWarning("No handler found for event type: {EventType}", eventType);
+                await _channel!.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
+                return;
             }
-            else
-            {
-                logger.LogWarning("No handler registered for event type: {EventType}", eventType);
-            }
+
+            await handler.HandleAsync(json, cancellationToken);
+
+            logger.LogInformation("Event processed: {EventType}", eventType);
 
             await _channel!.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
         }

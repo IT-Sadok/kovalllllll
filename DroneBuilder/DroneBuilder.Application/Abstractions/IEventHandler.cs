@@ -2,7 +2,8 @@
 
 namespace DroneBuilder.Application.Abstractions;
 
-public interface IEventHandler<TEvent> where TEvent : DomainEvent
+public interface IEventHandler
 {
-    Task HandleAsync(TEvent @event, CancellationToken ct = default);
+    string EventType { get; }
+    Task HandleAsync(string json, CancellationToken cancellationToken = default);
 }

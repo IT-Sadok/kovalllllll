@@ -6,10 +6,21 @@ using Microsoft.Extensions.Logging;
 
 namespace DroneBuilder.Infrastructure.MessageBroker.Handlers;
 
-public class UserSignedUpEventHandler(ILogger<UserSignedUpEventHandler> logger) : IEventHandler<UserSignedUpEvent>
+public class UserSignedUpEventHandler(ILogger<UserSignedUpEventHandler> logger) : IEventHandler
 {
-    public async Task HandleAsync(UserSignedUpEvent @event, CancellationToken ct = default)
+    public string EventType => typeof(UserSignedUpEvent).FullName!;
+
+    public async Task HandleAsync(string json, CancellationToken ct = default)
     {
+        var @event = JsonSerializer.Deserialize<UserSignedUpEvent>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (@event == null)
+        {
+            logger.LogWarning("Invalid UserSignedUpEvent");
+            return;
+        }
+
         logger.LogInformation(
             "User signed up! UserId={UserId}, Email={Email}",
             @event.UserId,

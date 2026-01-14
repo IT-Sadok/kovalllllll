@@ -57,33 +57,13 @@ public static class InfrastructureExtensions
         var assembly = typeof(InfrastructureExtensions).Assembly;
 
         var handlerTypes = assembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false })
-            .Where(t => t.GetInterfaces().Any(i =>
-                i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IEventHandler<>)))
+            .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IEventHandler).IsAssignableFrom(t))
             .ToList();
 
         foreach (var handlerType in handlerTypes)
         {
-            services.AddScoped(handlerType);
+            services.AddScoped(typeof(IEventHandler), handlerType);
         }
-
-        services.AddSingleton<EventHandlerRegistry>(sp =>
-        {
-            var registry = new EventHandlerRegistry();
-
-            foreach (var handlerType in handlerTypes)
-            {
-                var eventType = handlerType.GetInterfaces()
-                    .First(i => i.IsGenericType &&
-                                i.GetGenericTypeDefinition() == typeof(IEventHandler<>))
-                    .GetGenericArguments()[0];
-
-                registry.RegisterInstance(eventType.FullName!, handlerType, eventType);
-            }
-
-            return registry;
-        });
 
         return services;
     }
