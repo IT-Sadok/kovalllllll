@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Domain.Events.CartEvents;
+using DroneBuilder.Infrastructure.Common;
 using Microsoft.Extensions.Logging;
 
 namespace DroneBuilder.Infrastructure.MessageBroker.Handlers.CartHandlers;
@@ -12,7 +13,7 @@ public class ClearedCartEventHandler(ILogger<ClearedCartEventHandler> logger) : 
     public async Task HandleAsync(string json, CancellationToken cancellationToken = default)
     {
         var @event = JsonSerializer.Deserialize<ClearedCartEvent>(json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            JsonSettings.JsonSerializerOptions);
         if (@event == null)
         {
             logger.LogWarning("Invalid ClearedCartEvent");

@@ -48,7 +48,7 @@ public class ClearCartCommandHandler(
         await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
 
         var @event = new ClearedCartEvent(userContext.UserId);
-        await outboxService.PublishEventAsync(@event, queuesConfig.CartQueue, cancellationToken);
+        await outboxService.StoreEventAsync(@event, queuesConfig.CartQueue.Name, cancellationToken);
 
         await cartRepository.SaveChangesAsync(cancellationToken);
     }

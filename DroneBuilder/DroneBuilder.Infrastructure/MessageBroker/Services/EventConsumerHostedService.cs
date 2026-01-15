@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,19 +14,20 @@ namespace DroneBuilder.Infrastructure.MessageBroker.Services;
 public class EventConsumerHostedService(
     IServiceProvider serviceProvider,
     RabbitMqConfiguration settings,
+    MessageQueuesConfiguration queuesConfig,
     ILogger<EventConsumerHostedService> logger) : BackgroundService
 {
     private IConnection? _connection;
     private IChannel? _channel;
 
-    private readonly List<string> _queuesToListen =
+    private List<QueueConfiguration> GetQueuesToListen() =>
     [
-        "user-queue",
-        "cart-queue",
-        "order-queue",
-        "image-queue",
-        "product-queue",
-        "warehouse-queue"
+        queuesConfig.UserQueue,
+        queuesConfig.CartQueue,
+        queuesConfig.OrderQueue,
+        queuesConfig.ImageQueue,
+        queuesConfig.ProductQueue,
+        queuesConfig.WarehouseQueue
     ];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -56,18 +58,28 @@ public class EventConsumerHostedService(
         _connection = await factory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
-        foreach (var queueName in _queuesToListen)
+        var queuesToListen = GetQueuesToListen();
+
+        foreach (var queueConfig in queuesToListen)
         {
             await _channel.QueueDeclareAsync(
-                queue: queueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
+                queue: queueConfig.Name,
+                durable: queueConfig.Durable,
+                exclusive: queueConfig.Exclusive,
+                autoDelete: queueConfig.AutoDelete,
+                arguments: queueConfig.Arguments,
+                cancellationToken: cancellationToken
+            );
+
+            await _channel.BasicQosAsync(
+                prefetchSize: 0,
+                prefetchCount: (ushort)queueConfig.PrefetchCount,
+                global: false,
                 cancellationToken: cancellationToken
             );
         }
 
-        logger.LogInformation("Consumer initialized for {Count} queues", _queuesToListen.Count);
+        logger.LogInformation("Consumer initialized for {Count} queues", queuesToListen.Count);
     }
 
     private async Task StartConsumingFromAllQueuesAsync(CancellationToken cancellationToken)
@@ -75,29 +87,32 @@ public class EventConsumerHostedService(
         if (_channel == null)
             throw new InvalidOperationException("RabbitMQ channel is not initialized");
 
-        foreach (var queueName in _queuesToListen)
+        var queuesToListen = GetQueuesToListen();
+
+        foreach (var queueConfig in queuesToListen)
         {
             var consumer = new AsyncEventingBasicConsumer(_channel);
 
             consumer.ReceivedAsync += async (sender, eventArgs) =>
             {
-                await HandleEventAsync(queueName, eventArgs, cancellationToken);
+                await HandleEventAsync(queueConfig, eventArgs, cancellationToken);
             };
 
             await _channel.BasicConsumeAsync(
-                queue: queueName,
+                queue: queueConfig.Name,
                 autoAck: false,
                 consumer: consumer,
                 cancellationToken: cancellationToken
             );
 
-            logger.LogInformation("Consumer listening on queue: {Queue}", queueName);
+            logger.LogInformation("Consumer listening on queue: {Queue} (Prefetch: {PrefetchCount})",
+                queueConfig.Name, queueConfig.PrefetchCount);
         }
 
         await Task.Delay(Timeout.Infinite, cancellationToken);
     }
 
-    private async Task HandleEventAsync(string queueName, BasicDeliverEventArgs eventArgs,
+    private async Task HandleEventAsync(QueueConfiguration queueConfig, BasicDeliverEventArgs eventArgs,
         CancellationToken cancellationToken)
     {
         try
@@ -105,7 +120,7 @@ public class EventConsumerHostedService(
             var body = eventArgs.Body.ToArray();
             var json = Encoding.UTF8.GetString(body);
 
-            logger.LogInformation("Event received from queue '{Queue}'", queueName);
+            logger.LogInformation("Event received from queue '{Queue}'", queueConfig.Name);
 
             var eventType = ExtractEventType(json);
             if (eventType == null)
@@ -136,26 +151,34 @@ public class EventConsumerHostedService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing event from queue '{Queue}'", queueName);
+            logger.LogError(ex, "Error processing event from queue '{Queue}'", queueConfig.Name);
             await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
         }
     }
 
     private string? ExtractEventType(string json)
     {
-        var doc = JsonDocument.Parse(json);
-        if (!doc.RootElement.TryGetProperty("type", out var typeProperty))
+        try
         {
-            logger.LogWarning("Event payload missing 'type' property");
+            var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("type", out var typeProperty))
+            {
+                logger.LogWarning("Event payload missing 'type' property");
+                return null;
+            }
+
+            var eventType = typeProperty.GetString();
+            if (!string.IsNullOrEmpty(eventType)) return eventType;
+
+            logger.LogWarning("Event type is null or empty");
+
             return null;
         }
-
-        var eventType = typeProperty.GetString();
-        if (!string.IsNullOrEmpty(eventType)) return eventType;
-
-        logger.LogWarning("Event type is null or empty");
-
-        return null;
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error extracting event type");
+            return null;
+        }
     }
 
     public override async void Dispose()

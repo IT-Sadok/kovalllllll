@@ -44,7 +44,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
         WarehouseValidation.ValidateState(warehouseItem);
 
         var @event = new RemovedQuantityFromWarehouseItemEvent(warehouseItem.Id, command.Model.QuantityToRemove);
-        await outboxService.PublishEventAsync(@event, queuesConfig.WarehouseQueue, cancellationToken);
+        await outboxService.StoreEventAsync(@event, queuesConfig.WarehouseQueue.Name, cancellationToken);
 
         await warehouseRepository.SaveChangesAsync(cancellationToken);
 

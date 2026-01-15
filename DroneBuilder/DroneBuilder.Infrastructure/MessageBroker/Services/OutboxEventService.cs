@@ -8,7 +8,7 @@ namespace DroneBuilder.Infrastructure.MessageBroker.Services;
 
 public class OutboxEventService(ApplicationDbContext context) : IOutboxEventService
 {
-    public async Task PublishEventAsync<TEvent>(TEvent @event, string queueName,
+    public async Task StoreEventAsync<TEvent>(TEvent @event, string queueName,
         CancellationToken cancellationToken = default)
         where TEvent : DomainEvent
     {

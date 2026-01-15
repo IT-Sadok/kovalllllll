@@ -80,7 +80,7 @@ public class AddItemToCartCommandHandler(
 
         var @event = new AddedItemToCartEvent(userContext.UserId, command.ProductId, existingProduct.Name,
             command.Quantity);
-        await outboxService.PublishEventAsync(@event, queuesConfig.CartQueue, cancellationToken);
+        await outboxService.StoreEventAsync(@event, queuesConfig.CartQueue.Name, cancellationToken);
 
         await cartRepository.SaveChangesAsync(cancellationToken);
     }

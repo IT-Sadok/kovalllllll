@@ -2,10 +2,10 @@
 
 public class MessageQueuesConfiguration
 {
-    public string UserQueue { get; set; } = string.Empty;
-    public string CartQueue { get; set; } = string.Empty;
-    public string OrderQueue { get; set; } = string.Empty;
-    public string ImageQueue { get; set; } = string.Empty;
-    public string ProductQueue { get; set; } = string.Empty;
-    public string WarehouseQueue { get; set; } = string.Empty;
+    public QueueConfiguration UserQueue { get; set; } = new();
+    public QueueConfiguration CartQueue { get; set; } = new();
+    public QueueConfiguration OrderQueue { get; set; } = new();
+    public QueueConfiguration ImageQueue { get; set; } = new();
+    public QueueConfiguration ProductQueue { get; set; } = new();
+    public QueueConfiguration WarehouseQueue { get; set; } = new();
 }

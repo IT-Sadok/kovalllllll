@@ -46,7 +46,7 @@ public class CreateProductCommandHandler(
         await warehouseRepository.AddWarehouseItemAsync(warehouseItem, cancellationToken);
 
         var @event = new ProductCreatedEvent(product.Id);
-        await outboxService.PublishEventAsync(@event, queuesConfig.ProductQueue, cancellationToken);
+        await outboxService.StoreEventAsync(@event, queuesConfig.ProductQueue.Name, cancellationToken);
 
         await productRepository.SaveChangesAsync(cancellationToken);
 

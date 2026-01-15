@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Domain.Events.ImageEvents;
+using DroneBuilder.Infrastructure.Common;
 using Microsoft.Extensions.Logging;
 
 namespace DroneBuilder.Infrastructure.MessageBroker.Handlers.ImageHandlers;
@@ -11,8 +12,7 @@ public class ImageUploadedEventHandler(ILogger<ImageUploadedEventHandler> logger
 
     public async Task HandleAsync(string json, CancellationToken cancellationToken = default)
     {
-        var @event = JsonSerializer.Deserialize<ImageUploadedEvent>(json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var @event = JsonSerializer.Deserialize<ImageUploadedEvent>(json, JsonSettings.JsonSerializerOptions);
 
         if (@event == null)
         {

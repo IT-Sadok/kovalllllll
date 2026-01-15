@@ -32,7 +32,7 @@ public class SignUpCommandHandler(
         if (user.Email != null)
         {
             var @event = new UserSignedUpEvent(user.Id, user.Email);
-            await outboxService.PublishEventAsync(@event, queuesConfig.UserQueue, cancellationToken);
+            await outboxService.StoreEventAsync(@event, queuesConfig.UserQueue.Name, cancellationToken);
         }
 
         await userRepository.SaveChangesAsync(cancellationToken);

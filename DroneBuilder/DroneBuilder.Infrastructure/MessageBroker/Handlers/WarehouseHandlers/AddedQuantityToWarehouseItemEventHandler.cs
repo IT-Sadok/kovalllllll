@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Domain.Events.WarehouseEvents;
+using DroneBuilder.Infrastructure.Common;
 using Microsoft.Extensions.Logging;
 
 namespace DroneBuilder.Infrastructure.MessageBroker.Handlers.WarehouseHandlers;
@@ -13,7 +14,7 @@ public class AddedQuantityToWarehouseItemEventHandler(ILogger<AddedQuantityToWar
     public async Task HandleAsync(string json, CancellationToken cancellationToken = default)
     {
         var @event = JsonSerializer.Deserialize<AddedQuantityToWarehouseItemEvent>(json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            JsonSettings.JsonSerializerOptions);
         if (@event == null)
         {
             logger.LogWarning("Invalid AddedQuantityToWarehouseItemEvent");

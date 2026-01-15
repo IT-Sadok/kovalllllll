@@ -34,7 +34,7 @@ public class SignInCommandHandler(
         var authUserModel = mapper.Map<AuthUserModel>(token);
 
         var @event = new UserSignedInEvent(user.Id, user.Email);
-        await outboxService.PublishEventAsync(@event, queuesConfig.UserQueue, cancellationToken);
+        await outboxService.StoreEventAsync(@event, queuesConfig.UserQueue.Name, cancellationToken);
 
         await userRepository.SaveChangesAsync(cancellationToken);
 

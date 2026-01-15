@@ -65,7 +65,7 @@ public class CreateOrderCommandHandler(
         await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
         
         var @event = new OrderCreatedEvent(order.Id, userContext.UserId);
-        await outboxService.PublishEventAsync(@event, queuesConfig.OrderQueue, cancellationToken);
+        await outboxService.StoreEventAsync(@event, queuesConfig.OrderQueue.Name, cancellationToken);
         
         await orderRepository.SaveChangesAsync(cancellationToken);
 

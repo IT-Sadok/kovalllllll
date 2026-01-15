@@ -40,7 +40,7 @@ public class UploadImageCommandHandler(
         await imageRepository.AddImageAsync(image, cancellationToken);
 
         var @event = new ImageUploadedEvent(image.Id, command.ProductId);
-        await outboxService.PublishEventAsync(@event, queuesConfig.ImageQueue, cancellationToken);
+        await outboxService.StoreEventAsync(@event, queuesConfig.ImageQueue.Name, cancellationToken);
 
         await imageRepository.SaveChangesAsync(cancellationToken);
 
