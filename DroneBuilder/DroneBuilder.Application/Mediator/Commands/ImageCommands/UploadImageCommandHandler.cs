@@ -2,8 +2,10 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Events.ImageEvents;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 
@@ -12,6 +14,8 @@ namespace DroneBuilder.Application.Mediator.Commands.ImageCommands;
 public class UploadImageCommandHandler(
     IImageRepository imageRepository,
     IAzureStorageService azureStorageService,
+    IOutboxEventService outboxService,
+    MessageQueuesConfiguration queuesConfig,
     IMapper mapper)
     : ICommandHandler<UploadImageCommand, ImageModel>
 {
@@ -34,6 +38,10 @@ public class UploadImageCommandHandler(
         };
 
         await imageRepository.AddImageAsync(image, cancellationToken);
+
+        var @event = new ImageUploadedEvent(image.Id, command.ProductId);
+        await outboxService.PublishEventAsync(@event, queuesConfig.ImageQueue, cancellationToken);
+
         await imageRepository.SaveChangesAsync(cancellationToken);
 
         return mapper.Map<ImageModel>(image);

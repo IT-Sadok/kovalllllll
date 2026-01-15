@@ -1,14 +1,19 @@
-﻿using DroneBuilder.Application.Contexts;
+﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.Validation;
+using DroneBuilder.Domain.Events.CartEvents;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
 public class ClearCartCommandHandler(
     ICartRepository cartRepository,
     IWarehouseRepository warehouseRepository,
+    IOutboxEventService outboxService,
+    MessageQueuesConfiguration queuesConfig,
     IUserContext userContext)
     : ICommandHandler<ClearCartCommand>
 {
@@ -41,6 +46,9 @@ public class ClearCartCommandHandler(
         }
 
         await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
+
+        var @event = new ClearedCartEvent(userContext.UserId);
+        await outboxService.PublishEventAsync(@event, queuesConfig.CartQueue, cancellationToken);
 
         await cartRepository.SaveChangesAsync(cancellationToken);
     }

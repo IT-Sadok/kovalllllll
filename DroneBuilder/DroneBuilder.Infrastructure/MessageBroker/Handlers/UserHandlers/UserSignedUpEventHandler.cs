@@ -1,10 +1,9 @@
 ﻿using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Domain.Events;
-using Microsoft.Extensions.DependencyInjection;
+using DroneBuilder.Domain.Events.UserEvents;
 using Microsoft.Extensions.Logging;
 
-namespace DroneBuilder.Infrastructure.MessageBroker.Handlers;
+namespace DroneBuilder.Infrastructure.MessageBroker.Handlers.UserHandlers;
 
 public class UserSignedUpEventHandler(ILogger<UserSignedUpEventHandler> logger) : IEventHandler
 {

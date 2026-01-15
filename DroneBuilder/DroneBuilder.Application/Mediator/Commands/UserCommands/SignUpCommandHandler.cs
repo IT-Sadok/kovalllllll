@@ -3,10 +3,11 @@ using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.NotificationModels;
 using DroneBuilder.Application.Models.UserModels;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events;
-using DroneBuilder.Infrastructure.MessageBroker.Configuration;
+using DroneBuilder.Domain.Events.UserEvents;
 using Microsoft.AspNetCore.Identity;
 
 namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
@@ -31,7 +32,7 @@ public class SignUpCommandHandler(
         if (user.Email != null)
         {
             var @event = new UserSignedUpEvent(user.Id, user.Email);
-            await outboxService.PublishEventAsync(@event, queuesConfig.UserSignedUpQueue, cancellationToken);
+            await outboxService.PublishEventAsync(@event, queuesConfig.UserQueue, cancellationToken);
         }
 
         await userRepository.SaveChangesAsync(cancellationToken);

@@ -1,16 +1,21 @@
-﻿using DroneBuilder.Application.Contexts;
+﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Events.CartEvents;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
 public class AddItemToCartCommandHandler(
     ICartRepository cartRepository,
+    IOutboxEventService outboxService,
     IWarehouseRepository warehouseRepository,
     IProductRepository productRepository,
+    MessageQueuesConfiguration queuesConfig,
     IUserContext userContext) : ICommandHandler<AddItemToCartCommand>
 {
     public async Task ExecuteCommandAsync(AddItemToCartCommand command,
@@ -72,6 +77,10 @@ public class AddItemToCartCommandHandler(
         warehouseItem.Quantity -= command.Quantity;
 
         WarehouseValidation.ValidateState(warehouseItem);
+
+        var @event = new AddedItemToCartEvent(userContext.UserId, command.ProductId, existingProduct.Name,
+            command.Quantity);
+        await outboxService.PublishEventAsync(@event, queuesConfig.CartQueue, cancellationToken);
 
         await cartRepository.SaveChangesAsync(cancellationToken);
     }

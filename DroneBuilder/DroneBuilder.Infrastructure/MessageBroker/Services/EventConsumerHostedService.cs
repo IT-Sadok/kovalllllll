@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Models.NotificationModels;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,7 +20,12 @@ public class EventConsumerHostedService(
 
     private readonly List<string> _queuesToListen =
     [
-        "user-signed-up-queue"
+        "user-queue",
+        "cart-queue",
+        "order-queue",
+        "image-queue",
+        "product-queue",
+        "warehouse-queue"
     ];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
