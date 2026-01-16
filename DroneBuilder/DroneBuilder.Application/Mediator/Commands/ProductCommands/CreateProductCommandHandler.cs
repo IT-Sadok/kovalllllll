@@ -1,9 +1,12 @@
-﻿using DroneBuilder.Application.Exceptions;
+﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Events.ProductEvents;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
@@ -11,6 +14,8 @@ namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 public class CreateProductCommandHandler(
     IProductRepository productRepository,
     IWarehouseRepository warehouseRepository,
+    IOutboxEventService outboxService,
+    MessageQueuesConfiguration queuesConfig,
     IMapper mapper)
     : ICommandHandler<CreateProductCommand, ProductModel>
 {
@@ -39,6 +44,10 @@ public class CreateProductCommandHandler(
         };
 
         await warehouseRepository.AddWarehouseItemAsync(warehouseItem, cancellationToken);
+
+        var @event = new ProductCreatedEvent(product.Id);
+        await outboxService.StoreEventAsync(@event, queuesConfig.ProductQueue.Name, cancellationToken);
+
         await productRepository.SaveChangesAsync(cancellationToken);
 
         var createdProduct = await productRepository.GetProductByIdAsync(product.Id, cancellationToken);

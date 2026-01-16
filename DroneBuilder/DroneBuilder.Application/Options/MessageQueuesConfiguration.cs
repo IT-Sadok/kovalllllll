@@ -1,6 +1,11 @@
-﻿namespace DroneBuilder.Infrastructure.MessageBroker.Configuration;
+﻿namespace DroneBuilder.Application.Options;
 
 public class MessageQueuesConfiguration
 {
-    public string UserSignedUpQueue { get; set; } = string.Empty;
+    public QueueConfiguration UserQueue { get; set; } = new();
+    public QueueConfiguration CartQueue { get; set; } = new();
+    public QueueConfiguration OrderQueue { get; set; } = new();
+    public QueueConfiguration ImageQueue { get; set; } = new();
+    public QueueConfiguration ProductQueue { get; set; } = new();
+    public QueueConfiguration WarehouseQueue { get; set; } = new();
 }

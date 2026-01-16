@@ -1,10 +1,13 @@
 ﻿using System.Text.Json;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.OrderModels;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Events.OrderEvents;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
@@ -14,6 +17,8 @@ public class CreateOrderCommandHandler(
     ICartRepository cartRepository,
     IProductRepository productRepository,
     IWarehouseRepository warehouseRepository,
+    IOutboxEventService outboxService,
+    MessageQueuesConfiguration queuesConfig,
     IUserContext userContext,
     IMapper mapper) : ICommandHandler<CreateOrderCommand, OrderModel>
 {
@@ -58,6 +63,10 @@ public class CreateOrderCommandHandler(
 
         await orderRepository.CreateOrderAsync(order, cancellationToken);
         await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
+        
+        var @event = new OrderCreatedEvent(order.Id, userContext.UserId);
+        await outboxService.StoreEventAsync(@event, queuesConfig.OrderQueue.Name, cancellationToken);
+        
         await orderRepository.SaveChangesAsync(cancellationToken);
 
         return mapper.Map<OrderModel>(order);

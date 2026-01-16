@@ -4,6 +4,6 @@ namespace DroneBuilder.Application.Abstractions;
 
 public interface IOutboxEventService
 {
-    Task PublishEventAsync<TEvent>(TEvent @event, string queueName, CancellationToken ct = default)
+    Task StoreEventAsync<TEvent>(TEvent @event, string queueName, CancellationToken cancellationToken = default)
         where TEvent : DomainEvent;
 }
