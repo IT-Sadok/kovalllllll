@@ -21,7 +21,8 @@ public static class WarehouseEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapGet(ApiRoutes.Warehouses.GetItemById,
                 async (IMediator mediator, Guid warehouseItemId, CancellationToken cancellationToken) =>
@@ -32,7 +33,8 @@ public static class WarehouseEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapPost(ApiRoutes.Warehouses.AddQuantityToItem, async (IMediator mediator, Guid warehouseItemId,
                 [FromBody] AddQuantityModel model,
@@ -45,7 +47,8 @@ public static class WarehouseEndpointExtensions
                 return Results.Ok(result);
             })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapDelete(ApiRoutes.Warehouses.RemoveQuantityFromItem, async (IMediator mediator, Guid warehouseItemId,
                 [FromBody] RemoveQuantityModel model,
@@ -58,7 +61,8 @@ public static class WarehouseEndpointExtensions
                 return Results.Ok(result);
             })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapGet(ApiRoutes.Warehouses.GetAllItems,
                 async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>

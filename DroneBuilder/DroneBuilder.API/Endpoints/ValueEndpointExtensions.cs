@@ -19,7 +19,8 @@ public static class ValueEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Values")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapDelete(ApiRoutes.Values.Delete,
                 async (IMediator mediator, Guid valueId, CancellationToken cancellationToken) =>
@@ -27,7 +28,8 @@ public static class ValueEndpointExtensions
                     await mediator.ExecuteCommandAsync(new DeleteValueCommand(valueId), cancellationToken);
                     return Results.NoContent();
                 }).WithTags("Values")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapPatch(ApiRoutes.Values.Update, async (IMediator mediator, Guid valueId,
                 UpdateValueModel model, CancellationToken cancellationToken) =>
@@ -37,7 +39,8 @@ public static class ValueEndpointExtensions
                     cancellationToken);
                 return Results.Ok(result);
             }).WithTags("Values")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapGet(ApiRoutes.Values.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
@@ -59,7 +62,8 @@ public static class ValueEndpointExtensions
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Values")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         return app;
     }
