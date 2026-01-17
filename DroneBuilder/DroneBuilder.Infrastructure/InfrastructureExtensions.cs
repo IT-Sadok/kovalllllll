@@ -29,6 +29,8 @@ public static class InfrastructureExtensions
 
         services.Configure<MessageQueuesConfiguration>(configuration.GetSection("MessageQueues"));
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageQueuesConfiguration>>().Value);
+        
+        
 
 
         services.AddScoped<IUserRepository, UserRepository>();

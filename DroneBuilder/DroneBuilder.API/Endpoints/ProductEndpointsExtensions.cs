@@ -30,7 +30,8 @@ public static class ProductEndpointsExtensions
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Products")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapDelete(ApiRoutes.Products.Delete, async (IMediator mediator, Guid productId,
                 CancellationToken cancellationToken) =>
@@ -38,7 +39,8 @@ public static class ProductEndpointsExtensions
                 await mediator.ExecuteCommandAsync(new DeleteProductCommand(productId), cancellationToken);
                 return Results.NoContent();
             }).WithTags("Products")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         app.MapGet(ApiRoutes.Products.GetAll,
                 async (int page, int pageSize, IMediator mediator, [AsParameters] ProductFilterModel filter,
@@ -83,7 +85,8 @@ public static class ProductEndpointsExtensions
                         cancellationToken);
                     return Results.NoContent();
                 }).WithTags("Products")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         return app;
     }

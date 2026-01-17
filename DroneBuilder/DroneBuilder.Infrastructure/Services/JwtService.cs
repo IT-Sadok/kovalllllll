@@ -4,18 +4,21 @@ using System.Text;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure.Options;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DroneBuilder.Infrastructure.Services;
 
-public class JwtService(IOptions<JwtOptions> jwtOptions)
+public class JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userManager)
     : IJwtService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public Task<string> GenerateJwtTokenAsync(User user)
+    public async Task<string> GenerateJwtTokenAsync(User user)
     {
+        var roles = await userManager.GetRolesAsync(user);
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -23,6 +26,8 @@ public class JwtService(IOptions<JwtOptions> jwtOptions)
             new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -34,6 +39,6 @@ public class JwtService(IOptions<JwtOptions> jwtOptions)
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds);
 
-        return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

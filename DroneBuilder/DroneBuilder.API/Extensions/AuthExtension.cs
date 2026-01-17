@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Claims;
+using System.Text;
 using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -44,13 +45,14 @@ public static class AuthExtension
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = false,
-                ValidateIssuerSigningKey = true
+                ValidateIssuerSigningKey = true,
+                RoleClaimType = ClaimTypes.Role
             };
         });
 
         services.Configure<JwtOptions>(
             configuration.GetSection(nameof(JwtOptions)));
-        
+
         return services;
     }
 }

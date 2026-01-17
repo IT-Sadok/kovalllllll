@@ -72,7 +72,8 @@ public static class CartEndpointExtensions
                     return Results.Ok(cart);
                 })
             .WithTags("Cart")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+                policy.RequireRole("Admin"));
 
         return app;
     }
