@@ -1,4 +1,5 @@
-﻿using DroneBuilder.API.Endpoints.Routes;
+﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
@@ -28,8 +29,7 @@ public static class ImageEndpointExtensions
                 })
             .WithTags("Images")
             .DisableAntiforgery()
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapDelete(ApiRoutes.Images.Delete,
                 async (IMediator mediator, Guid imageId, CancellationToken cancellationToken) =>
@@ -41,8 +41,7 @@ public static class ImageEndpointExtensions
                     return Results.NoContent();
                 })
             .WithTags("Images")
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Images.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
@@ -57,8 +56,7 @@ public static class ImageEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Images")
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Images.GetImagesByProductId,
                 async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
@@ -73,8 +71,7 @@ public static class ImageEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Images")
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Images.GetById,
                 async (IMediator mediator, Guid imageId, CancellationToken cancellationToken) =>
@@ -89,8 +86,7 @@ public static class ImageEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Images")
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         return app;
     }

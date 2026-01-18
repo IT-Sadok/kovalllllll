@@ -1,3 +1,4 @@
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints;
 using DroneBuilder.API.Extensions;
 using DroneBuilder.API.Middleware;
@@ -28,7 +29,9 @@ public abstract class Program
             .AddIdentity<User, IdentityRole<Guid>>(options => options.SignIn.RequireConfirmedAccount = true)
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy(PolicyNames.Admin, policy => policy.RequireRole("Admin"))
+            .AddPolicy(PolicyNames.User, policy => policy.RequireRole("User"));
 
         builder.Services.AddOpenApi();
 

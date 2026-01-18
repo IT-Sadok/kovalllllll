@@ -29,7 +29,7 @@ public class SignInCommandHandler(
             throw new InvalidEmailOrPasswordException("Invalid email or password.");
         }
 
-        var token = await jwtService.GenerateJwtTokenAsync(user);
+        var token = await jwtService.GenerateJwtTokenAsync(user.Id.ToString());
 
         var authUserModel = mapper.Map<AuthUserModel>(token);
 

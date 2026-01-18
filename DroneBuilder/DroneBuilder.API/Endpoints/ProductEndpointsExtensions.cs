@@ -1,4 +1,5 @@
-﻿using DroneBuilder.API.Endpoints.Routes;
+﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.ProductQueries;
@@ -30,8 +31,7 @@ public static class ProductEndpointsExtensions
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Products")
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapDelete(ApiRoutes.Products.Delete, async (IMediator mediator, Guid productId,
                 CancellationToken cancellationToken) =>
@@ -39,8 +39,7 @@ public static class ProductEndpointsExtensions
                 await mediator.ExecuteCommandAsync(new DeleteProductCommand(productId), cancellationToken);
                 return Results.NoContent();
             }).WithTags("Products")
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Products.GetAll,
                 async (int page, int pageSize, IMediator mediator, [AsParameters] ProductFilterModel filter,
@@ -85,8 +84,7 @@ public static class ProductEndpointsExtensions
                         cancellationToken);
                     return Results.NoContent();
                 }).WithTags("Products")
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         return app;
     }

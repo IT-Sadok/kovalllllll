@@ -20,7 +20,6 @@ public static class IdentitySeeder
             }
         }
 
-        // Створення адмін користувача
         const string adminEmail = "admin@dronebuilder.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 

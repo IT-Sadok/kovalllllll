@@ -1,4 +1,5 @@
-﻿using DroneBuilder.API.Endpoints.Routes;
+﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
@@ -72,8 +73,7 @@ public static class CartEndpointExtensions
                     return Results.Ok(cart);
                 })
             .WithTags("Cart")
-            .RequireAuthorization(policy =>
-                policy.RequireRole("Admin"));
+            .RequireAuthorization(PolicyNames.Admin);
 
         return app;
     }

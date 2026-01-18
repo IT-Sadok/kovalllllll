@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Identity;
@@ -15,8 +16,14 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userM
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public async Task<string> GenerateJwtTokenAsync(User user)
+    public async Task<string> GenerateJwtTokenAsync(string userId)
     {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            throw new NotFoundException($"User with id {userId} not found.");
+        }
+
         var roles = await userManager.GetRolesAsync(user);
 
         var claims = new List<Claim>
