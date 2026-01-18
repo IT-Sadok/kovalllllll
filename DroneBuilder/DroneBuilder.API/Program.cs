@@ -1,16 +1,18 @@
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints;
 using DroneBuilder.API.Extensions;
 using DroneBuilder.API.Middleware;
 using DroneBuilder.Application;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure;
+using DroneBuilder.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 
 namespace DroneBuilder.API;
 
 public abstract class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +29,9 @@ public abstract class Program
             .AddIdentity<User, IdentityRole<Guid>>(options => options.SignIn.RequireConfirmedAccount = true)
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy(PolicyNames.Admin, policy => policy.RequireRole("Admin"))
+            .AddPolicy(PolicyNames.User, policy => policy.RequireRole("User"));
 
         builder.Services.AddOpenApi();
 
@@ -49,6 +53,12 @@ public abstract class Program
         });
 
         var app = builder.Build();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            await IdentitySeeder.SeedRolesAndAdminAsync(services);
+        }
 
         app.UseExceptionHandler();
 

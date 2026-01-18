@@ -4,5 +4,5 @@ namespace DroneBuilder.Application.Abstractions;
 
 public interface IJwtService
 {
-    Task<string> GenerateJwtTokenAsync(User user);
+    Task<string> GenerateJwtTokenAsync(string userId);
 }

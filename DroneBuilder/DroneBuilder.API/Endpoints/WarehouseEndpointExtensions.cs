@@ -1,4 +1,5 @@
-﻿using DroneBuilder.API.Endpoints.Routes;
+﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
@@ -21,7 +22,7 @@ public static class WarehouseEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Warehouses.GetItemById,
                 async (IMediator mediator, Guid warehouseItemId, CancellationToken cancellationToken) =>
@@ -32,7 +33,7 @@ public static class WarehouseEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapPost(ApiRoutes.Warehouses.AddQuantityToItem, async (IMediator mediator, Guid warehouseItemId,
                 [FromBody] AddQuantityModel model,
@@ -45,7 +46,7 @@ public static class WarehouseEndpointExtensions
                 return Results.Ok(result);
             })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapDelete(ApiRoutes.Warehouses.RemoveQuantityFromItem, async (IMediator mediator, Guid warehouseItemId,
                 [FromBody] RemoveQuantityModel model,
@@ -58,7 +59,7 @@ public static class WarehouseEndpointExtensions
                 return Results.Ok(result);
             })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Warehouses.GetAllItems,
                 async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>

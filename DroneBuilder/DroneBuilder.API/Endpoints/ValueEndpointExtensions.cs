@@ -1,4 +1,5 @@
-﻿using DroneBuilder.API.Endpoints.Routes;
+﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.ValueQueries;
@@ -19,7 +20,7 @@ public static class ValueEndpointExtensions
                     return Results.Ok(result);
                 })
             .WithTags("Values")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapDelete(ApiRoutes.Values.Delete,
                 async (IMediator mediator, Guid valueId, CancellationToken cancellationToken) =>
@@ -27,7 +28,7 @@ public static class ValueEndpointExtensions
                     await mediator.ExecuteCommandAsync(new DeleteValueCommand(valueId), cancellationToken);
                     return Results.NoContent();
                 }).WithTags("Values")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapPatch(ApiRoutes.Values.Update, async (IMediator mediator, Guid valueId,
                 UpdateValueModel model, CancellationToken cancellationToken) =>
@@ -37,7 +38,7 @@ public static class ValueEndpointExtensions
                     cancellationToken);
                 return Results.Ok(result);
             }).WithTags("Values")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Values.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
@@ -59,7 +60,7 @@ public static class ValueEndpointExtensions
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Values")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         return app;
     }

@@ -2,20 +2,30 @@
 using System.Security.Claims;
 using System.Text;
 using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure.Options;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DroneBuilder.Infrastructure.Services;
 
-public class JwtService(IOptions<JwtOptions> jwtOptions)
+public class JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userManager)
     : IJwtService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public Task<string> GenerateJwtTokenAsync(User user)
+    public async Task<string> GenerateJwtTokenAsync(string userId)
     {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            throw new NotFoundException($"User with id {userId} not found.");
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -23,6 +33,8 @@ public class JwtService(IOptions<JwtOptions> jwtOptions)
             new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -34,6 +46,6 @@ public class JwtService(IOptions<JwtOptions> jwtOptions)
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds);
 
-        return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
