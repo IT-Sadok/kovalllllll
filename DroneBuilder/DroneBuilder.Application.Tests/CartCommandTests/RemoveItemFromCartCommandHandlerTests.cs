@@ -12,7 +12,6 @@ public class RemoveItemFromCartCommandHandlerTests
     private readonly ICartRepository _cartRepository;
     private readonly IProductRepository _productRepository;
     private readonly IWarehouseRepository _warehouseRepository;
-    private readonly IUserContext _userContext;
     private readonly RemoveItemFromCartCommandHandler _handler;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -29,15 +28,15 @@ public class RemoveItemFromCartCommandHandlerTests
         _cartRepository = Substitute.For<ICartRepository>();
         _productRepository = Substitute.For<IProductRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
-        _userContext = Substitute.For<IUserContext>();
+        var userContext = Substitute.For<IUserContext>();
 
-        _userContext.UserId.Returns(UserId);
+        userContext.UserId.Returns(UserId);
 
         _handler = new RemoveItemFromCartCommandHandler(
             _cartRepository,
             _productRepository,
             _warehouseRepository,
-            _userContext);
+            userContext);
     }
 
     [Fact]
