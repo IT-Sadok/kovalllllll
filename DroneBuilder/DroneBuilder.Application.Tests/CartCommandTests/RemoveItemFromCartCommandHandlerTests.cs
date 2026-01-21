@@ -19,6 +19,7 @@ public class RemoveItemFromCartCommandHandlerTests
     private static readonly Guid ProductId = Guid.NewGuid();
     private static readonly Guid CartItemId = Guid.NewGuid();
     private const string ProductName = "Test Product";
+    private const string OtherProductName = "Other Product";
     private const int CartItemQuantity = 5;
     private const int WarehouseQuantity = 100;
 
@@ -165,7 +166,7 @@ public class RemoveItemFromCartCommandHandlerTests
         {
             Id = Guid.NewGuid(),
             ProductId = Guid.NewGuid(),
-            ProductName = "Other Product",
+            ProductName = OtherProductName,
             Quantity = 3
         };
 
@@ -272,7 +273,7 @@ public class RemoveItemFromCartCommandHandlerTests
         {
             Id = Guid.NewGuid(),
             ProductId = Guid.NewGuid(),
-            ProductName = "Other Product",
+            ProductName = OtherProductName,
             Quantity = 10
         };
 

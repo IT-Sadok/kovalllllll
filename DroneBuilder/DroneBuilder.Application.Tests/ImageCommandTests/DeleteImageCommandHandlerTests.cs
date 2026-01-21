@@ -118,7 +118,7 @@ public class DeleteImageCommandHandlerTests
     {
         // Arrange
         var command = new DeleteImageCommand(ImageId);
-        var customImageUrl = "https://mycustomstorage.blob.core.windows.net/images/photo.png";
+        const string customImageUrl = "https://mycustomstorage.blob.core.windows.net/images/photo.png";
 
         var existingImage = new Image
         {

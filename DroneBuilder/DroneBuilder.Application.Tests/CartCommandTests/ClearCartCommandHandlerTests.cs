@@ -22,6 +22,8 @@ public class ClearCartCommandHandlerTests
     private static readonly Guid CartId = Guid.NewGuid();
     private static readonly Guid ProductId1 = Guid.NewGuid();
     private static readonly Guid ProductId2 = Guid.NewGuid();
+    private const string ProductName1 = "Product 1";
+    private const string ProductName2 = "Product 2";
     private const int ItemCount = 3;
 
     public ClearCartCommandHandlerTests()
@@ -56,14 +58,14 @@ public class ClearCartCommandHandlerTests
         var cartItem1 = new CartItem
         {
             ProductId = ProductId1,
-            ProductName = "Product 1",
+            ProductName = ProductName1,
             Quantity = 5
         };
 
         var cartItem2 = new CartItem
         {
             ProductId = ProductId2,
-            ProductName = "Product 2",
+            ProductName = ProductName2,
             Quantity = 3
         };
 
@@ -152,7 +154,7 @@ public class ClearCartCommandHandlerTests
         var cartItem = new CartItem
         {
             ProductId = ProductId1,
-            ProductName = "Product 1",
+            ProductName = ProductName1,
             Quantity = 5
         };
 

@@ -114,7 +114,7 @@ public class AddItemToCartCommandHandlerTests
     {
         // Arrange
         var command = new AddItemToCartCommand(ProductId, ValidQuantity);
-        var initialCartItemQuantity = 3;
+        const int initialCartItemQuantity = 3;
 
         var product = new Product
         {
@@ -178,7 +178,7 @@ public class AddItemToCartCommandHandlerTests
         var product = new Product
         {
             Id = ProductId,
-            Name = ProductName
+            Name = ProductName,
         };
 
         var warehouseItem = new WarehouseItem
