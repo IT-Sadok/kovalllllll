@@ -13,10 +13,12 @@ public class PayForOrderCommandHandler(IOrderRepository orderRepository) : IComm
         if (order is null)
             throw new NotFoundException($"Order with id {payForOrderCommand.OrderId} not found.");
 
-        if (order.Status != Status.New)
-            throw new BadRequestException("Order is not in new status.");
+
         if (order.Status == Status.Paid)
             throw new BadRequestException("Order is already paid.");
+
+        if (order.Status != Status.New)
+            throw new BadRequestException("Order is not in new status.");
 
         order.Status = Status.Paid;
 
