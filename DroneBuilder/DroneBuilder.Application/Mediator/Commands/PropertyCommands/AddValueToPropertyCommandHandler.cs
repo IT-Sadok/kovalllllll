@@ -1,7 +1,6 @@
 ﻿using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
-using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
 namespace DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 
