@@ -52,7 +52,12 @@ public class EventConsumerHostedService(
             UserName = settings.UserName,
             Password = settings.Password,
             VirtualHost = settings.VirtualHost,
-            AutomaticRecoveryEnabled = true
+            AutomaticRecoveryEnabled = true,
+            Ssl = new SslOption
+            {
+                Enabled = true,
+                ServerName = settings.HostName
+            }
         };
 
         _connection = await factory.CreateConnectionAsync(cancellationToken);
