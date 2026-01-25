@@ -45,20 +45,33 @@ public class EventConsumerHostedService(
 
     private async Task InitializeRabbitMqAsync(CancellationToken cancellationToken)
     {
-        var factory = new ConnectionFactory
+        ConnectionFactory factory;
+
+        if (!string.IsNullOrEmpty(settings.ConnectionString))
         {
-            HostName = settings.HostName,
-            Port = settings.Port,
-            UserName = settings.UserName,
-            Password = settings.Password,
-            VirtualHost = settings.VirtualHost,
-            AutomaticRecoveryEnabled = true,
-            Ssl = new SslOption
+            factory = new ConnectionFactory
             {
-                Enabled = true,
-                ServerName = settings.HostName
-            }
-        };
+                Uri = new Uri(settings.ConnectionString),
+                AutomaticRecoveryEnabled = true,
+                Ssl = new SslOption
+                {
+                    Enabled = true,
+                    ServerName = new Uri(settings.ConnectionString).Host
+                }
+            };
+        }
+        else
+        {
+            factory = new ConnectionFactory
+            {
+                HostName = settings.HostName,
+                Port = settings.Port,
+                UserName = settings.UserName,
+                Password = settings.Password,
+                VirtualHost = settings.VirtualHost,
+                AutomaticRecoveryEnabled = true
+            };
+        }
 
         _connection = await factory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
