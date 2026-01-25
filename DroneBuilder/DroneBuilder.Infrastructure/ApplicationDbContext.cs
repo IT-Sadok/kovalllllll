@@ -17,7 +17,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
             Name = "Main Warehouse",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         });
     }
 

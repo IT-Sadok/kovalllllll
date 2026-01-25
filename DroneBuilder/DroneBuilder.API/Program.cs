@@ -7,6 +7,7 @@ using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure;
 using DroneBuilder.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace DroneBuilder.API;
 
@@ -57,6 +58,10 @@ public abstract class Program
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
+
+            var dbContext = services.GetRequiredService<ApplicationDbContext>();
+            await dbContext.Database.MigrateAsync();
+
             await IdentitySeeder.SeedRolesAndAdminAsync(services);
         }
 
