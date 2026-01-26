@@ -22,7 +22,7 @@ public static class InfrastructureExtensions
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString(connectionString!));
+            options.UseNpgsql(connectionString);
         });
 
         services.Configure<AzureStorageConfig>(configuration.GetSection("AzureStorage"));
