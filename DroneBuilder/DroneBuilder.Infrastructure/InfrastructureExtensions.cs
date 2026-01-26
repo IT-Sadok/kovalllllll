@@ -17,9 +17,12 @@ public static class InfrastructureExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION")
+                               ?? configuration.GetConnectionString("DefaultConnection");
+
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            options.UseNpgsql(connectionString);
         });
 
         services.Configure<AzureStorageConfig>(configuration.GetSection("AzureStorage"));
@@ -29,9 +32,6 @@ public static class InfrastructureExtensions
 
         services.Configure<MessageQueuesConfiguration>(configuration.GetSection("MessageQueues"));
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageQueuesConfiguration>>().Value);
-        
-        
-
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
