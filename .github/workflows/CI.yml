@@ -1,0 +1,29 @@
+﻿name: CI - Build and Test
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore ./DroneBuilder/DroneBuilder.sln
+
+      - name: Build
+        run: dotnet build ./DroneBuilder/DroneBuilder.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ./DroneBuilder/DroneBuilder.sln --configuration Release --no-build --verbosity normal
