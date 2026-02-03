@@ -8,6 +8,7 @@ COPY ["DroneBuilder/DroneBuilder.API/DroneBuilder.API.csproj", "DroneBuilder/Dro
 COPY ["DroneBuilder/DroneBuilder.Application/DroneBuilder.Application.csproj", "DroneBuilder/DroneBuilder.Application/"]
 COPY ["DroneBuilder/DroneBuilder.Infrastructure/DroneBuilder.Infrastructure.csproj", "DroneBuilder/DroneBuilder.Infrastructure/"]
 COPY ["DroneBuilder/DroneBuilder.Domain/DroneBuilder.Domain.csproj", "DroneBuilder/DroneBuilder.Domain/"]
+COPY ["DroneBuilder/DroneBuilder.Application.Tests/DroneBuilder.Application.Tests.csproj", "DroneBuilder/DroneBuilder.Application.Tests/"]
 
 # Restore dependencies
 RUN dotnet restore "DroneBuilder/DroneBuilder.sln"
