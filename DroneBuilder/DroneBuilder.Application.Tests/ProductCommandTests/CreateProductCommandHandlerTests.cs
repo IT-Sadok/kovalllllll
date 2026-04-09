@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Models.ProductModels;
@@ -23,8 +23,8 @@ public class CreateProductCommandHandlerTests
     private static readonly Guid WarehouseId = Guid.NewGuid();
     private static readonly Guid ProductId = Guid.NewGuid();
     private const string ProductName = "Test Drone";
-    private const string PropertyName = "Color";
     private const decimal ProductPrice = 999.99m;
+    private const string ProductCategory = "Quadcopter";
 
     public CreateProductCommandHandlerTests()
     {
@@ -55,7 +55,7 @@ public class CreateProductCommandHandlerTests
         {
             Name = ProductName,
             Price = ProductPrice,
-            Properties = new CreatePropertyModel()
+            Category = ProductCategory
         };
         var command = new CreateProductCommand(createProductModel);
 
@@ -66,23 +66,23 @@ public class CreateProductCommandHandlerTests
             Id = ProductId,
             Name = ProductName,
             Price = ProductPrice,
-            Properties = new List<Property>()
+            Category = ProductCategory
         };
-
-        var mappedProperty = new Property { Id = Guid.NewGuid() };
 
         var createdProduct = new Product
         {
             Id = ProductId,
             Name = ProductName,
-            Price = ProductPrice
+            Price = ProductPrice,
+            Category = ProductCategory
         };
 
         var expectedProductModel = new ProductModel
         {
             Id = ProductId,
             Name = ProductName,
-            Price = ProductPrice
+            Price = ProductPrice,
+            Category = ProductCategory
         };
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
@@ -92,9 +92,6 @@ public class CreateProductCommandHandlerTests
                 m.Name == ProductName &&
                 m.Price == ProductPrice))
             .Returns(mappedProduct);
-
-        _mapper.Map<Property>(Arg.Is<CreatePropertyModel>(p => p.Name == PropertyName))
-            .Returns(mappedProperty);
 
         _productRepository.GetProductByIdAsync(
                 Arg.Is<Guid>(id => id == ProductId),
@@ -158,20 +155,16 @@ public class CreateProductCommandHandlerTests
         Assert.Equal("Warehouse not found.", exception.Message);
 
         await _productRepository.DidNotReceive().AddProductAsync(
-            Arg.Is<Product>(p =>
-                p.Name == ProductName &&
-                p.Price == ProductPrice),
+            Arg.Any<Product>(),
             Arg.Any<CancellationToken>());
 
         await _warehouseRepository.DidNotReceive().AddWarehouseItemAsync(
-            Arg.Is<WarehouseItem>(wi =>
-                wi.WarehouseId == WarehouseId &&
-                wi.ProductId == ProductId),
+            Arg.Any<WarehouseItem>(),
             Arg.Any<CancellationToken>());
 
         await _outboxService.DidNotReceive().StoreEventAsync(
-            Arg.Is<ProductCreatedEvent>(e => e.ProductId == ProductId),
-            Arg.Is<string>(q => q == ProductQueueName),
+            Arg.Any<ProductCreatedEvent>(),
+            Arg.Any<string>(),
             Arg.Any<CancellationToken>());
 
         await _productRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -184,8 +177,7 @@ public class CreateProductCommandHandlerTests
         var createProductModel = new CreateProductModel
         {
             Name = ProductName,
-            Price = ProductPrice,
-            Properties = new CreatePropertyModel()
+            Price = ProductPrice
         };
         var command = new CreateProductCommand(createProductModel);
 
@@ -194,8 +186,7 @@ public class CreateProductCommandHandlerTests
         var mappedProduct = new Product
         {
             Id = ProductId,
-            Name = ProductName,
-            Properties = new List<Property>()
+            Name = ProductName
         };
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
@@ -205,9 +196,6 @@ public class CreateProductCommandHandlerTests
                 m.Name == ProductName &&
                 m.Price == ProductPrice))
             .Returns(mappedProduct);
-
-        _mapper.Map<Property>(Arg.Is<CreatePropertyModel>(p => p.Name == PropertyName))
-            .Returns(new Property());
 
         _productRepository.GetProductByIdAsync(Arg.Is<Guid>(id => id == ProductId), Arg.Any<CancellationToken>())
             .Returns(mappedProduct);
@@ -230,62 +218,13 @@ public class CreateProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenSuccessful_ShouldAddPropertyToProduct()
-    {
-        // Arrange
-        var createProductModel = new CreateProductModel
-        {
-            Name = ProductName,
-            Price = ProductPrice,
-            Properties = new CreatePropertyModel()
-        };
-        var command = new CreateProductCommand(createProductModel);
-
-        var warehouse = new Warehouse { Id = WarehouseId };
-
-        var mappedProduct = new Product
-        {
-            Id = ProductId,
-            Name = ProductName,
-            Properties = new List<Property>()
-        };
-
-        var mappedProperty = new Property { Id = Guid.NewGuid() };
-
-        _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
-            .Returns(warehouse);
-
-        _mapper.Map<Product>(Arg.Is<CreateProductModel>(m =>
-                m.Name == ProductName &&
-                m.Price == ProductPrice))
-            .Returns(mappedProduct);
-
-        _mapper.Map<Property>(Arg.Any<CreatePropertyModel>())
-            .Returns(mappedProperty);
-
-        _productRepository.GetProductByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(mappedProduct);
-
-        _mapper.Map<ProductModel>(Arg.Any<Product>())
-            .Returns(new ProductModel());
-
-        // Act
-        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(mappedProduct.Properties);
-        Assert.Contains(mappedProperty, mappedProduct.Properties);
-    }
-
-    [Fact]
     public async Task ExecuteCommandAsync_WhenSuccessful_ShouldGenerateCorrectEvent()
     {
         // Arrange
         var createProductModel = new CreateProductModel
         {
             Name = ProductName,
-            Price = ProductPrice,
-            Properties = new CreatePropertyModel()
+            Price = ProductPrice
         };
         var command = new CreateProductCommand(createProductModel);
 
@@ -293,8 +232,7 @@ public class CreateProductCommandHandlerTests
 
         var mappedProduct = new Product
         {
-            Id = ProductId,
-            Properties = new List<Property>()
+            Id = ProductId
         };
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
@@ -302,9 +240,6 @@ public class CreateProductCommandHandlerTests
 
         _mapper.Map<Product>(Arg.Any<CreateProductModel>())
             .Returns(mappedProduct);
-
-        _mapper.Map<Property>(Arg.Any<CreatePropertyModel>())
-            .Returns(new Property());
 
         _productRepository.GetProductByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(mappedProduct);
