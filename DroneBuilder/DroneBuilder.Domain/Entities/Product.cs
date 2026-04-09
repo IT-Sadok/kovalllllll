@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Entities;
+namespace DroneBuilder.Domain.Entities;
 
 public class Product
 {
@@ -7,5 +7,5 @@ public class Product
     public decimal Price { get; set; }
     public string Category { get; set; }
     public ICollection<Image> Images { get; set; } = [];
-    public ICollection<Property>? Properties { get; set; } = [];
+    public ICollection<ProductPropertyValue> ProductPropertyValues { get; set; } = [];
 }

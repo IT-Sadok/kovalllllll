@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
@@ -17,8 +17,10 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         return await dbContext.Products
             .Include(p => p.Images)
-            .Include(p => p.Properties)!
-            .ThenInclude(prop => prop.Values)
+            .Include(p => p.ProductPropertyValues)
+                .ThenInclude(ppv => ppv.Property)
+            .Include(p => p.ProductPropertyValues)
+                .ThenInclude(ppv => ppv.Value)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
@@ -27,8 +29,10 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         return await dbContext.Products
             .AsNoTracking()
             .Include(p => p.Images)
-            .Include(p => p.Properties)!
-            .ThenInclude(prop => prop.Values)
+            .Include(p => p.ProductPropertyValues)
+                .ThenInclude(ppv => ppv.Property)
+            .Include(p => p.ProductPropertyValues)
+                .ThenInclude(ppv => ppv.Value)
             .ToListAsync(cancellationToken);
     }
 
@@ -37,8 +41,10 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         return await dbContext.Products
             .AsNoTracking()
-            .Include(p => p.Properties)!
-            .ThenInclude(prop => prop.Values)
+            .Include(p => p.ProductPropertyValues)
+                .ThenInclude(ppv => ppv.Property)
+            .Include(p => p.ProductPropertyValues)
+                .ThenInclude(ppv => ppv.Value)
             .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
     }
 
@@ -49,8 +55,10 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         var query = dbContext.Products
             .AsNoTracking()
             .Include(p => p.Images)
-            .Include(p => p.Properties)!
-            .ThenInclude(prop => prop.Values)
+            .Include(p => p.ProductPropertyValues)
+                .ThenInclude(ppv => ppv.Property)
+            .Include(p => p.ProductPropertyValues)
+                .ThenInclude(ppv => ppv.Value)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
@@ -105,6 +113,13 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         dbContext.Products.Remove(product);
     }
 
+    public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .Select(p => p.Category)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +15,8 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
     {
         return await dbContext.Carts
             .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
+                .ThenInclude(ci => ci.Product)
+                    .ThenInclude(p => p.Images)
             .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
     }
 

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -26,8 +26,5 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
             .WithOne(i => i.Product)
             .HasForeignKey(i => i.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(p => p.Properties)
-            .WithMany(pr => pr.Products);
     }
 }
