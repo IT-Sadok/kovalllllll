@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getOrders } from '../api/orders';
-import type { Order, ShippingDetails, OrderStatus } from '../types';
+import type { Order, OrderStatus } from '../types';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
 import { Link } from 'react-router-dom';

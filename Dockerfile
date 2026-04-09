@@ -1,4 +1,19 @@
-﻿# Build stage
+﻿# UI build stage
+FROM node:20-alpine AS ui-build
+WORKDIR /src/DroneBuilder.UI
+
+COPY ["DroneBuilder.UI/package.json", "DroneBuilder.UI/package-lock.json", "./"]
+RUN npm install --no-audit --no-fund
+
+COPY ["DroneBuilder.UI/", "./"]
+
+# Optional override for split deployments. In single-container mode /api is correct.
+ARG VITE_API_BASE_URL=/api
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
+RUN npm run build
+
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
@@ -15,6 +30,9 @@ RUN dotnet restore "DroneBuilder/DroneBuilder.sln"
 
 # Copy all source code
 COPY . .
+
+# Copy built frontend into API static files folder
+COPY --from=ui-build /src/DroneBuilder.UI/dist /src/DroneBuilder/DroneBuilder.API/wwwroot
 
 # Build
 WORKDIR "/src/DroneBuilder/DroneBuilder.API"

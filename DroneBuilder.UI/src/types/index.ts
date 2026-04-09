@@ -45,6 +45,7 @@ export interface Product {
   name: string;
   price: number;
   category: string;
+  stockQuantity: number;
   properties: Property[];
   images?: Image[];
 }
@@ -54,6 +55,7 @@ export interface ProductPropertiesResponse {
   name: string;
   price: number;
   category: string;
+  stockQuantity: number;
   properties: Property[];
 }
 

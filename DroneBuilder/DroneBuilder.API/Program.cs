@@ -81,6 +81,15 @@ public abstract class Program
         app.UseHttpsRedirection();
         app.UseCors("AllowAll");
 
+        var webRootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+        var hasSpaAssets = Directory.Exists(webRootPath) && File.Exists(Path.Combine(webRootPath, "index.html"));
+
+        if (hasSpaAssets)
+        {
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+        }
+
         app.MapUserEndpoints()
             .MapProductEndpoints()
             .MapPropertyEndpoints()
@@ -89,6 +98,11 @@ public abstract class Program
             .MapCartEndpoints()
             .MapWarehouseEndpoints()
             .MapOrderEndpoints();
+
+        if (hasSpaAssets)
+        {
+            app.MapFallbackToFile("index.html");
+        }
 
         app.Run();
     }

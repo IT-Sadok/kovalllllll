@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { getAdminOrders, updateOrderStatus } from '../../api/orders';
-import { OrderStatusLabel, type OrderStatus, type Order } from '../../types';
+import { OrderStatusLabel, type OrderStatus } from '../../types';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
-import Button from '../../components/ui/Button';
 
 const AdminOrdersPage: React.FC = () => {
   const [page, setPage] = useState(1);

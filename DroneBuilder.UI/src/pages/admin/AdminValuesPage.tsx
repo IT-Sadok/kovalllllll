@@ -64,11 +64,6 @@ const AdminValuesPage: React.FC = () => {
     onError: () => toast.error('Failed to delete value'),
   });
 
-  const openCreate = () => {
-    reset({ text: '' });
-    setEditTarget(null);
-    setModalType('create');
-  };
 
   const openEdit = (v: Value) => {
     reset({ text: v.text });

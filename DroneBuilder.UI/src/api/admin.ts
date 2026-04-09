@@ -118,7 +118,7 @@ export const getValues = () =>
   api.get<Value[]>('/values').then((r) => r.data);
 
 // POST /values [Admin] body: { text, propertyId }
-export const createValue = (text: string, propertyId: string) =>
+export const createValue = (text: string, propertyId?: string) =>
   api.post<Value>('/values', { text, propertyId }).then((r) => r.data);
 
 // PATCH /values/{valueId} [Admin] body: { text? }
