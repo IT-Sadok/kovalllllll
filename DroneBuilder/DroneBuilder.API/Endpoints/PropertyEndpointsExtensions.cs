@@ -1,4 +1,4 @@
-﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
@@ -62,10 +62,19 @@ public static class PropertyEndpointsExtensions
                 }).WithTags("Properties")
             .RequireAuthorization();
 
-        app.Map(ApiRoutes.Properties.AssignValueToProperty, async (IMediator mediator, Guid propertyId, Guid valueId,
+        app.MapPost(ApiRoutes.Properties.AssignValueToProperty, async (IMediator mediator, Guid propertyId, Guid valueId,
                 CancellationToken cancellationToken) =>
             {
                 await mediator.ExecuteCommandAsync(new AddValueToPropertyCommand(propertyId, valueId),
+                    cancellationToken);
+                return Results.NoContent();
+            }).WithTags("Properties")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapDelete(ApiRoutes.Properties.RemoveValueFromProperty, async (IMediator mediator, Guid propertyId, Guid valueId,
+                CancellationToken cancellationToken) =>
+            {
+                await mediator.ExecuteCommandAsync(new RemoveValueFromPropertyCommand(propertyId, valueId),
                     cancellationToken);
                 return Results.NoContent();
             }).WithTags("Properties")

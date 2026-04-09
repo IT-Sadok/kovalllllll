@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
@@ -56,7 +56,10 @@ public class CreateOrderCommandHandler(
         var order = new Order
         {
             UserId = userContext.UserId,
-            ShippingDetails = JsonSerializer.Serialize(command.ShippingDetails),
+            ShippingDetails = JsonSerializer.Serialize(command.ShippingDetails, new JsonSerializerOptions 
+            { 
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+            }),
             OrderItems = orderItems,
             TotalPrice = orderItems.Sum(i => i.PriceAtPurchase * i.Quantity)
         };

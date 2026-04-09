@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.API.Endpoints.Routes;
+namespace DroneBuilder.API.Endpoints.Routes;
 
 public abstract class ApiRoutes
 {
@@ -19,8 +19,11 @@ public abstract class ApiRoutes
         public const string Create = BaseRoute;
         public const string Update = BaseRoute + "/{productId}";
         public const string Delete = BaseRoute + "/{productId}";
+        public const string GetCategories = BaseRoute + "/categories";
         public const string GetPropertiesByProductId = BaseRoute + "/{productId}/properties";
-        public const string AssignPropertyToProduct = BaseRoute + "/{productId}/properties/{propertyId}";
+        public const string AssignValueToProductProperty = BaseRoute + "/{productId}/properties/{propertyId}/values/{valueId}";
+        public const string RemoveValueFromProductProperty = BaseRoute + "/{productId}/properties/{propertyId}/values/{valueId}";
+        public const string RemovePropertyFromProduct = BaseRoute + "/{productId}/properties/{propertyId}";
     }
 
     public static class Properties
@@ -32,6 +35,7 @@ public abstract class ApiRoutes
         public const string GetAll = BaseRoute;
         public const string GetValuesByPropertyId = BaseRoute + "/{propertyId}/values";
         public const string AssignValueToProperty = BaseRoute + "/{propertyId}/values/{valueId}";
+        public const string RemoveValueFromProperty = BaseRoute + "/{propertyId}/values/{valueId}";
     }
 
     public static class Values
@@ -52,6 +56,7 @@ public abstract class ApiRoutes
         public const string GetById = BaseRoute + "/{imageId}";
         public const string GetAll = BaseRoute;
         public const string GetImagesByProductId = BaseRoute + "/product/{productId}";
+        public const string SetPrimary = BaseRoute + "/{imageId}/set-primary";
     }
 
     public static class Cart
@@ -81,6 +86,8 @@ public abstract class ApiRoutes
         public const string CreateOrder = BaseRoute;
         public const string GetOrderById = BaseRoute + "/{orderId}";
         public const string GetAllOrders = BaseRoute;
+        public const string GetAllAdminOrders = BaseRoute + "/admin";
         public const string PayForOrder = BaseRoute + "/{orderId}/pay";
+        public const string UpdateStatus = BaseRoute + "/{orderId}/status";
     }
 }

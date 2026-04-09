@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
@@ -29,11 +29,6 @@ public class CreateProductCommandHandler(
         }
 
         var product = mapper.Map<Product>(command.Model);
-
-        var property = mapper.Map<Property>(command.Model.Properties);
-
-
-        product.Properties?.Add(property);
 
         await productRepository.AddProductAsync(product, cancellationToken);
 

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
@@ -17,6 +17,18 @@ public class DeleteImageCommandHandler(IAzureStorageService azureStorageService,
         }
 
         await azureStorageService.DeleteFileAsync(existingImage.Url);
+        
+        // If we are deleting the primary image, we should try to promote another one
+        if (existingImage.IsPrimary)
+        {
+            var otherImages = await imageRepository.GetImagesByProductIdAsync(existingImage.ProductId, cancellationToken);
+            var nextPrimary = otherImages.FirstOrDefault(x => x.Id != existingImage.Id);
+            if (nextPrimary != null)
+            {
+                nextPrimary.IsPrimary = true;
+                // No need to call Update specifically if tracking is enabled, but ensuring it's in the repo context
+            }
+        }
 
         imageRepository.RemoveImage(existingImage);
         await imageRepository.SaveChangesAsync(cancellationToken);

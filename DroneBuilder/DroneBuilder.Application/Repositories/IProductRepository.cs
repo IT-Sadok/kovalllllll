@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Domain.Entities;
 
@@ -20,6 +20,8 @@ public interface IProductRepository
         CancellationToken cancellationToken = default);
 
     void RemoveProduct(Product product);
+
+    Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default);
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

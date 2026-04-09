@@ -1,4 +1,4 @@
-﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Commands.ImageCommands;
@@ -84,6 +84,18 @@ public static class ImageEndpointExtensions
                             cancellationToken);
 
                     return Results.Ok(result);
+                })
+            .WithTags("Images")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapPost(ApiRoutes.Images.SetPrimary,
+                async (IMediator mediator, Guid imageId, CancellationToken cancellationToken) =>
+                {
+                    var command = new SetPrimaryImageCommand(imageId);
+
+                    await mediator.ExecuteCommandAsync(command, cancellationToken);
+
+                    return Results.Ok();
                 })
             .WithTags("Images")
             .RequireAuthorization(PolicyNames.Admin);

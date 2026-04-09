@@ -1,4 +1,4 @@
-﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
@@ -38,10 +38,22 @@ public static class CartEndpointExtensions
             .WithTags("Cart")
             .RequireAuthorization();
         app.MapDelete(ApiRoutes.Cart.RemoveItemFromCart,
-                async (IMediator mediator, Guid productId,
+                async (IMediator mediator, Guid itemId,
                     CancellationToken cancellationToken) =>
                 {
-                    var command = new RemoveItemFromCartCommand(productId);
+                    var command = new RemoveItemFromCartCommand(itemId);
+
+                    await mediator.ExecuteCommandAsync(command, cancellationToken);
+                    return Results.NoContent();
+                })
+            .WithTags("Cart")
+            .RequireAuthorization();
+
+        app.MapPatch(ApiRoutes.Cart.AddItemToCart + "/{productId}",
+                async (IMediator mediator, Guid productId, [FromBody] int quantity,
+                    CancellationToken cancellationToken) =>
+                {
+                    var command = new UpdateCartItemQuantityCommand(productId, quantity);
 
                     await mediator.ExecuteCommandAsync(command, cancellationToken);
                     return Results.NoContent();

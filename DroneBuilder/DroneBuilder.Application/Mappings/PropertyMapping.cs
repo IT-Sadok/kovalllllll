@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Domain.Entities;
 using Mapster;
 
@@ -14,15 +14,12 @@ public class PropertyMapping : IRegister
         config.NewConfig<CreatePropertyModel, Property>()
             .Map(dest => dest.Name, src => src.Name)
             .Map(dest => dest.Values, src => src.Values)
-            .Ignore(dest => dest.Id)
-            .Ignore(dest => dest.Products);
+            .Ignore(dest => dest.Id);
 
         config.NewConfig<UpdatePropertyModel, Property>()
             .IgnoreNullValues(true)
             .Ignore(dest => dest.Id)
-            .Ignore(dest => dest.Values)
-            .Ignore(dest => dest.Products);
-
+            .Ignore(dest => dest.Values);
 
         config.NewConfig<Property, ICollection<PropertyModel>>();
     }

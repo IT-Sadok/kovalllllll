@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
@@ -29,12 +29,15 @@ public class UploadImageCommandHandler(
             throw new ValidationException("Failed to upload image to storage.");
         }
 
+        var existingImages = await imageRepository.GetImagesByProductIdAsync(command.ProductId, cancellationToken);
+        
         var image = new Image
         {
             ProductId = command.ProductId,
             Url = url,
             FileName = command.File.FileName,
-            UploadedAt = DateTime.UtcNow
+            UploadedAt = DateTime.UtcNow,
+            IsPrimary = existingImages.Count == 0
         };
 
         await imageRepository.AddImageAsync(image, cancellationToken);
