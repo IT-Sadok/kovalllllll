@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Models.ProductModels;
 
@@ -9,4 +9,6 @@ public class ProductPropertiesResponseModel
     public decimal Price { get; set; }
     public string Category { get; set; } = string.Empty;
     public ICollection<PropertyModel> Properties { get; set; } = [];
+    public ICollection<ImageModel> Images { get; set; } = [];
+    public int StockQuantity { get; set; }
 }

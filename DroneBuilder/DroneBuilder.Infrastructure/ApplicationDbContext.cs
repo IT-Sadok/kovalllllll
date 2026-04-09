@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +19,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             Name = "Main Warehouse",
             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         });
+
+        builder.Entity<ProductPropertyValue>()
+            .HasKey(ppv => new { ppv.ProductId, ppv.PropertyId, ppv.ValueId });
     }
 
     public DbSet<Message> Messages { get; set; }
@@ -26,6 +29,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Image> Images { get; set; }
     public DbSet<Property> Properties { get; set; }
     public DbSet<Value> Values { get; set; }
+    public DbSet<ProductPropertyValue> ProductPropertyValues { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }

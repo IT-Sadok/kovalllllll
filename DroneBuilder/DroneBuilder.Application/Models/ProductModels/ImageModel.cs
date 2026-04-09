@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Models.ProductModels;
+namespace DroneBuilder.Application.Models.ProductModels;
 
 public class ImageModel
 {
@@ -6,4 +6,5 @@ public class ImageModel
     public string Url { get; set; }
     public string FileName { get; set; }
     public DateTime UploadedAt { get; set; }
+    public bool IsPrimary { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models.WarehouseModels;
+using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Domain.Entities;
 using Mapster;
 
@@ -20,6 +20,7 @@ public class WarehouseMapping : IRegister
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.WarehouseId, src => src.WarehouseId)
             .Map(dest => dest.ProductId, src => src.ProductId)
+            .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : "Unknown")
             .Map(dest => dest.Quantity, src => src.Quantity);
 
         config.NewConfig<Warehouse, ICollection<WarehouseItemModel>>()

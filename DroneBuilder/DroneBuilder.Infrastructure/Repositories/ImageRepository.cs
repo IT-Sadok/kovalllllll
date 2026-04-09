@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,11 +17,20 @@ public class ImageRepository(ApplicationDbContext dbContext) : IImageRepository
             .FindAsync([id],
                 cancellationToken: cancellationToken);
     }
+    
 
     public async Task<ICollection<Image>> GetImagesAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Images
             .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ICollection<Image>> GetImagesByProductIdAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Images
+            .Where(x => x.ProductId == productId)
+            .OrderByDescending(x => x.IsPrimary)
             .ToListAsync(cancellationToken);
     }
 

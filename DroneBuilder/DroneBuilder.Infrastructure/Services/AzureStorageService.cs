@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;

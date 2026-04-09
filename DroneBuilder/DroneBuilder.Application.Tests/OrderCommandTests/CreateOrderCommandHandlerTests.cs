@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
@@ -419,7 +419,7 @@ public class CreateOrderCommandHandlerTests
         Assert.NotNull(capturedOrder.ShippingDetails);
 
         var deserializedDetails = JsonSerializer.Deserialize<ShippingDetailsModel>(
-            capturedOrder.ShippingDetails);
+            capturedOrder.ShippingDetails, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         Assert.NotNull(deserializedDetails);
         Assert.Equal(shippingDetails.FullName, deserializedDetails.FullName);

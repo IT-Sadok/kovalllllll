@@ -1,4 +1,4 @@
-﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
@@ -25,36 +25,36 @@ public static class WarehouseEndpointExtensions
             .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Warehouses.GetItemById,
-                async (IMediator mediator, Guid warehouseItemId, CancellationToken cancellationToken) =>
+                async (IMediator mediator, Guid itemId, CancellationToken cancellationToken) =>
                 {
                     var result = await mediator.ExecuteQueryAsync<GetWarehouseItemByIdQuery, WarehouseItemModel>(
-                        new GetWarehouseItemByIdQuery(warehouseItemId),
+                        new GetWarehouseItemByIdQuery(itemId),
                         cancellationToken);
                     return Results.Ok(result);
                 })
             .WithTags("Warehouse")
             .RequireAuthorization(PolicyNames.Admin);
 
-        app.MapPost(ApiRoutes.Warehouses.AddQuantityToItem, async (IMediator mediator, Guid warehouseItemId,
+        app.MapPost(ApiRoutes.Warehouses.AddQuantityToItem, async (IMediator mediator, Guid itemId,
                 [FromBody] AddQuantityModel model,
                 CancellationToken cancellationToken) =>
             {
                 var result =
                     await mediator.ExecuteCommandAsync<AddQuantityToWarehouseItemCommand, WarehouseItemModel>(
-                        new AddQuantityToWarehouseItemCommand(warehouseItemId, model),
+                        new AddQuantityToWarehouseItemCommand(itemId, model),
                         cancellationToken);
                 return Results.Ok(result);
             })
             .WithTags("Warehouse")
             .RequireAuthorization(PolicyNames.Admin);
 
-        app.MapDelete(ApiRoutes.Warehouses.RemoveQuantityFromItem, async (IMediator mediator, Guid warehouseItemId,
+        app.MapDelete(ApiRoutes.Warehouses.RemoveQuantityFromItem, async (IMediator mediator, Guid itemId,
                 [FromBody] RemoveQuantityModel model,
                 CancellationToken cancellationToken) =>
             {
                 var result =
                     await mediator.ExecuteCommandAsync<RemoveQuantityFromWarehouseItemCommand, WarehouseItemModel>(
-                        new RemoveQuantityFromWarehouseItemCommand(warehouseItemId, model),
+                        new RemoveQuantityFromWarehouseItemCommand(itemId, model),
                         cancellationToken);
                 return Results.Ok(result);
             })

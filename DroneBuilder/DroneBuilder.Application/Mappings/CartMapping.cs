@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models.CartModels;
+using DroneBuilder.Application.Models.CartModels;
 using DroneBuilder.Domain.Entities;
 using Mapster;
 
@@ -24,7 +24,10 @@ public class CartMapping : IRegister
             .Map(dest => dest.ProductId, src => src.ProductId)
             .Map(dest => dest.Quantity, src => src.Quantity)
             .Map(dest => dest.Price, src => src.Product != null ? src.Product.Price : 0m)
-            .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : src.ProductName);
+            .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : src.ProductName)
+            .Map(dest => dest.ProductImageUrl, src => (src.Product != null && src.Product.Images != null && src.Product.Images.Any()) 
+                ? (src.Product.Images.FirstOrDefault(x => x.IsPrimary) ?? src.Product.Images.First()).Url 
+                : string.Empty);
 
         config.NewConfig<CreateCartItemModel, CartItem>()
             .Map(dest => dest.ProductId, src => src.ProductId)

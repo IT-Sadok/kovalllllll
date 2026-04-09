@@ -81,6 +81,9 @@ namespace DroneBuilder.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
@@ -220,6 +223,26 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("DroneBuilder.Domain.Entities.ProductPropertyValue", b =>
+                {
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ValueId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ProductId", "PropertyId", "ValueId");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("ValueId");
+
+                    b.ToTable("ProductPropertyValues");
                 });
 
             modelBuilder.Entity("DroneBuilder.Domain.Entities.Property", b =>
@@ -500,21 +523,6 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ProductProperty", b =>
-                {
-                    b.Property<Guid>("ProductsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("PropertiesId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ProductsId", "PropertiesId");
-
-                    b.HasIndex("PropertiesId");
-
-                    b.ToTable("ProductProperty");
-                });
-
             modelBuilder.Entity("PropertyValue", b =>
                 {
                     b.Property<Guid>("PropertiesId")
@@ -601,6 +609,33 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("DroneBuilder.Domain.Entities.ProductPropertyValue", b =>
+                {
+                    b.HasOne("DroneBuilder.Domain.Entities.Product", "Product")
+                        .WithMany("ProductPropertyValues")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DroneBuilder.Domain.Entities.Property", "Property")
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DroneBuilder.Domain.Entities.Value", "Value")
+                        .WithMany()
+                        .HasForeignKey("ValueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Property");
+
+                    b.Navigation("Value");
+                });
+
             modelBuilder.Entity("DroneBuilder.Domain.Entities.WarehouseItem", b =>
                 {
                     b.HasOne("DroneBuilder.Domain.Entities.Product", "Product")
@@ -671,21 +706,6 @@ namespace DroneBuilder.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProductProperty", b =>
-                {
-                    b.HasOne("DroneBuilder.Domain.Entities.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DroneBuilder.Domain.Entities.Property", null)
-                        .WithMany()
-                        .HasForeignKey("PropertiesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("PropertyValue", b =>
                 {
                     b.HasOne("DroneBuilder.Domain.Entities.Property", null)
@@ -714,6 +734,8 @@ namespace DroneBuilder.Infrastructure.Migrations
             modelBuilder.Entity("DroneBuilder.Domain.Entities.Product", b =>
                 {
                     b.Navigation("Images");
+
+                    b.Navigation("ProductPropertyValues");
                 });
 
             modelBuilder.Entity("DroneBuilder.Domain.Entities.User", b =>

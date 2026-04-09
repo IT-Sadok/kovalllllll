@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Repositories;
@@ -10,6 +10,10 @@ public interface IOrderRepository
 
     Task<PagedResult<Order>> GetOrdersByUserIdAsync(
         Guid userId,
+        PaginationParams pagination,
+        CancellationToken cancellationToken = default);
+
+    Task<PagedResult<Order>> GetPagedOrdersAsync(
         PaginationParams pagination,
         CancellationToken cancellationToken = default);
 

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
@@ -51,8 +51,16 @@ public static class ProductEndpointsExtensions
                         query,
                         cancellationToken);
                     return Results.Ok(result);
-                }).WithTags("Products")
-            .RequireAuthorization();
+                }).WithTags("Products");
+
+        app.MapGet(ApiRoutes.Products.GetCategories,
+                async (IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    var result = await mediator.ExecuteQueryAsync<GetCategoriesQuery, IEnumerable<string>>(
+                        new GetCategoriesQuery(),
+                        cancellationToken);
+                    return Results.Ok(result);
+                }).WithTags("Products");
 
         app.MapGet(ApiRoutes.Products.GetById,
                 async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
@@ -61,8 +69,7 @@ public static class ProductEndpointsExtensions
                         new GetProductByIdQuery(productId),
                         cancellationToken);
                     return Results.Ok(result);
-                }).WithTags("Products")
-            .RequireAuthorization();
+                }).WithTags("Products");
 
 
         app.MapGet(ApiRoutes.Products.GetPropertiesByProductId,
@@ -73,17 +80,33 @@ public static class ProductEndpointsExtensions
                             new GetPropertiesByProductIdQuery(productId),
                             cancellationToken);
                     return Results.Ok(result);
-                }).WithTags("Products")
-            .RequireAuthorization();
+                }).WithTags("Products");
 
-        app.MapPost(ApiRoutes.Products.AssignPropertyToProduct,
-                async (IMediator mediator, Guid productId, Guid propertyId, CancellationToken cancellationToken) =>
-                {
-                    await mediator.ExecuteCommandAsync(
-                        new AddPropertyToProductCommand(productId, propertyId),
-                        cancellationToken);
-                    return Results.NoContent();
-                }).WithTags("Products")
+        app.MapPost(ApiRoutes.Products.AssignValueToProductProperty, async (IMediator mediator, Guid productId, Guid propertyId, Guid valueId,
+                CancellationToken cancellationToken) =>
+            {
+                await mediator.ExecuteCommandAsync(new AddValueToProductPropertyCommand(productId, propertyId, valueId),
+                    cancellationToken);
+                return Results.NoContent();
+            }).WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapDelete(ApiRoutes.Products.RemoveValueFromProductProperty, async (IMediator mediator, Guid productId, Guid propertyId, Guid valueId,
+                CancellationToken cancellationToken) =>
+            {
+                await mediator.ExecuteCommandAsync(new RemoveValueFromProductPropertyCommand(productId, propertyId, valueId),
+                    cancellationToken);
+                return Results.NoContent();
+            }).WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapDelete(ApiRoutes.Products.RemovePropertyFromProduct, async (IMediator mediator, Guid productId, Guid propertyId,
+                CancellationToken cancellationToken) =>
+            {
+                await mediator.ExecuteCommandAsync(new RemovePropertyFromProductCommand(productId, propertyId),
+                    cancellationToken);
+                return Results.NoContent();
+            }).WithTags("Products")
             .RequireAuthorization(PolicyNames.Admin);
 
         return app;

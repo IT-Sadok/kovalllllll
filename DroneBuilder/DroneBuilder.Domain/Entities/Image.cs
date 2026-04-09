@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Entities;
+namespace DroneBuilder.Domain.Entities;
 
 public class Image
 {
@@ -6,6 +6,7 @@ public class Image
     public string Url { get; set; }
     public string FileName { get; set; }
     public DateTime UploadedAt { get; set; }
+    public bool IsPrimary { get; set; }
     public Guid ProductId { get; set; }
     public Product Product { get; set; }
 }

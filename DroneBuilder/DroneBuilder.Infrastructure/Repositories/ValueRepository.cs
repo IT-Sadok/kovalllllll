@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +14,13 @@ public class ValueRepository(ApplicationDbContext dbContext) : IValueRepository
     public async Task<Value?> GetValueByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await dbContext.Values.FindAsync([id], cancellationToken: cancellationToken);
+    }
+
+    public async Task<Value?> GetValueWithPropertiesByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Values
+            .Include(v => v.Properties)
+            .FirstOrDefaultAsync(v => v.Id == id, cancellationToken);
     }
 
     public async Task<ICollection<Value>> GetValuesAsync(CancellationToken cancellationToken = default)
