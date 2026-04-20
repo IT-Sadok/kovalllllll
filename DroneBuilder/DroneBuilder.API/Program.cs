@@ -53,16 +53,6 @@ public abstract class Program
             });
         });
 
-        // Allow large file uploads (up to 100 MB) - needed for Azure App Service
-        builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
-        {
-            options.MultipartBodyLengthLimit = 104_857_600; // 100 MB
-        });
-        builder.WebHost.ConfigureKestrel(options =>
-        {
-            options.Limits.MaxRequestBodySize = 104_857_600; // 100 MB
-        });
-
         var app = builder.Build();
 
         using (var scope = app.Services.CreateScope())
@@ -85,7 +75,7 @@ public abstract class Program
             app.UseSwaggerUI();
         }
 
-        app.UseCors("AllowAll");  // Must be BEFORE UseAuthentication so OPTIONS preflight gets CORS headers
+        app.UseCors("AllowAll"); 
 
         app.UseAuthentication();
         app.UseAuthorization();
