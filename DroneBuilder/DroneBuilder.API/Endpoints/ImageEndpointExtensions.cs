@@ -5,6 +5,7 @@ using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.ImageQueries;
 using DroneBuilder.Application.Models.ProductModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DroneBuilder.API.Endpoints;
 
@@ -13,7 +14,7 @@ public static class ImageEndpointExtensions
     public static IEndpointRouteBuilder MapImageEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapPost(ApiRoutes.Images.Upload,
-                async (IMediator mediator, IFormFile file, Guid productId, CancellationToken cancellationToken) =>
+                async (IMediator mediator, IFormFile file, [FromQuery] Guid productId, CancellationToken cancellationToken) =>
                 {
                     if (file.Length == 0)
                         return Results.BadRequest("File is empty");
