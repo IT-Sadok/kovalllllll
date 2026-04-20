@@ -58,9 +58,7 @@ export const removeWarehouseQuantity = (itemId: string, quantityToRemove: number
 export const uploadImage = (file: File, productId: string) => {
   const formData = new FormData();
   formData.append('file', file);
-  return api.post<Image>(`/images/upload?productId=${productId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }).then((r) => r.data);
+  return api.post<Image>(`/images/upload?productId=${productId}`, formData).then((r) => r.data);
 };
 
 // DELETE /images/{imageId}
