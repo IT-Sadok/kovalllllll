@@ -75,11 +75,12 @@ public abstract class Program
             app.UseSwaggerUI();
         }
 
+        app.UseCors("AllowAll"); 
+
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.UseHttpsRedirection();
-        app.UseCors("AllowAll");
 
         var webRootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
         var hasSpaAssets = Directory.Exists(webRootPath) && File.Exists(Path.Combine(webRootPath, "index.html"));
