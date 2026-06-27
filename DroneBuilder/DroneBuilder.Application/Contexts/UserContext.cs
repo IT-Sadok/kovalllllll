@@ -12,10 +12,9 @@ public class UserContext(IHttpContextAccessor contextAccessor) : IUserContext
             var userIdClaim = contextAccessor.HttpContext?.User
                 .FindFirst(ClaimTypes.NameIdentifier);
 
-            if (userIdClaim?.Value == null)
-                throw new UnauthorizedAccessException("User is not authenticated or NameIdentifier claim missing");
-
-            return Guid.Parse(userIdClaim.Value);
+            return userIdClaim?.Value == null
+                ? throw new UnauthorizedAccessException("User is not authenticated or NameIdentifier claim missing")
+                : Guid.Parse(userIdClaim.Value);
         }
     }
 

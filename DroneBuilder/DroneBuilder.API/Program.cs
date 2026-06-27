@@ -17,9 +17,6 @@ public abstract class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true,
-            reloadOnChange: true);
-
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddHttpContextAccessor();
