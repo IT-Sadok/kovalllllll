@@ -20,10 +20,7 @@ public static class InfrastructureExtensions
         var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION")
                                ?? configuration.GetConnectionString("DefaultConnection");
 
-        services.AddDbContext<ApplicationDbContext>(options =>
-        {
-            options.UseNpgsql(connectionString);
-        });
+        services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(connectionString); });
 
         services.Configure<AzureStorageConfig>(configuration.GetSection("AzureStorage"));
 
