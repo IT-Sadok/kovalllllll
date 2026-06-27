@@ -50,13 +50,13 @@ public abstract class Program
             });
         });
 
-        WebApplication app = builder.Build();
+        var app = builder.Build();
 
-        using (IServiceScope scope = app.Services.CreateScope())
+        using (var scope = app.Services.CreateScope())
         {
-            IServiceProvider services = scope.ServiceProvider;
+            var services = scope.ServiceProvider;
 
-            ApplicationDbContext dbContext = services.GetRequiredService<ApplicationDbContext>();
+            var dbContext = services.GetRequiredService<ApplicationDbContext>();
             await dbContext.Database.MigrateAsync();
 
             await IdentitySeeder.SeedRolesAndAdminAsync(services);
