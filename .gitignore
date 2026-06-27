@@ -504,4 +504,10 @@ $RECYCLE.BIN/
 # JetBrains Rider user-specific files
 *.DotSettings.user
 
+## User-specific files
 appsettings.*.json
+
+# Local publish test folders
+test-publish/
+test-wwwroot/
+wwwroot/
