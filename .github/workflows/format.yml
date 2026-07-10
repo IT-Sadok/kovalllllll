@@ -1,0 +1,30 @@
+name: CI - Format Check
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  format:
+    name: Verify .NET code formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore ./DroneBuilder/DroneBuilder.sln
+
+      - name: Verify formatting
+        run: |
+          dotnet format ./DroneBuilder/DroneBuilder.sln \
+            --verify-no-changes \
+            --verbosity diagnostic
