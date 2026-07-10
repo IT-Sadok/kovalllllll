@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Models.ProductModels;
+namespace DroneBuilder.Application.Models.ProductModels;
 
 public class ProductFilterModel
 {

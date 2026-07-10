@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Domain.Events.CartEvents;
 using DroneBuilder.Infrastructure.Common;
@@ -12,7 +12,7 @@ public class AddedItemToCartEventHandler(ILogger<AddedItemToCartEventHandler> lo
 
     public async Task HandleAsync(string json, CancellationToken cancellationToken = default)
     {
-        var @event = JsonSerializer.Deserialize<AddedItemToCartEvent>(json,
+        AddedItemToCartEvent? @event = JsonSerializer.Deserialize<AddedItemToCartEvent>(json,
             JsonSettings.JsonSerializerOptions);
         if (@event == null)
         {

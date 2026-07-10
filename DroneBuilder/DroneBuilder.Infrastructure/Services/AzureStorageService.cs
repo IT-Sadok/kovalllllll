@@ -1,9 +1,9 @@
 using Azure.Storage.Blobs;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using DroneBuilder.Application.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DroneBuilder.Infrastructure.Services;
 
@@ -19,12 +19,12 @@ public class AzureStorageService(IOptions<AzureStorageConfig> config, ILogger<Az
         logger.LogInformation("Uploading file {FileName} to Azure Blob Storage.", file.FileName);
         try
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             await containerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
-            var blobClient = containerClient.GetBlobClient(file.FileName);
+            BlobClient blobClient = containerClient.GetBlobClient(file.FileName);
 
-            await using var stream = file.OpenReadStream();
+            await using Stream stream = file.OpenReadStream();
             await blobClient.UploadAsync(stream, overwrite: true, cancellationToken);
             logger.LogInformation(
                 "File {FileName} uploaded successfully to container {BlobContainerName} with URL {Url}.",
@@ -41,9 +41,9 @@ public class AzureStorageService(IOptions<AzureStorageConfig> config, ILogger<Az
 
     public async Task DeleteFileAsync(string blobUrl, CancellationToken cancellationToken = default)
     {
-        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-        var blobName = new Uri(blobUrl).Segments.Last();
-        var blobClient = containerClient.GetBlobClient(blobName);
+        BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+        string blobName = new Uri(blobUrl).Segments.Last();
+        BlobClient blobClient = containerClient.GetBlobClient(blobName);
         await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
     }
 }

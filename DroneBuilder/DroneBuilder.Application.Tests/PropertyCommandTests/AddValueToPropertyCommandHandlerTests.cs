@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
@@ -75,7 +75,7 @@ public class AddValueToPropertyCommandHandlerTests
             .Returns((Property)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Property with ID {PropertyId} not found.", exception.Message);
@@ -110,7 +110,7 @@ public class AddValueToPropertyCommandHandlerTests
             .Returns((Value)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Value with ID {ValueId} not found.", exception.Message);
@@ -146,9 +146,8 @@ public class AddValueToPropertyCommandHandlerTests
             .Returns(value);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
-
 
         Assert.Contains($"Value with ID {ValueId} is already associated with Property ID {PropertyId}",
             exception.Message);

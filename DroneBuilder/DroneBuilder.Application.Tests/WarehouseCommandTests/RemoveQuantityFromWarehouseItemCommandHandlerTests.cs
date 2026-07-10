@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 using DroneBuilder.Application.Models.WarehouseModels;
@@ -81,7 +81,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
             .Returns(expectedModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        WarehouseItemModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -109,7 +109,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
+        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Quantity to remove must be greater than 0.", exception.Message);
@@ -130,7 +130,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
+        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Quantity to remove must be greater than 0.", exception.Message);
@@ -152,7 +152,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
             .Returns((Warehouse)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Warehouse not found.", exception.Message);
@@ -185,7 +185,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
             .Returns((WarehouseItem)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Warehouse item with id {WarehouseItemId} not found.", exception.Message);

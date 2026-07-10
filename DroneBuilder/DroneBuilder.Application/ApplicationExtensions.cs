@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using MapsterMapper;

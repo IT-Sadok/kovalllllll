@@ -1,10 +1,9 @@
-﻿using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
+using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 using NSubstitute;
-using Xunit;
 
 namespace DroneBuilder.Application.Tests.PropertyCommandTests;
 
@@ -59,7 +58,7 @@ public class CreatePropertyCommandHandlerTests
             .Returns(expectedPropertyModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        PropertyModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -128,7 +127,7 @@ public class CreatePropertyCommandHandlerTests
             .Returns(expectedModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        PropertyModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);

@@ -3,7 +3,6 @@ using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using NSubstitute;
-using Xunit;
 
 namespace DroneBuilder.Application.Tests.ProductCommandTests;
 
@@ -53,7 +52,7 @@ public class AddValueToProductPropertyCommandHandlerTests
         // Assert
         Assert.NotNull(product.ProductPropertyValues);
         Assert.Single(product.ProductPropertyValues);
-        var ppv = product.ProductPropertyValues.First();
+        ProductPropertyValue ppv = product.ProductPropertyValues.First();
         Assert.Equal(ProductId, ppv.ProductId);
         Assert.Equal(PropertyId, ppv.PropertyId);
         Assert.Equal(ValueId, ppv.ValueId);
@@ -107,7 +106,7 @@ public class AddValueToProductPropertyCommandHandlerTests
             Id = ProductId,
             ProductPropertyValues = new List<ProductPropertyValue>
             {
-                new ProductPropertyValue { ProductId = ProductId, PropertyId = PropertyId, ValueId = ValueId }
+                new() { ProductId = ProductId, PropertyId = PropertyId, ValueId = ValueId }
             }
         };
 

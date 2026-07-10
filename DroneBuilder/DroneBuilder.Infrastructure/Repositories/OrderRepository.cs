@@ -17,16 +17,16 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
         PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Orders
+        IOrderedQueryable<Order> query = dbContext.Orders
             .Where(o => o.UserId == userId)
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                     .ThenInclude(p => p.Images)
             .OrderBy(o => o.CreatedAt);
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        int totalCount = await query.CountAsync(cancellationToken);
 
-        var items = await query
+        List<Order> items = await query
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);
@@ -40,21 +40,20 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
         };
     }
 
-
     public async Task<PagedResult<Order>> GetPagedOrdersAsync(
         PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Orders
+        IOrderedQueryable<Order> query = dbContext.Orders
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                     .ThenInclude(p => p.Images)
             .Include(o => o.User)
             .OrderByDescending(o => o.CreatedAt);
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        int totalCount = await query.CountAsync(cancellationToken);
 
-        var items = await query
+        List<Order> items = await query
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);
@@ -67,7 +66,6 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
             PageSize = pagination.PageSize
         };
     }
-
 
     public async Task<Order?> GetOrderByIdAsync(Guid orderId, CancellationToken cancellationToken = default)
     {

@@ -2,6 +2,7 @@ using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.OrderQueries;
@@ -11,7 +12,7 @@ public class GetAdminOrdersQueryHandler(IOrderRepository orderRepository, IMappe
 {
     public async Task<PagedResult<OrderModel>> ExecuteAsync(GetAdminOrdersQuery query, CancellationToken cancellationToken)
     {
-        var orders = await orderRepository.GetPagedOrdersAsync(query.Pagination, cancellationToken);
+        PagedResult<Order> orders = await orderRepository.GetPagedOrdersAsync(query.Pagination, cancellationToken);
 
         return new PagedResult<OrderModel>
         {

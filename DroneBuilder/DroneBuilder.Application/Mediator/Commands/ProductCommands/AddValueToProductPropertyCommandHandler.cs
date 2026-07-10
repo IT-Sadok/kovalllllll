@@ -13,19 +13,25 @@ public class AddValueToProductPropertyCommandHandler(
 {
     public async Task ExecuteCommandAsync(AddValueToProductPropertyCommand command, CancellationToken cancellationToken)
     {
-        var product = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
+        Product? product = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
         if (product == null)
+        {
             throw new NotFoundException($"Product with ID {command.ProductId} not found.");
+        }
 
-        var property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
+        Property? property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
         if (property == null)
+        {
             throw new NotFoundException($"Property with ID {command.PropertyId} not found.");
+        }
 
-        var value = await valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken);
+        Value? value = await valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken);
         if (value == null)
+        {
             throw new NotFoundException($"Value with ID {command.ValueId} not found.");
+        }
 
-        if (product.ProductPropertyValues != null && 
+        if (product.ProductPropertyValues != null &&
             product.ProductPropertyValues.Any(p => p.PropertyId == command.PropertyId && p.ValueId == command.ValueId))
         {
             throw new ValidationException($"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId} on Product ID {command.ProductId}.");
@@ -37,7 +43,7 @@ public class AddValueToProductPropertyCommandHandler(
             PropertyId = property.Id,
             ValueId = value.Id
         });
-        
+
         await productRepository.SaveChangesAsync(cancellationToken);
     }
 }

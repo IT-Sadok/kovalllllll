@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Domain.Events.WarehouseEvents;
 using DroneBuilder.Infrastructure.Common;
@@ -13,7 +13,7 @@ public class AddedQuantityToWarehouseItemEventHandler(ILogger<AddedQuantityToWar
 
     public async Task HandleAsync(string json, CancellationToken cancellationToken = default)
     {
-        var @event = JsonSerializer.Deserialize<AddedQuantityToWarehouseItemEvent>(json,
+        AddedQuantityToWarehouseItemEvent? @event = JsonSerializer.Deserialize<AddedQuantityToWarehouseItemEvent>(json,
             JsonSettings.JsonSerializerOptions);
         if (@event == null)
         {

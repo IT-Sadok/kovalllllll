@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Models.WarehouseModels;
+namespace DroneBuilder.Application.Models.WarehouseModels;
 
 public class AddQuantityModel
 {

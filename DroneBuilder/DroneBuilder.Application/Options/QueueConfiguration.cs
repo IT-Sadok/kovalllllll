@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Options;
+namespace DroneBuilder.Application.Options;
 
 public class QueueConfiguration
 {

@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Events.ProductEvents;
+namespace DroneBuilder.Domain.Events.ProductEvents;
 
 public class ProductCreatedEvent(Guid productId) : DomainEvent
 {

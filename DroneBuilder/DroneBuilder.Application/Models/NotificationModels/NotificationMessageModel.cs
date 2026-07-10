@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Models.NotificationModels;
+namespace DroneBuilder.Application.Models.NotificationModels;
 
 public class NotificationMessageModel
 {

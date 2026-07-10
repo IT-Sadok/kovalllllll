@@ -15,7 +15,7 @@ public static class ProductEndpointsExtensions
         app.MapPost(ApiRoutes.Products.Create,
                 async (IMediator mediator, CreateProductModel model, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteCommandAsync<CreateProductCommand, ProductModel>(
+                    ProductModel result = await mediator.ExecuteCommandAsync<CreateProductCommand, ProductModel>(
                         new CreateProductCommand(model),
                         cancellationToken);
                     return Results.Ok(result);
@@ -26,7 +26,7 @@ public static class ProductEndpointsExtensions
                 async (Guid productId, UpdateProductRequestModel requestModel,
                     IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteCommandAsync<UpdateProductCommand, ProductModel>(
+                    ProductModel result = await mediator.ExecuteCommandAsync<UpdateProductCommand, ProductModel>(
                         new UpdateProductCommand(productId, requestModel),
                         cancellationToken);
                     return Results.Ok(result);
@@ -47,7 +47,7 @@ public static class ProductEndpointsExtensions
                 {
                     var pagination = new PaginationParams(page, pageSize);
                     var query = new GetProductsQuery(pagination, filter);
-                    var result = await mediator.ExecuteQueryAsync<GetProductsQuery, PagedResult<ProductModel>>(
+                    PagedResult<ProductModel> result = await mediator.ExecuteQueryAsync<GetProductsQuery, PagedResult<ProductModel>>(
                         query,
                         cancellationToken);
                     return Results.Ok(result);
@@ -56,7 +56,7 @@ public static class ProductEndpointsExtensions
         app.MapGet(ApiRoutes.Products.GetCategories,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetCategoriesQuery, IEnumerable<string>>(
+                    IEnumerable<string> result = await mediator.ExecuteQueryAsync<GetCategoriesQuery, IEnumerable<string>>(
                         new GetCategoriesQuery(),
                         cancellationToken);
                     return Results.Ok(result);
@@ -65,17 +65,16 @@ public static class ProductEndpointsExtensions
         app.MapGet(ApiRoutes.Products.GetById,
                 async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetProductByIdQuery, ProductModel>(
+                    ProductModel result = await mediator.ExecuteQueryAsync<GetProductByIdQuery, ProductModel>(
                         new GetProductByIdQuery(productId),
                         cancellationToken);
                     return Results.Ok(result);
                 }).WithTags("Products");
 
-
         app.MapGet(ApiRoutes.Products.GetPropertiesByProductId,
                 async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
                 {
-                    var result =
+                    ProductPropertiesResponseModel result =
                         await mediator.ExecuteQueryAsync<GetPropertiesByProductIdQuery, ProductPropertiesResponseModel>(
                             new GetPropertiesByProductIdQuery(productId),
                             cancellationToken);

@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Events.CartEvents;
+namespace DroneBuilder.Domain.Events.CartEvents;
 
 public class ClearedCartEvent(Guid userId) : DomainEvent
 {

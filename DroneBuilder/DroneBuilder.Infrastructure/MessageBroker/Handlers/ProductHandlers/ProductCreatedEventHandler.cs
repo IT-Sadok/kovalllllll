@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Domain.Events.ProductEvents;
 using DroneBuilder.Infrastructure.Common;
@@ -12,7 +12,7 @@ public class ProductCreatedEventHandler(ILogger<ProductCreatedEventHandler> logg
 
     public async Task HandleAsync(string json, CancellationToken cancellationToken = default)
     {
-        var @event = JsonSerializer.Deserialize<ProductCreatedEvent>(json,
+        ProductCreatedEvent? @event = JsonSerializer.Deserialize<ProductCreatedEvent>(json,
             JsonSettings.JsonSerializerOptions);
         if (@event == null)
         {

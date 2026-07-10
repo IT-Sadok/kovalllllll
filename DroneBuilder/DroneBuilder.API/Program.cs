@@ -15,7 +15,7 @@ public abstract class Program
 {
     public static async Task Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddSwaggerGen();
 
@@ -50,13 +50,13 @@ public abstract class Program
             });
         });
 
-        var app = builder.Build();
+        WebApplication app = builder.Build();
 
-        using (var scope = app.Services.CreateScope())
+        using (IServiceScope scope = app.Services.CreateScope())
         {
-            var services = scope.ServiceProvider;
+            IServiceProvider services = scope.ServiceProvider;
 
-            var dbContext = services.GetRequiredService<ApplicationDbContext>();
+            ApplicationDbContext dbContext = services.GetRequiredService<ApplicationDbContext>();
             await dbContext.Database.MigrateAsync();
 
             await IdentitySeeder.SeedRolesAndAdminAsync(services);
@@ -72,15 +72,16 @@ public abstract class Program
             app.UseSwaggerUI();
         }
 
-        app.UseCors("AllowAll"); 
+        app.UseCors("AllowAll");
 
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.UseHttpsRedirection();
 
-        var webRootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
-        var hasSpaAssets = Directory.Exists(webRootPath) && File.Exists(Path.Combine(webRootPath, "index.html"));
+        string webRootSegment = "wwwroot".TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        string webRootPath = Path.Join(app.Environment.ContentRootPath, webRootSegment);
+        bool hasSpaAssets = Directory.Exists(webRootPath) && File.Exists(Path.Combine(webRootPath, "index.html"));
 
         if (hasSpaAssets)
         {
@@ -102,6 +103,6 @@ public abstract class Program
             app.MapFallbackToFile("index.html");
         }
 
-        app.Run();
+        await app.RunAsync();
     }
 }

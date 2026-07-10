@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Repositories;
@@ -29,7 +29,7 @@ public class RemoveItemFromCartCommandHandlerTests
         _cartRepository = Substitute.For<ICartRepository>();
         _productRepository = Substitute.For<IProductRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
-        var userContext = Substitute.For<IUserContext>();
+        IUserContext userContext = Substitute.For<IUserContext>();
 
         userContext.UserId.Returns(UserId);
 
@@ -102,7 +102,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns((Cart)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Cart for User ID {UserId} not found.", exception.Message);
@@ -138,7 +138,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns((Product)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Product with ID {ProductId} not found.", exception.Message);
@@ -184,7 +184,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns(product);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Product with ID {ProductId} not found in the cart.", exception.Message);
@@ -237,7 +237,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns((WarehouseItem)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Warehouse item for Product ID {ProductId} not found.", exception.Message);
@@ -387,7 +387,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns(product);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Product with ID {ProductId} not found in the cart.", exception.Message);

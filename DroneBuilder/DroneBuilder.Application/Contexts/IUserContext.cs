@@ -1,7 +1,7 @@
-﻿namespace DroneBuilder.Application.Contexts;
+namespace DroneBuilder.Application.Contexts;
 
 public interface IUserContext
 {
-    public Guid UserId { get; }
-    public string UserEmail { get; }
+    Guid UserId { get; }
+    string UserEmail { get; }
 }

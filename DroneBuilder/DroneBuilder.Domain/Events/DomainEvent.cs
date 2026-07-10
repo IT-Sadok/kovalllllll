@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Events;
+namespace DroneBuilder.Domain.Events;
 
 public abstract class DomainEvent
 {

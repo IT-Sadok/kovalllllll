@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
 namespace DroneBuilder.Application.Contexts;
@@ -9,7 +9,7 @@ public class UserContext(IHttpContextAccessor contextAccessor) : IUserContext
     {
         get
         {
-            var userIdClaim = contextAccessor.HttpContext?.User
+            Claim? userIdClaim = contextAccessor.HttpContext?.User
                 .FindFirst(ClaimTypes.NameIdentifier);
 
             return userIdClaim?.Value == null
@@ -17,7 +17,6 @@ public class UserContext(IHttpContextAccessor contextAccessor) : IUserContext
                 : Guid.Parse(userIdClaim.Value);
         }
     }
-
 
     public string UserEmail
         => contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;

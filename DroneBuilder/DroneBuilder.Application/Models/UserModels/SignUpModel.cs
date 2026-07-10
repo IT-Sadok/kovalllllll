@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Models.UserModels;
+namespace DroneBuilder.Application.Models.UserModels;
 
 public class SignUpModel
 {

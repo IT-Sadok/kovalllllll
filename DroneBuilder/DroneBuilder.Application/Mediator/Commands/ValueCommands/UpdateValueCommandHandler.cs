@@ -1,7 +1,8 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.ValueCommands;
@@ -12,7 +13,7 @@ public class UpdateValueCommandHandler(IValueRepository valueRepository, IMapper
     public async Task<ValueModel> ExecuteCommandAsync(UpdateValueCommand command,
         CancellationToken cancellationToken)
     {
-        var value = await valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken);
+        Value? value = await valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken);
 
         if (value is null)
         {
@@ -20,7 +21,9 @@ public class UpdateValueCommandHandler(IValueRepository valueRepository, IMapper
         }
 
         if (command.Model.Text is not null)
+        {
             value.Text = command.Model.Text;
+        }
 
         await valueRepository.SaveChangesAsync(cancellationToken);
 

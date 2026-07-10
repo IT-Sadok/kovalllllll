@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models.UserModels;
+using DroneBuilder.Application.Models.UserModels;
 using Mapster;
 
 namespace DroneBuilder.Application.Mappings;

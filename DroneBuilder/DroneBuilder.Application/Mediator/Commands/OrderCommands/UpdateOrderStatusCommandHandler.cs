@@ -5,12 +5,12 @@ using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
 
-public class UpdateOrderStatusCommandHandler(IOrderRepository orderRepository) 
+public class UpdateOrderStatusCommandHandler(IOrderRepository orderRepository)
     : ICommandHandler<UpdateOrderStatusCommand>
 {
     public async Task ExecuteCommandAsync(UpdateOrderStatusCommand command, CancellationToken cancellationToken)
     {
-        var order = await orderRepository.GetOrderByIdAsync(command.OrderId, cancellationToken);
+        Order? order = await orderRepository.GetOrderByIdAsync(command.OrderId, cancellationToken);
         if (order is null)
         {
             throw new NotFoundException($"Order with ID {command.OrderId} not found.");

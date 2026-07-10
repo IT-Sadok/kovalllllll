@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
@@ -32,7 +32,7 @@ public class AddItemToCartCommandHandlerTests
         _outboxService = Substitute.For<IOutboxEventService>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _productRepository = Substitute.For<IProductRepository>();
-        var userContext = Substitute.For<IUserContext>();
+        IUserContext userContext = Substitute.For<IUserContext>();
 
         var queuesConfig = new MessageQueuesConfiguration
         {
@@ -225,7 +225,7 @@ public class AddItemToCartCommandHandlerTests
             .Returns((Product)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Product with ID {ProductId} not found.", exception.Message);
@@ -256,7 +256,7 @@ public class AddItemToCartCommandHandlerTests
             .Returns((WarehouseItem)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Warehouse item for product ID {ProductId} not found.", exception.Message);
@@ -289,7 +289,7 @@ public class AddItemToCartCommandHandlerTests
             .Returns(warehouseItem);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
+        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Quantity must be greater than zero.", exception.Message);
@@ -322,7 +322,7 @@ public class AddItemToCartCommandHandlerTests
             .Returns(warehouseItem);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
+        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Quantity must be greater than zero.", exception.Message);

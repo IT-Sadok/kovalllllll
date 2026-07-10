@@ -102,7 +102,7 @@ public class CreateProductCommandHandlerTests
             .Returns(expectedProductModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        ProductModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -149,7 +149,7 @@ public class CreateProductCommandHandlerTests
             .Returns((Warehouse)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Warehouse not found.", exception.Message);
@@ -247,7 +247,7 @@ public class CreateProductCommandHandlerTests
         _mapper.Map<ProductModel>(Arg.Any<Product>())
             .Returns(new ProductModel());
 
-        var capturedProductId = Guid.Empty;
+        Guid capturedProductId = Guid.Empty;
         await _outboxService.StoreEventAsync(
             Arg.Do<ProductCreatedEvent>(e => capturedProductId = e.ProductId),
             Arg.Any<string>(),

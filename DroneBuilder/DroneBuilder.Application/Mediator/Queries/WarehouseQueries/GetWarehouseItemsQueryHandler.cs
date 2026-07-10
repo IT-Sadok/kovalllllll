@@ -1,8 +1,9 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
@@ -13,7 +14,7 @@ public class GetWarehouseItemsQueryHandler(IWarehouseRepository warehouseReposit
     public async Task<PagedResult<WarehouseItemModel>> ExecuteAsync(GetWarehouseItemsQuery query,
         CancellationToken cancellationToken)
     {
-        var warehouseItems = await warehouseRepository.GetWarehouseItemsAsync(
+        PagedResult<WarehouseItem>? warehouseItems = await warehouseRepository.GetWarehouseItemsAsync(
             query.Pagination,
             cancellationToken);
 

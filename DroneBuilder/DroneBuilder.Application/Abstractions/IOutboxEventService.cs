@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Domain.Events;
+using DroneBuilder.Domain.Events;
 
 namespace DroneBuilder.Application.Abstractions;
 

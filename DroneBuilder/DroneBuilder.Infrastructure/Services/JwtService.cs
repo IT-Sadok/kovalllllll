@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using DroneBuilder.Application.Abstractions;
@@ -18,13 +18,13 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userM
 
     public async Task<string> GenerateJwtTokenAsync(string userId)
     {
-        var user = await userManager.FindByIdAsync(userId);
+        User? user = await userManager.FindByIdAsync(userId);
         if (user == null)
         {
             throw new NotFoundException($"User with id {userId} not found.");
         }
 
-        var roles = await userManager.GetRolesAsync(user);
+        IList<string> roles = await userManager.GetRolesAsync(user);
 
         var claims = new List<Claim>
         {

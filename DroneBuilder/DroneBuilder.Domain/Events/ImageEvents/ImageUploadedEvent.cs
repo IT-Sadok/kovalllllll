@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Events.ImageEvents;
+namespace DroneBuilder.Domain.Events.ImageEvents;
 
 public class ImageUploadedEvent(Guid imageId, Guid productId) : DomainEvent
 {

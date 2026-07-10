@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.OrderCommands;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
@@ -63,7 +63,7 @@ public class PayForOrderCommandHandlerTests
             .Returns((Order)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Order with id {OrderId} not found.", exception.Message);
@@ -89,7 +89,7 @@ public class PayForOrderCommandHandlerTests
             .Returns(order);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
+        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Order is not in new status.", exception.Message);
@@ -117,7 +117,7 @@ public class PayForOrderCommandHandlerTests
             .Returns(order);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
+        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Order is already paid.", exception.Message);

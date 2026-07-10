@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Exceptions;
+namespace DroneBuilder.Application.Exceptions;
 
 public class NotFoundException : Exception
 {

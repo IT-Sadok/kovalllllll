@@ -22,15 +22,15 @@ public class UploadImageCommandHandler(
     public async Task<ImageModel> ExecuteCommandAsync(UploadImageCommand command,
         CancellationToken cancellationToken)
     {
-        var (success, url) = await azureStorageService.UploadFileAsync(command.File, cancellationToken);
+        (bool success, string? url) = await azureStorageService.UploadFileAsync(command.File, cancellationToken);
 
         if (!success)
         {
             throw new ValidationException("Failed to upload image to storage.");
         }
 
-        var existingImages = await imageRepository.GetImagesByProductIdAsync(command.ProductId, cancellationToken);
-        
+        ICollection<Image> existingImages = await imageRepository.GetImagesByProductIdAsync(command.ProductId, cancellationToken);
+
         var image = new Image
         {
             ProductId = command.ProductId,

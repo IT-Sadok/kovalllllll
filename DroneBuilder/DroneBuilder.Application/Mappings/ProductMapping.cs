@@ -1,6 +1,6 @@
-using Mapster;
-using DroneBuilder.Domain.Entities;
 using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Domain.Entities;
+using Mapster;
 
 namespace DroneBuilder.Application.Mappings;
 
@@ -23,7 +23,6 @@ public class ProductMapping : IRegister
                 }).ToList())
             .Map(dest => dest.Images, src => src.Images != null ? src.Images.OrderByDescending(i => i.IsPrimary).ToList() : null);
 
-
         config.NewConfig<Product, ProductPropertiesResponseModel>()
             .Map(dest => dest.Properties, src => src.ProductPropertyValues
                 .GroupBy(ppv => ppv.Property.Id)
@@ -38,7 +37,6 @@ public class ProductMapping : IRegister
                     }).ToList()
                 }).ToList())
             .Map(dest => dest.Images, src => src.Images);
-
 
         config.NewConfig<CreateProductModel, Product>()
             .Map(dest => dest.Name, src => src.Name)

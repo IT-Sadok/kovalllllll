@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Domain.Entities;
 using Mapster;
 

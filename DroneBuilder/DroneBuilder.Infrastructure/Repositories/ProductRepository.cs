@@ -52,7 +52,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         ProductFilterModel filter,
         CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Products
+        IQueryable<Product> query = dbContext.Products
             .AsNoTracking()
             .Include(p => p.Images)
             .Include(p => p.ProductPropertyValues)
@@ -63,7 +63,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
-            var name = filter.Name.Trim().ToLower();
+            string name = filter.Name.Trim().ToLower();
             query = query.Where(p => p.Name.ToLower().Contains(name));
         }
 
@@ -79,13 +79,13 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
         if (!string.IsNullOrWhiteSpace(filter.Category))
         {
-            var category = filter.Category.Trim().ToLower();
+            string category = filter.Category.Trim().ToLower();
             query = query.Where(p => p.Category.ToLower() == category);
         }
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        int totalCount = await query.CountAsync(cancellationToken);
 
-        var items = await query
+        List<Product> items = await query
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);

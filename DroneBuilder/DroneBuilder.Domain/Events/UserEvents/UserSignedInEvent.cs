@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Events.UserEvents;
+namespace DroneBuilder.Domain.Events.UserEvents;
 
 public class UserSignedInEvent(Guid userId, string email) : DomainEvent
 {

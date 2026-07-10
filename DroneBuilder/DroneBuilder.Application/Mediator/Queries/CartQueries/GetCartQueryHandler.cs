@@ -1,8 +1,9 @@
-﻿using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.CartModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.CartQueries;
@@ -12,7 +13,7 @@ public class GetCartQueryHandler(ICartRepository cartRepository, IMapper mapper,
 {
     public async Task<CartModel> ExecuteAsync(GetCartByUserIdQuery query, CancellationToken cancellationToken)
     {
-        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
+        Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
         if (cart == null)
         {

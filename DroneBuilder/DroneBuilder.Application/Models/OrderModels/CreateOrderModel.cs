@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Models.OrderModels;
 

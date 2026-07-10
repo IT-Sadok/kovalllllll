@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.API.Authorization;
+namespace DroneBuilder.API.Authorization;
 
 public static class PolicyNames
 {

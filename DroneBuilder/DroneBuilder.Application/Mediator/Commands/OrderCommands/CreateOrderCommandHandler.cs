@@ -24,26 +24,30 @@ public class CreateOrderCommandHandler(
 {
     public async Task<OrderModel> ExecuteCommandAsync(CreateOrderCommand command, CancellationToken cancellationToken)
     {
-        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
+        Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
         if (cart is null || cart.CartItems.Count == 0)
+        {
             throw new BadRequestException("Cart is empty.");
+        }
 
         var productIds = cart.CartItems.Select(ci => ci.ProductId).ToList();
 
-        var warehouseItem = await warehouseRepository
+        ICollection<WarehouseItem>? warehouseItem = await warehouseRepository
             .GetAllWarehouseItemsByProductIdsAsync(productIds, cancellationToken);
 
-        foreach (var item in cart.CartItems)
+        foreach (CartItem item in cart.CartItems)
         {
             if (warehouseItem is null)
+            {
                 throw new NotFoundException($"Product {item.ProductId} not found in warehouse.");
+            }
         }
 
-        var products = await productRepository.GetProductsByIdsAsync(productIds, cancellationToken);
+        ICollection<Product> products = await productRepository.GetProductsByIdsAsync(productIds, cancellationToken);
 
         var orderItems = cart.CartItems.Select(ci =>
         {
-            var product = products.First(p => p.Id == ci.ProductId);
+            Product product = products.First(p => p.Id == ci.ProductId);
 
             return new OrderItem
             {
@@ -56,9 +60,9 @@ public class CreateOrderCommandHandler(
         var order = new Order
         {
             UserId = userContext.UserId,
-            ShippingDetails = JsonSerializer.Serialize(command.ShippingDetails, new JsonSerializerOptions 
-            { 
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+            ShippingDetails = JsonSerializer.Serialize(command.ShippingDetails, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             }),
             OrderItems = orderItems,
             TotalPrice = orderItems.Sum(i => i.PriceAtPurchase * i.Quantity)
@@ -66,10 +70,10 @@ public class CreateOrderCommandHandler(
 
         await orderRepository.CreateOrderAsync(order, cancellationToken);
         await cartRepository.ClearCartAsync(cart.Id, cancellationToken);
-        
+
         var @event = new OrderCreatedEvent(order.Id, userContext.UserId);
         await outboxService.StoreEventAsync(@event, queuesConfig.OrderQueue.Name, cancellationToken);
-        
+
         await orderRepository.SaveChangesAsync(cancellationToken);
 
         return mapper.Map<OrderModel>(order);

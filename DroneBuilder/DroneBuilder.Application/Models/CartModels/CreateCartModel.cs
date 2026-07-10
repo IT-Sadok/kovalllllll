@@ -1,5 +1,3 @@
-﻿using DroneBuilder.Domain.Entities;
-
 namespace DroneBuilder.Application.Models.CartModels;
 
 public class CreateCartModel

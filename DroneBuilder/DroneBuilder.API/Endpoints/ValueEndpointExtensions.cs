@@ -1,4 +1,4 @@
-﻿using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
@@ -14,7 +14,7 @@ public static class ValueEndpointExtensions
         app.MapPost(ApiRoutes.Values.Create,
                 async (IMediator mediator, CreateValueModel model, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteCommandAsync<CreateValueCommand, ValueModel>(
+                    ValueModel result = await mediator.ExecuteCommandAsync<CreateValueCommand, ValueModel>(
                         new CreateValueCommand(model),
                         cancellationToken);
                     return Results.Ok(result);
@@ -33,7 +33,7 @@ public static class ValueEndpointExtensions
         app.MapPatch(ApiRoutes.Values.Update, async (IMediator mediator, Guid valueId,
                 UpdateValueModel model, CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteCommandAsync<UpdateValueCommand, ValueModel>(
+                ValueModel result = await mediator.ExecuteCommandAsync<UpdateValueCommand, ValueModel>(
                     new UpdateValueCommand(valueId, model),
                     cancellationToken);
                 return Results.Ok(result);
@@ -43,7 +43,7 @@ public static class ValueEndpointExtensions
         app.MapGet(ApiRoutes.Values.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetValuesQuery, ICollection<ValueModel>>(
+                    ICollection<ValueModel> result = await mediator.ExecuteQueryAsync<GetValuesQuery, ICollection<ValueModel>>(
                         new GetValuesQuery(),
                         cancellationToken);
                     return Results.Ok(result);
@@ -51,11 +51,10 @@ public static class ValueEndpointExtensions
             .WithTags("Values")
             .RequireAuthorization();
 
-
         app.MapGet(ApiRoutes.Values.GetById,
                 async (IMediator mediator, Guid valueId, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetValueByIdQuery, ValueModel>(
+                    ValueModel result = await mediator.ExecuteQueryAsync<GetValueByIdQuery, ValueModel>(
                         new GetValueByIdQuery(valueId),
                         cancellationToken);
                     return Results.Ok(result);

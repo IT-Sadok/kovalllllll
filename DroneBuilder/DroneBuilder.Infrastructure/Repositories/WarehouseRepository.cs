@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -37,13 +37,13 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
     public async Task<PagedResult<WarehouseItem>> GetWarehouseItemsAsync(PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
-        var query = dbContext.WarehouseItems
+        IOrderedQueryable<WarehouseItem> query = dbContext.WarehouseItems
             .Include(wi => wi.Product)
             .OrderBy(wi => wi.Product!.Name);
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        int totalCount = await query.CountAsync(cancellationToken);
 
-        var items = await query
+        List<WarehouseItem> items = await query
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);

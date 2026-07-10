@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Events.OrderEvents;
+namespace DroneBuilder.Domain.Events.OrderEvents;
 
 public class OrderCreatedEvent(Guid orderId, Guid userId) : DomainEvent
 {

@@ -41,7 +41,7 @@ public class CreateOrderCommandHandlerTests
         _productRepository = Substitute.For<IProductRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
-        var userContext = Substitute.For<IUserContext>();
+        IUserContext userContext = Substitute.For<IUserContext>();
         _mapper = Substitute.For<IMapper>();
 
         var queuesConfig = new MessageQueuesConfiguration
@@ -133,7 +133,7 @@ public class CreateOrderCommandHandlerTests
             .Returns(expectedOrderModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        OrderModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -184,7 +184,7 @@ public class CreateOrderCommandHandlerTests
             .Returns(cart);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
+        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Cart is empty.", exception.Message);
@@ -222,7 +222,7 @@ public class CreateOrderCommandHandlerTests
             .Returns((Cart)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
+        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Cart is empty.", exception.Message);
@@ -273,7 +273,7 @@ public class CreateOrderCommandHandlerTests
             .Returns((List<WarehouseItem>)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Contains($"Product {ProductId1} not found in warehouse.", exception.Message);
@@ -418,7 +418,7 @@ public class CreateOrderCommandHandlerTests
         Assert.NotNull(capturedOrder);
         Assert.NotNull(capturedOrder.ShippingDetails);
 
-        var deserializedDetails = JsonSerializer.Deserialize<ShippingDetailsModel>(
+        ShippingDetailsModel? deserializedDetails = JsonSerializer.Deserialize<ShippingDetailsModel>(
             capturedOrder.ShippingDetails, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         Assert.NotNull(deserializedDetails);
@@ -479,8 +479,8 @@ public class CreateOrderCommandHandlerTests
         _mapper.Map<OrderModel>(Arg.Any<Order>())
             .Returns(new OrderModel());
 
-        var capturedOrderId = Guid.Empty;
-        var capturedUserId = Guid.Empty;
+        Guid capturedOrderId = Guid.Empty;
+        Guid capturedUserId = Guid.Empty;
 
         await _outboxService.StoreEventAsync(
             Arg.Do<OrderCreatedEvent>(e =>
@@ -619,7 +619,7 @@ public class CreateOrderCommandHandlerTests
 
         // Assert
         Assert.NotNull(capturedOrder);
-        var orderItem = capturedOrder.OrderItems.First();
+        OrderItem orderItem = capturedOrder.OrderItems.First();
         Assert.Equal(currentPrice, orderItem.PriceAtPurchase);
         Assert.Equal(currentPrice * 2, capturedOrder.TotalPrice);
     }
@@ -687,11 +687,11 @@ public class CreateOrderCommandHandlerTests
         Assert.NotNull(capturedOrder);
         Assert.Equal(2, capturedOrder.OrderItems.Count);
 
-        var orderItem1 = capturedOrder.OrderItems.First(oi => oi.ProductId == ProductId1);
+        OrderItem orderItem1 = capturedOrder.OrderItems.First(oi => oi.ProductId == ProductId1);
         Assert.Equal(2, orderItem1.Quantity);
         Assert.Equal(50m, orderItem1.PriceAtPurchase);
 
-        var orderItem2 = capturedOrder.OrderItems.First(oi => oi.ProductId == ProductId2);
+        OrderItem orderItem2 = capturedOrder.OrderItems.First(oi => oi.ProductId == ProductId2);
         Assert.Equal(5, orderItem2.Quantity);
         Assert.Equal(30m, orderItem2.PriceAtPurchase);
 

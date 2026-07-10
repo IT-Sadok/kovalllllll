@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Models.UserModels;
@@ -97,7 +97,7 @@ public class SignInCommandHandlerTests
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        AuthUserModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -132,7 +132,7 @@ public class SignInCommandHandlerTests
             .ReturnsAsync((User)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidEmailOrPasswordException>(() =>
+        InvalidEmailOrPasswordException exception = await Assert.ThrowsAsync<InvalidEmailOrPasswordException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Invalid email or password.", exception.Message);
@@ -174,7 +174,7 @@ public class SignInCommandHandlerTests
             .ReturnsAsync(false);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidEmailOrPasswordException>(() =>
+        InvalidEmailOrPasswordException exception = await Assert.ThrowsAsync<InvalidEmailOrPasswordException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Invalid email or password.", exception.Message);

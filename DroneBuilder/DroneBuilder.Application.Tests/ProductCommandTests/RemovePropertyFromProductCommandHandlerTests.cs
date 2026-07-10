@@ -3,7 +3,6 @@ using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using NSubstitute;
-using Xunit;
 
 namespace DroneBuilder.Application.Tests.ProductCommandTests;
 
