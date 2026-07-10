@@ -1,4 +1,5 @@
 using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Documentation;
 using DroneBuilder.API.Endpoints;
 using DroneBuilder.API.Extensions;
 using DroneBuilder.API.Middleware;
@@ -8,6 +9,8 @@ using DroneBuilder.Infrastructure;
 using DroneBuilder.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
 
 namespace DroneBuilder.API;
 
@@ -16,8 +19,6 @@ public abstract class Program
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-        builder.Services.AddSwaggerGen();
 
         builder.Services.AddHttpContextAccessor();
 
@@ -31,7 +32,28 @@ public abstract class Program
             .AddPolicy(PolicyNames.Admin, policy => policy.RequireRole("Admin"))
             .AddPolicy(PolicyNames.User, policy => policy.RequireRole("User"));
 
-        builder.Services.AddOpenApi();
+        builder.Services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                document.Info = new OpenApiInfo
+                {
+                    Title = "DroneBuilder API",
+                    Version = "v1",
+                    Description = "API for managing drone products, configurations, orders and warehouse operations.",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "DroneBuilder Dev Team",
+                        Email = "dev@dronebuilder.io"
+                    }
+                };
+
+                return Task.CompletedTask;
+            });
+
+            options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+            options.AddOperationTransformer<BearerSecurityOperationTransformer>();
+        });
 
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddProblemDetails();
@@ -68,8 +90,11 @@ public abstract class Program
         {
             app.MapOpenApi();
 
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            app.MapScalarApiReference(options =>
+            {
+                options.Title = "DroneBuilder API";
+                options.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+            });
         }
 
         app.UseCors("AllowAll");
