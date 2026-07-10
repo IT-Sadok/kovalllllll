@@ -8,7 +8,7 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        string basePath = Path.Combine(Directory.GetCurrentDirectory(), "../DroneBuilder.API");
+        string basePath = Path.GetFullPath("../DroneBuilder.API", Directory.GetCurrentDirectory());
 
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .SetBasePath(basePath)

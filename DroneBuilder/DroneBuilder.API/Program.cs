@@ -79,7 +79,8 @@ public abstract class Program
 
         app.UseHttpsRedirection();
 
-        string webRootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+        string webRootSegment = "wwwroot".TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        string webRootPath = Path.Combine(app.Environment.ContentRootPath, webRootSegment);
         bool hasSpaAssets = Directory.Exists(webRootPath) && File.Exists(Path.Combine(webRootPath, "index.html"));
 
         if (hasSpaAssets)
