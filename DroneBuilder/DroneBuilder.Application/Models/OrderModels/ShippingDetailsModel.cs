@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Application.Models.OrderModels;
+namespace DroneBuilder.Application.Models.OrderModels;
 
 public class ShippingDetailsModel
 {

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
@@ -32,7 +32,7 @@ public class ClearCartCommandHandlerTests
         _cartRepository = Substitute.For<ICartRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
-        var userContext = Substitute.For<IUserContext>();
+        IUserContext userContext = Substitute.For<IUserContext>();
 
         var queuesConfig = new MessageQueuesConfiguration
         {
@@ -124,7 +124,7 @@ public class ClearCartCommandHandlerTests
             .Returns((Cart)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Cart for user ID {UserId} not found.", exception.Message);
@@ -172,7 +172,7 @@ public class ClearCartCommandHandlerTests
             .Returns((WarehouseItem)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Contains($"Warehouse item for product {ProductId1} not found while clearing cart.", exception.Message);
@@ -246,7 +246,7 @@ public class ClearCartCommandHandlerTests
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
             .Returns(cart);
 
-        foreach (var cartItem in cartItems)
+        foreach (CartItem cartItem in cartItems)
         {
             var warehouseItem = new WarehouseItem
             {

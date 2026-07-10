@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
@@ -62,7 +62,7 @@ public class UpdateValueCommandHandlerTests
             .Returns(expectedValueModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        ValueModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -88,7 +88,7 @@ public class UpdateValueCommandHandlerTests
             .Returns((Value)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Value with id {ValueId} not found.", exception.Message);

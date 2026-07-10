@@ -15,19 +15,19 @@ public class CreateValueCommandHandler(
     public async Task<ValueModel> ExecuteCommandAsync(CreateValueCommand command,
         CancellationToken cancellationToken)
     {
-        var property = await propertyRepository.GetPropertyByIdAsync(command.Model.PropertyId, cancellationToken);
+        Property? property = await propertyRepository.GetPropertyByIdAsync(command.Model.PropertyId, cancellationToken);
         if (property == null)
         {
             throw new Exception($"Property with ID {command.Model.PropertyId} not found");
         }
 
-        var value = mapper.Map<Value>(command.Model);
+        Value value = mapper.Map<Value>(command.Model);
 
         await valueRepository.AddValueAsync(value, cancellationToken);
-        
+
         // Link value to property
         property.Values.Add(value);
-        
+
         await valueRepository.SaveChangesAsync(cancellationToken);
 
         return mapper.Map<ValueModel>(value);

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
@@ -9,16 +9,21 @@ public class PayForOrderCommandHandler(IOrderRepository orderRepository) : IComm
 {
     public async Task ExecuteCommandAsync(PayForOrderCommand payForOrderCommand, CancellationToken cancellationToken)
     {
-        var order = await orderRepository.GetOrderByIdAsync(payForOrderCommand.OrderId, cancellationToken);
+        Order? order = await orderRepository.GetOrderByIdAsync(payForOrderCommand.OrderId, cancellationToken);
         if (order is null)
+        {
             throw new NotFoundException($"Order with id {payForOrderCommand.OrderId} not found.");
-
+        }
 
         if (order.Status == Status.Paid)
+        {
             throw new BadRequestException("Order is already paid.");
+        }
 
         if (order.Status != Status.New)
+        {
             throw new BadRequestException("Order is not in new status.");
+        }
 
         order.Status = Status.Paid;
 

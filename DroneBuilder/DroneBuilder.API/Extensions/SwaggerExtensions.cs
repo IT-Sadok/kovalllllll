@@ -1,4 +1,3 @@
-﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 
 namespace DroneBuilder.API.Extensions;
@@ -17,7 +16,7 @@ public static class SwaggerExtensions
             });
 
             c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
-            
+
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -43,7 +42,6 @@ public static class SwaggerExtensions
                 }
             });
         });
-
 
         return services;
     }

@@ -1,10 +1,11 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.Validation;
+using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
@@ -19,17 +20,16 @@ public class ClearCartCommandHandler(
 {
     public async Task ExecuteCommandAsync(ClearCartCommand command, CancellationToken cancellationToken)
     {
-        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
+        Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
         if (cart == null)
         {
             throw new NotFoundException($"Cart for user ID {userContext.UserId} not found.");
         }
 
-
-        foreach (var cartItem in cart.CartItems)
+        foreach (CartItem cartItem in cart.CartItems)
         {
-            var warehouseItem =
+            WarehouseItem? warehouseItem =
                 await warehouseRepository.GetWarehouseItemByProductIdAsync(cartItem.ProductId, cancellationToken);
 
             if (warehouseItem == null)

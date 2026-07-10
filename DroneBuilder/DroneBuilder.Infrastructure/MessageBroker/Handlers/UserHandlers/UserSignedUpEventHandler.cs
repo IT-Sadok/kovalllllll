@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Domain.Events.UserEvents;
 using DroneBuilder.Infrastructure.Common;
@@ -12,7 +12,7 @@ public class UserSignedUpEventHandler(ILogger<UserSignedUpEventHandler> logger) 
 
     public async Task HandleAsync(string json, CancellationToken cancellationToken = default)
     {
-        var @event = JsonSerializer.Deserialize<UserSignedUpEvent>(json,
+        UserSignedUpEvent? @event = JsonSerializer.Deserialize<UserSignedUpEvent>(json,
             JsonSettings.JsonSerializerOptions);
 
         if (@event == null)

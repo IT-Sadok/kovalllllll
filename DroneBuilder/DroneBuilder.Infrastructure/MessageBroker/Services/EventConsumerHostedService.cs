@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Options;
@@ -20,8 +20,8 @@ public class EventConsumerHostedService(
     private IConnection? _connection;
     private IChannel? _channel;
 
-    private List<QueueConfiguration> GetQueuesToListen() =>
-    [
+    private List<QueueConfiguration> GetQueuesToListen()
+    => [
         queuesConfig.UserQueue,
         queuesConfig.CartQueue,
         queuesConfig.OrderQueue,
@@ -76,9 +76,9 @@ public class EventConsumerHostedService(
         _connection = await factory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
-        var queuesToListen = GetQueuesToListen();
+        List<QueueConfiguration> queuesToListen = GetQueuesToListen();
 
-        foreach (var queueConfig in queuesToListen)
+        foreach (QueueConfiguration queueConfig in queuesToListen)
         {
             await _channel.QueueDeclareAsync(
                 queue: queueConfig.Name,
@@ -103,18 +103,17 @@ public class EventConsumerHostedService(
     private async Task StartConsumingFromAllQueuesAsync(CancellationToken cancellationToken)
     {
         if (_channel == null)
+        {
             throw new InvalidOperationException("RabbitMQ channel is not initialized");
+        }
 
-        var queuesToListen = GetQueuesToListen();
+        List<QueueConfiguration> queuesToListen = GetQueuesToListen();
 
-        foreach (var queueConfig in queuesToListen)
+        foreach (QueueConfiguration queueConfig in queuesToListen)
         {
             var consumer = new AsyncEventingBasicConsumer(_channel);
 
-            consumer.ReceivedAsync += async (sender, eventArgs) =>
-            {
-                await HandleEventAsync(queueConfig, eventArgs, cancellationToken);
-            };
+            consumer.ReceivedAsync += async (sender, eventArgs) => await HandleEventAsync(queueConfig, eventArgs, cancellationToken);
 
             await _channel.BasicConsumeAsync(
                 queue: queueConfig.Name,
@@ -135,12 +134,12 @@ public class EventConsumerHostedService(
     {
         try
         {
-            var body = eventArgs.Body.ToArray();
-            var json = Encoding.UTF8.GetString(body);
+            byte[] body = eventArgs.Body.ToArray();
+            string json = Encoding.UTF8.GetString(body);
 
             logger.LogInformation("Event received from queue '{Queue}'", queueConfig.Name);
 
-            var eventType = ExtractEventType(json);
+            string? eventType = ExtractEventType(json);
             if (eventType == null)
             {
                 await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
@@ -149,10 +148,10 @@ public class EventConsumerHostedService(
 
             logger.LogInformation("Event type: {EventType}", eventType);
 
-            using var scope = serviceProvider.CreateScope();
+            using IServiceScope scope = serviceProvider.CreateScope();
 
-            var handlers = scope.ServiceProvider.GetServices<IEventHandler>();
-            var handler = handlers.FirstOrDefault(h => h.EventType == eventType);
+            IEnumerable<IEventHandler> handlers = scope.ServiceProvider.GetServices<IEventHandler>();
+            IEventHandler? handler = handlers.FirstOrDefault(h => h.EventType == eventType);
 
             if (handler == null)
             {
@@ -179,14 +178,17 @@ public class EventConsumerHostedService(
         try
         {
             var doc = JsonDocument.Parse(json);
-            if (!doc.RootElement.TryGetProperty("type", out var typeProperty))
+            if (!doc.RootElement.TryGetProperty("type", out JsonElement typeProperty))
             {
                 logger.LogWarning("Event payload missing 'type' property");
                 return null;
             }
 
-            var eventType = typeProperty.GetString();
-            if (!string.IsNullOrEmpty(eventType)) return eventType;
+            string? eventType = typeProperty.GetString();
+            if (!string.IsNullOrEmpty(eventType))
+            {
+                return eventType;
+            }
 
             logger.LogWarning("Event type is null or empty");
 
@@ -203,8 +205,16 @@ public class EventConsumerHostedService(
     {
         try
         {
-            if (_channel != null) await _channel.CloseAsync();
-            if (_connection != null) await _connection.CloseAsync();
+            if (_channel != null)
+            {
+                await _channel.CloseAsync();
+            }
+
+            if (_connection != null)
+            {
+                await _connection.CloseAsync();
+            }
+
             logger.LogInformation("Consumer disposed");
         }
         catch (Exception ex)

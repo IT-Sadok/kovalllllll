@@ -1,7 +1,8 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.PropertyCommands;
@@ -12,7 +13,7 @@ public class UpdatePropertyCommandHandler(IPropertyRepository propertyRepository
     public async Task<PropertyModel> ExecuteCommandAsync(UpdatePropertyCommand command,
         CancellationToken cancellationToken)
     {
-        var property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
+        Property? property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
 
         if (property is null)
         {
@@ -20,7 +21,9 @@ public class UpdatePropertyCommandHandler(IPropertyRepository propertyRepository
         }
 
         if (command.Model.Name is not null)
+        {
             property.Name = command.Model.Name;
+        }
 
         await propertyRepository.SaveChangesAsync(cancellationToken);
 

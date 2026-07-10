@@ -1,6 +1,5 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
-using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.OrderCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.OrderQueries;
@@ -19,7 +18,7 @@ public static class OrderEndpointExtensions
                 async (IMediator mediator, ShippingDetailsModel shippingDetails,
                     CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteCommandAsync<CreateOrderCommand, OrderModel>(
+                    OrderModel result = await mediator.ExecuteCommandAsync<CreateOrderCommand, OrderModel>(
                         new CreateOrderCommand(shippingDetails),
                         cancellationToken);
                     return Results.Ok(result);
@@ -31,7 +30,7 @@ public static class OrderEndpointExtensions
                 {
                     var pagination = new PaginationParams(page, pageSize);
 
-                    var result = await mediator.ExecuteQueryAsync<GetOrdersQuery, PagedResult<OrderModel>>(
+                    PagedResult<OrderModel> result = await mediator.ExecuteQueryAsync<GetOrdersQuery, PagedResult<OrderModel>>(
                         new GetOrdersQuery(pagination),
                         cancellationToken);
                     return Results.Ok(result);
@@ -51,7 +50,7 @@ public static class OrderEndpointExtensions
                 {
                     var pagination = new PaginationParams(page, pageSize);
 
-                    var result = await mediator.ExecuteQueryAsync<GetAdminOrdersQuery, PagedResult<OrderModel>>(
+                    PagedResult<OrderModel> result = await mediator.ExecuteQueryAsync<GetAdminOrdersQuery, PagedResult<OrderModel>>(
                         new GetAdminOrdersQuery(pagination),
                         cancellationToken);
                     return Results.Ok(result);

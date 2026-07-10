@@ -4,7 +4,6 @@ using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.PropertyQueries;
 using DroneBuilder.Application.Models.ProductModels;
-using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.API.Endpoints;
 
@@ -15,7 +14,7 @@ public static class PropertyEndpointsExtensions
         app.MapPost(ApiRoutes.Properties.Create,
                 async (IMediator mediator, CreatePropertyModel model, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteCommandAsync<CreatePropertyCommand, PropertyModel>(
+                    PropertyModel result = await mediator.ExecuteCommandAsync<CreatePropertyCommand, PropertyModel>(
                         new CreatePropertyCommand(model),
                         cancellationToken);
                     return Results.Ok(result);
@@ -34,7 +33,7 @@ public static class PropertyEndpointsExtensions
         app.MapPatch(ApiRoutes.Properties.Update, async (IMediator mediator, Guid propertyId,
                 UpdatePropertyModel model, CancellationToken cancellationToken) =>
             {
-                var result = await mediator.ExecuteCommandAsync<UpdatePropertyCommand, PropertyModel>(
+                PropertyModel result = await mediator.ExecuteCommandAsync<UpdatePropertyCommand, PropertyModel>(
                     new UpdatePropertyCommand(propertyId, model),
                     cancellationToken);
                 return Results.Ok(result);
@@ -44,7 +43,7 @@ public static class PropertyEndpointsExtensions
         app.MapGet(ApiRoutes.Properties.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetPropertiesQuery, ICollection<PropertyModel>>(
+                    ICollection<PropertyModel> result = await mediator.ExecuteQueryAsync<GetPropertiesQuery, ICollection<PropertyModel>>(
                         new GetPropertiesQuery(),
                         cancellationToken);
                     return Results.Ok(result);
@@ -55,7 +54,7 @@ public static class PropertyEndpointsExtensions
         app.MapGet(ApiRoutes.Properties.GetValuesByPropertyId,
                 async (IMediator mediator, Guid propertyId, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetValuesByPropertyIdQuery, PropertyModel>(
+                    PropertyModel result = await mediator.ExecuteQueryAsync<GetValuesByPropertyIdQuery, PropertyModel>(
                         new GetValuesByPropertyIdQuery(propertyId),
                         cancellationToken);
                     return Results.Ok(result);

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
@@ -104,7 +104,7 @@ public class SignUpCommandHandlerTests
         };
         var command = new SignUpUserCommand(signUpModel);
 
-        var errors = new[]
+        IdentityError[] errors = new[]
         {
             new IdentityError { Description = ErrorMessage }
         };
@@ -117,7 +117,7 @@ public class SignUpCommandHandlerTests
             .ReturnsAsync(failedResult);
 
         // Act
-        var exception =
+        InvalidOperationException exception =
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _handler.ExecuteCommandAsync(command, CancellationToken.None));
 

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
@@ -12,7 +12,7 @@ public class CreatePropertyCommandHandler(IPropertyRepository propertyRepository
     public async Task<PropertyModel> ExecuteCommandAsync(CreatePropertyCommand command,
         CancellationToken cancellationToken)
     {
-        var property = mapper.Map<Property>(command.Model);
+        Property property = mapper.Map<Property>(command.Model);
 
         await propertyRepository.AddPropertyAsync(property, cancellationToken);
         await propertyRepository.SaveChangesAsync(cancellationToken);

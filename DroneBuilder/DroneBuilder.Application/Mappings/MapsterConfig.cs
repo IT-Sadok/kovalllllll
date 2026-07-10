@@ -1,4 +1,4 @@
-﻿using Mapster;
+using Mapster;
 
 namespace DroneBuilder.Application.Mappings;
 
@@ -6,7 +6,7 @@ public static class MapsterConfig
 {
     public static TypeAdapterConfig Configure()
     {
-        var config = TypeAdapterConfig.GlobalSettings;
+        TypeAdapterConfig config = TypeAdapterConfig.GlobalSettings;
 
         config.Scan(typeof(MapsterConfig).Assembly);
 

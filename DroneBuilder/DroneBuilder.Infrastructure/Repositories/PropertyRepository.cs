@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +32,6 @@ public class PropertyRepository(ApplicationDbContext dbContext) : IPropertyRepos
             .Include(p => p.Values)
             .FirstAsync(p => p.Id == propertyId, cancellationToken);
     }
-
 
     public void RemoveProperty(Property property)
     {

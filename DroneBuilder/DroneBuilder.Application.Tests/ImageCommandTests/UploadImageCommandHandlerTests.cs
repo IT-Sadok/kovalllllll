@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Models.ProductModels;
@@ -50,7 +50,7 @@ public class UploadImageCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenUploadSucceeds_ShouldSaveImageAndReturnModel()
     {
         // Arrange
-        var mockFile = Substitute.For<IFormFile>();
+        IFormFile mockFile = Substitute.For<IFormFile>();
         mockFile.FileName.Returns(FileName);
 
         var command = new UploadImageCommand(mockFile, ProductId);
@@ -73,7 +73,7 @@ public class UploadImageCommandHandlerTests
             .Returns(expectedImageModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        ImageModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -108,7 +108,7 @@ public class UploadImageCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenUploadFails_ShouldThrowValidationException()
     {
         // Arrange
-        var mockFile = Substitute.For<IFormFile>();
+        IFormFile mockFile = Substitute.For<IFormFile>();
         mockFile.FileName.Returns(FileName);
 
         var command = new UploadImageCommand(mockFile, ProductId);
@@ -119,7 +119,7 @@ public class UploadImageCommandHandlerTests
             .Returns((false, string.Empty));
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal("Failed to upload image to storage.", exception.Message);
@@ -148,7 +148,7 @@ public class UploadImageCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenSuccessful_ShouldCreateImageWithCorrectProperties()
     {
         // Arrange
-        var mockFile = Substitute.For<IFormFile>();
+        IFormFile mockFile = Substitute.For<IFormFile>();
         mockFile.FileName.Returns(FileName);
 
         var command = new UploadImageCommand(mockFile, ProductId);
@@ -184,7 +184,7 @@ public class UploadImageCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenSuccessful_ShouldGenerateCorrectEvent()
     {
         // Arrange
-        var mockFile = Substitute.For<IFormFile>();
+        IFormFile mockFile = Substitute.For<IFormFile>();
         mockFile.FileName.Returns(FileName);
 
         var command = new UploadImageCommand(mockFile, ProductId);
@@ -200,8 +200,8 @@ public class UploadImageCommandHandlerTests
                 img.FileName == FileName))
             .Returns(new ImageModel());
 
-        var capturedImageId = Guid.Empty;
-        var capturedProductId = Guid.Empty;
+        Guid capturedImageId = Guid.Empty;
+        Guid capturedProductId = Guid.Empty;
 
         await _outboxService.StoreEventAsync(
             Arg.Do<ImageUploadedEvent>(e =>
@@ -224,7 +224,7 @@ public class UploadImageCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenSuccessful_ShouldPassCorrectQueueName()
     {
         // Arrange
-        var mockFile = Substitute.For<IFormFile>();
+        IFormFile mockFile = Substitute.For<IFormFile>();
         mockFile.FileName.Returns(FileName);
 
         var command = new UploadImageCommand(mockFile, ProductId);
@@ -257,7 +257,7 @@ public class UploadImageCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenSuccessful_ShouldMapImageToModel()
     {
         // Arrange
-        var mockFile = Substitute.For<IFormFile>();
+        IFormFile mockFile = Substitute.For<IFormFile>();
         mockFile.FileName.Returns(FileName);
 
         var command = new UploadImageCommand(mockFile, ProductId);
@@ -278,7 +278,7 @@ public class UploadImageCommandHandlerTests
             .Returns(expectedImageModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        ImageModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(mappedImage);
@@ -295,7 +295,7 @@ public class UploadImageCommandHandlerTests
         var productId1 = Guid.NewGuid();
         var productId2 = Guid.NewGuid();
 
-        var mockFile = Substitute.For<IFormFile>();
+        IFormFile mockFile = Substitute.For<IFormFile>();
         mockFile.FileName.Returns(FileName);
 
         var command1 = new UploadImageCommand(mockFile, productId1);
@@ -325,11 +325,11 @@ public class UploadImageCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenSuccessful_ShouldSetUploadedAtToUtcNow()
     {
         // Arrange
-        var mockFile = Substitute.For<IFormFile>();
+        IFormFile mockFile = Substitute.For<IFormFile>();
         mockFile.FileName.Returns(FileName);
 
         var command = new UploadImageCommand(mockFile, ProductId);
-        var beforeExecution = DateTime.UtcNow;
+        DateTime beforeExecution = DateTime.UtcNow;
 
         _azureStorageService.UploadFileAsync(
                 Arg.Is<IFormFile>(f => f.FileName == FileName),
@@ -347,7 +347,7 @@ public class UploadImageCommandHandlerTests
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        var afterExecution = DateTime.UtcNow;
+        DateTime afterExecution = DateTime.UtcNow;
 
         // Assert
         Assert.NotNull(capturedImage);

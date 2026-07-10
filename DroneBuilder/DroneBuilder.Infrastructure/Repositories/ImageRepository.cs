@@ -17,7 +17,6 @@ public class ImageRepository(ApplicationDbContext dbContext) : IImageRepository
             .FindAsync([id],
                 cancellationToken: cancellationToken);
     }
-    
 
     public async Task<ICollection<Image>> GetImagesAsync(CancellationToken cancellationToken = default)
     {

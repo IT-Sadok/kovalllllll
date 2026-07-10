@@ -1,7 +1,8 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.PropertyQueries;
@@ -12,7 +13,7 @@ public class GetPropertiesQueryHandler(IPropertyRepository propertyRepository, I
     public async Task<ICollection<PropertyModel>> ExecuteAsync(GetPropertiesQuery query,
         CancellationToken cancellationToken)
     {
-        var properties = await propertyRepository.GetPropertiesAsync(cancellationToken);
+        ICollection<Property> properties = await propertyRepository.GetPropertiesAsync(cancellationToken);
 
         if (properties == null)
         {

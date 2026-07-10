@@ -1,7 +1,8 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
@@ -11,7 +12,7 @@ public class GetWarehouseQueryHandler(IWarehouseRepository warehouseRepository, 
 {
     public async Task<WarehouseModel> ExecuteAsync(GetWarehouseQuery query, CancellationToken cancellationToken)
     {
-        var warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
+        Warehouse? warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
         if (warehouse == null)
         {
             throw new NotFoundException("Warehouse not found.");

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models;
 using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Repositories;

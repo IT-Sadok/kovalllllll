@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Events.CartEvents;
+namespace DroneBuilder.Domain.Events.CartEvents;
 
 public class AddedItemToCartEvent(Guid userId, Guid productId, string productName, int quantity) : DomainEvent
 {

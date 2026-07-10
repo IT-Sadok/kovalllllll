@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
@@ -61,7 +61,7 @@ public class DeleteValueCommandHandlerTests
             .Returns((Value)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
             _handler.ExecuteCommandAsync(command, CancellationToken.None));
 
         Assert.Equal($"Value with id {ValueId} not found.", exception.Message);

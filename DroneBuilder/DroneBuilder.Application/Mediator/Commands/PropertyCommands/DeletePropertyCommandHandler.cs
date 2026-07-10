@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
@@ -10,7 +10,7 @@ public class DeletePropertyCommandHandler(IPropertyRepository propertyRepository
 {
     public async Task ExecuteCommandAsync(DeletePropertyCommand command, CancellationToken cancellationToken)
     {
-        var property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
+        Property? property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
 
         if (property is null)
         {

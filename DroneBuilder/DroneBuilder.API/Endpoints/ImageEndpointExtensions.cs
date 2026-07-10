@@ -1,6 +1,5 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
-using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.ImageQueries;
@@ -17,11 +16,13 @@ public static class ImageEndpointExtensions
                 async (IMediator mediator, IFormFile file, [FromQuery] Guid productId, CancellationToken cancellationToken) =>
                 {
                     if (file.Length == 0)
+                    {
                         return Results.BadRequest("File is empty");
+                    }
 
                     var command = new UploadImageCommand(file, productId);
 
-                    var result =
+                    ImageModel result =
                         await mediator.ExecuteCommandAsync<UploadImageCommand, ImageModel>(
                             command,
                             cancellationToken);
@@ -49,7 +50,7 @@ public static class ImageEndpointExtensions
                 {
                     var query = new GetImagesQuery();
 
-                    var result =
+                    ICollection<ImageModel> result =
                         await mediator.ExecuteQueryAsync<GetImagesQuery, ICollection<ImageModel>>(
                             query,
                             cancellationToken);
@@ -64,7 +65,7 @@ public static class ImageEndpointExtensions
                 {
                     var query = new GetImagesByProductIdQuery(productId);
 
-                    var result =
+                    ICollection<ImageModel> result =
                         await mediator.ExecuteQueryAsync<GetImagesByProductIdQuery, ICollection<ImageModel>>(
                             query,
                             cancellationToken);
@@ -79,7 +80,7 @@ public static class ImageEndpointExtensions
                 {
                     var query = new GetImageByIdQuery(imageId);
 
-                    var result =
+                    ImageModel result =
                         await mediator.ExecuteQueryAsync<GetImageByIdQuery, ImageModel>(
                             query,
                             cancellationToken);

@@ -1,11 +1,10 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
-using DroneBuilder.Domain.Events;
 using DroneBuilder.Domain.Events.UserEvents;
 using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
@@ -23,15 +22,15 @@ public class SignInCommandHandler(
 {
     public async Task<AuthUserModel> ExecuteCommandAsync(SignInCommand command, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(command.Email);
+        User? user = await userManager.FindByEmailAsync(command.Email);
         if (user == null || !await userManager.CheckPasswordAsync(user, command.Password))
         {
             throw new InvalidEmailOrPasswordException("Invalid email or password.");
         }
 
-        var token = await jwtService.GenerateJwtTokenAsync(user.Id.ToString());
+        string token = await jwtService.GenerateJwtTokenAsync(user.Id.ToString());
 
-        var authUserModel = mapper.Map<AuthUserModel>(token);
+        AuthUserModel authUserModel = mapper.Map<AuthUserModel>(token);
 
         var @event = new UserSignedInEvent(user.Id, user.Email);
         await outboxService.StoreEventAsync(@event, queuesConfig.UserQueue.Name, cancellationToken);

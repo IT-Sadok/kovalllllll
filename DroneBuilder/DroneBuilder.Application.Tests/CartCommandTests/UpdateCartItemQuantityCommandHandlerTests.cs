@@ -6,7 +6,6 @@ using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using NSubstitute;
-using Xunit;
 
 namespace DroneBuilder.Application.Tests.CartCommandTests;
 

@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
@@ -21,13 +21,13 @@ public class AddItemToCartCommandHandler(
     public async Task ExecuteCommandAsync(AddItemToCartCommand command,
         CancellationToken cancellationToken)
     {
-        var existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
+        Product? existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
         if (existingProduct == null)
         {
             throw new NotFoundException($"Product with ID {command.ProductId} not found.");
         }
 
-        var warehouseItem =
+        WarehouseItem? warehouseItem =
             await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
         if (warehouseItem == null)
         {
@@ -41,8 +41,7 @@ public class AddItemToCartCommandHandler(
 
         WarehouseValidation.ValidateState(warehouseItem);
 
-
-        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
+        Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
         if (cart == null)
         {
@@ -54,9 +53,8 @@ public class AddItemToCartCommandHandler(
             await cartRepository.CreateCartAsync(cart, cancellationToken);
         }
 
-        var existingCartItem = cart.CartItems
+        CartItem? existingCartItem = cart.CartItems
             .FirstOrDefault(ci => ci.ProductId == command.ProductId);
-
 
         if (existingCartItem == null)
         {

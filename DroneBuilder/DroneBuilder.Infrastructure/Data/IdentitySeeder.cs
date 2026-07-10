@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,11 +8,11 @@ public static class IdentitySeeder
 {
     public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
     {
-        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-        var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+        RoleManager<IdentityRole<Guid>> roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        UserManager<User> userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
         string[] roles = ["Admin", "User"];
-        foreach (var role in roles)
+        foreach (string role in roles)
         {
             if (!await roleManager.RoleExistsAsync(role))
             {
@@ -21,7 +21,7 @@ public static class IdentitySeeder
         }
 
         const string adminEmail = "admin@dronebuilder.com";
-        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        User? adminUser = await userManager.FindByEmailAsync(adminEmail);
 
         if (adminUser == null)
         {
@@ -32,7 +32,7 @@ public static class IdentitySeeder
                 EmailConfirmed = true
             };
 
-            var result = await userManager.CreateAsync(adminUser, "Admin123!");
+            IdentityResult result = await userManager.CreateAsync(adminUser, "Admin123!");
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(adminUser, "Admin");

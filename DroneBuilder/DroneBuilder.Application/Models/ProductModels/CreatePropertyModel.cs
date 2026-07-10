@@ -1,5 +1,3 @@
-﻿using Mapster.Models;
-
 namespace DroneBuilder.Application.Models.ProductModels;
 
 public class CreatePropertyModel

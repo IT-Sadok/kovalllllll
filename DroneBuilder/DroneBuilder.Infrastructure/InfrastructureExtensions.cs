@@ -1,3 +1,4 @@
+using System.Reflection;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
@@ -17,10 +18,10 @@ public static class InfrastructureExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION")
+        string? connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION")
                                ?? configuration.GetConnectionString("DefaultConnection");
 
-        services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(connectionString); });
+        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
         services.Configure<AzureStorageConfig>(configuration.GetSection("AzureStorage"));
 
@@ -54,13 +55,13 @@ public static class InfrastructureExtensions
 
     private static IServiceCollection AddEventHandlers(this IServiceCollection services)
     {
-        var assembly = typeof(InfrastructureExtensions).Assembly;
+        Assembly assembly = typeof(InfrastructureExtensions).Assembly;
 
         var handlerTypes = assembly.GetTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IEventHandler).IsAssignableFrom(t))
             .ToList();
 
-        foreach (var handlerType in handlerTypes)
+        foreach (Type? handlerType in handlerTypes)
         {
             services.AddScoped(typeof(IEventHandler), handlerType);
         }

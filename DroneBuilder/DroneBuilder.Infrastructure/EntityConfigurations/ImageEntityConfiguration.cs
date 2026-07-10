@@ -1,4 +1,4 @@
-﻿using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

@@ -1,6 +1,5 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
-using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.CartQueries;
@@ -61,13 +60,12 @@ public static class CartEndpointExtensions
             .WithTags("Cart")
             .RequireAuthorization();
 
-
         app.MapGet(ApiRoutes.Cart.GetCartItems,
                 async (IMediator mediator,
                     CancellationToken cancellationToken) =>
                 {
                     var query = new GetCartItemsQuery();
-                    var cartItems = await mediator.ExecuteQueryAsync<GetCartItemsQuery, ICollection<CartItemModel>>(
+                    ICollection<CartItemModel> cartItems = await mediator.ExecuteQueryAsync<GetCartItemsQuery, ICollection<CartItemModel>>(
                         query,
                         cancellationToken);
                     return Results.Ok(cartItems);
@@ -80,7 +78,7 @@ public static class CartEndpointExtensions
                     CancellationToken cancellationToken) =>
                 {
                     var query = new GetCartByUserIdQuery();
-                    var cart = await mediator.ExecuteQueryAsync<GetCartByUserIdQuery, CartModel>(query,
+                    CartModel cart = await mediator.ExecuteQueryAsync<GetCartByUserIdQuery, CartModel>(query,
                         cancellationToken);
                     return Results.Ok(cart);
                 })

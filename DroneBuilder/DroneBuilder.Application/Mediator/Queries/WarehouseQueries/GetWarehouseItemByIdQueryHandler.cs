@@ -1,6 +1,7 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
@@ -11,7 +12,7 @@ public class GetWarehouseItemByIdQueryHandler(IWarehouseRepository warehouseRepo
     public async Task<WarehouseItemModel> ExecuteAsync(GetWarehouseItemByIdQuery query,
         CancellationToken cancellationToken)
     {
-        var warehouseItem =
+        WarehouseItem? warehouseItem =
             await warehouseRepository.GetWarehouseItemByIdAsync(query.WarehouseItemId, cancellationToken);
         if (warehouseItem == null)
         {

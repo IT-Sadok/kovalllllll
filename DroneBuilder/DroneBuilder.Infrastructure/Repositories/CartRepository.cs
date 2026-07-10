@@ -22,10 +22,13 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
 
     public async Task RemoveCartItemAsync(Guid cartItemId, CancellationToken cancellationToken = default)
     {
-        var cartItem = await dbContext.CartItems
+        CartItem? cartItem = await dbContext.CartItems
             .FirstOrDefaultAsync(ci => ci.Id == cartItemId, cancellationToken);
 
-        if (cartItem != null) dbContext.CartItems.Remove(cartItem);
+        if (cartItem != null)
+        {
+            dbContext.CartItems.Remove(cartItem);
+        }
     }
 
     public async Task ClearCartAsync(Guid cartId, CancellationToken cancellationToken = default)

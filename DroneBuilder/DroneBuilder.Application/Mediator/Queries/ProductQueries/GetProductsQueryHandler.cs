@@ -3,6 +3,7 @@ using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ProductQueries;
@@ -16,7 +17,7 @@ public class GetProductsQueryHandler(
     public async Task<PagedResult<ProductModel>> ExecuteAsync(GetProductsQuery query,
         CancellationToken cancellationToken)
     {
-        var products = await productRepository.GetFilteredPagedProductsAsync(
+        PagedResult<Product>? products = await productRepository.GetFilteredPagedProductsAsync(
             query.Pagination,
             query.Filter,
             cancellationToken);
@@ -26,19 +27,19 @@ public class GetProductsQueryHandler(
             throw new NotFoundException("No products found.");
         }
 
-        var mappedItems = mapper.Map<List<ProductModel>>(products.Items);
+        List<ProductModel> mappedItems = mapper.Map<List<ProductModel>>(products.Items);
 
         // Fetch stock levels from WarehouseRepository
         var productIds = mappedItems.Select(i => i.Id).ToList();
-        var warehouseItems = await warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(productIds, cancellationToken);
-        
+        ICollection<WarehouseItem> warehouseItems = await warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(productIds, cancellationToken);
+
         var stockMap = warehouseItems
             .GroupBy(wi => wi.ProductId)
             .ToDictionary(g => g.Key, g => g.Sum(wi => wi.Quantity));
 
-        foreach (var item in mappedItems)
+        foreach (ProductModel item in mappedItems)
         {
-            if (stockMap.TryGetValue(item.Id, out var quantity))
+            if (stockMap.TryGetValue(item.Id, out int quantity))
             {
                 item.StockQuantity = quantity;
             }

@@ -5,7 +5,7 @@ using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.Validation;
-using DroneBuilder.Domain.Events.CartEvents;
+using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
@@ -25,19 +25,19 @@ public class UpdateCartItemQuantityCommandHandler(
             throw new BadRequestException("Quantity cannot be negative.");
         }
 
-        var cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
+        Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
         if (cart == null)
         {
             throw new NotFoundException($"Cart for user with ID {userContext.UserId} not found.");
         }
 
-        var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == command.ProductId);
+        CartItem? cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == command.ProductId);
         if (cartItem == null)
         {
             throw new NotFoundException($"Product with ID {command.ProductId} not found in cart.");
         }
 
-        var warehouseItem = await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
+        WarehouseItem? warehouseItem = await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
         if (warehouseItem == null)
         {
             throw new NotFoundException($"Warehouse item for product ID {command.ProductId} not found.");
@@ -45,13 +45,16 @@ public class UpdateCartItemQuantityCommandHandler(
 
         int quantityDifference = command.Quantity - cartItem.Quantity;
 
-        if (quantityDifference == 0) return;
+        if (quantityDifference == 0)
+        {
+            return;
+        }
 
         // If we are increasing quantity, check warehouse
         if (quantityDifference > 0)
         {
             WarehouseValidation.ValidateState(warehouseItem);
-            
+
             // Note: We need to make sure the warehouse has enough stock for the delta
             // WarehouseValidation.ValidateState might check if item.Quantity is >= 0, 
             // but we need to check if warehouseItem.Quantity - quantityDifference >= 0.
@@ -79,7 +82,7 @@ public class UpdateCartItemQuantityCommandHandler(
         // or just let the outbox handle the state if it's simpler. 
         // For now, let's just trigger a generic update or clear cart event if needed.
         // Actually, let's just save changes.
-        
+
         await cartRepository.SaveChangesAsync(cancellationToken);
     }
 }

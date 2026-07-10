@@ -1,5 +1,3 @@
-using DroneBuilder.Domain.Entities;
-
 namespace DroneBuilder.Application.Models.ProductModels;
 
 public class ProductPropertiesResponseModel

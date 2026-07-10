@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Domain.Entities;
+namespace DroneBuilder.Domain.Entities;
 
 public class Warehouse
 {

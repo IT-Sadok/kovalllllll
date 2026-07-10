@@ -1,7 +1,8 @@
-﻿using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ImageQueries;
@@ -11,7 +12,7 @@ public class GetImageByIdQueryHandler(IImageRepository imageRepository, IMapper 
 {
     public async Task<ImageModel> ExecuteAsync(GetImageByIdQuery query, CancellationToken cancellationToken)
     {
-        var image = await imageRepository.GetImageByIdAsync(query.ImageId, cancellationToken);
+        Image? image = await imageRepository.GetImageByIdAsync(query.ImageId, cancellationToken);
 
         if (image == null)
         {

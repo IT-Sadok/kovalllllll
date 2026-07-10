@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Infrastructure.MessageBroker.Configuration;
+namespace DroneBuilder.Infrastructure.MessageBroker.Configuration;
 
 public class RabbitMqConfiguration
 {

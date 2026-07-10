@@ -1,4 +1,4 @@
-﻿namespace DroneBuilder.Infrastructure.Options;
+namespace DroneBuilder.Infrastructure.Options;
 
 public class JwtOptions
 {

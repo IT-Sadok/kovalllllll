@@ -16,7 +16,7 @@ public static class WarehouseEndpointExtensions
         app.MapGet(ApiRoutes.Warehouses.Get,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetWarehouseQuery, WarehouseModel>(
+                    WarehouseModel result = await mediator.ExecuteQueryAsync<GetWarehouseQuery, WarehouseModel>(
                         new GetWarehouseQuery(),
                         cancellationToken);
                     return Results.Ok(result);
@@ -27,7 +27,7 @@ public static class WarehouseEndpointExtensions
         app.MapGet(ApiRoutes.Warehouses.GetItemById,
                 async (IMediator mediator, Guid itemId, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.ExecuteQueryAsync<GetWarehouseItemByIdQuery, WarehouseItemModel>(
+                    WarehouseItemModel result = await mediator.ExecuteQueryAsync<GetWarehouseItemByIdQuery, WarehouseItemModel>(
                         new GetWarehouseItemByIdQuery(itemId),
                         cancellationToken);
                     return Results.Ok(result);
@@ -39,7 +39,7 @@ public static class WarehouseEndpointExtensions
                 [FromBody] AddQuantityModel model,
                 CancellationToken cancellationToken) =>
             {
-                var result =
+                WarehouseItemModel result =
                     await mediator.ExecuteCommandAsync<AddQuantityToWarehouseItemCommand, WarehouseItemModel>(
                         new AddQuantityToWarehouseItemCommand(itemId, model),
                         cancellationToken);
@@ -52,7 +52,7 @@ public static class WarehouseEndpointExtensions
                 [FromBody] RemoveQuantityModel model,
                 CancellationToken cancellationToken) =>
             {
-                var result =
+                WarehouseItemModel result =
                     await mediator.ExecuteCommandAsync<RemoveQuantityFromWarehouseItemCommand, WarehouseItemModel>(
                         new RemoveQuantityFromWarehouseItemCommand(itemId, model),
                         cancellationToken);
@@ -65,7 +65,7 @@ public static class WarehouseEndpointExtensions
                 async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
                 {
                     var pagination = new PaginationParams(page, pageSize);
-                    var result =
+                    PagedResult<WarehouseItemModel> result =
                         await mediator.ExecuteQueryAsync<GetWarehouseItemsQuery, PagedResult<WarehouseItemModel>>(
                             new GetWarehouseItemsQuery(pagination),
                             cancellationToken);
@@ -73,7 +73,6 @@ public static class WarehouseEndpointExtensions
                 })
             .WithTags("Warehouse")
             .RequireAuthorization();
-
 
         return app;
     }

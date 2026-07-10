@@ -4,7 +4,6 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 using NSubstitute;
-using Xunit;
 
 namespace DroneBuilder.Application.Tests.ValueCommandTests;
 
@@ -68,7 +67,7 @@ public class CreateValueCommandHandlerTests
             .Returns(expectedValueModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        ValueModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -140,7 +139,7 @@ public class CreateValueCommandHandlerTests
             .Returns(expectedModel);
 
         // Act
-        var result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        ValueModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);

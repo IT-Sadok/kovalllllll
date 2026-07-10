@@ -1,6 +1,7 @@
-﻿using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Domain.Entities;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ImageQueries;
@@ -10,8 +11,7 @@ public class GetImagesQueryHandler(IImageRepository imageRepository, IMapper map
 {
     public async Task<ICollection<ImageModel>> ExecuteAsync(GetImagesQuery query, CancellationToken cancellationToken)
     {
-        var images = await imageRepository.GetImagesAsync(cancellationToken);
-        
+        ICollection<Image> images = await imageRepository.GetImagesAsync(cancellationToken);
 
         return mapper.Map<ICollection<ImageModel>>(images);
     }

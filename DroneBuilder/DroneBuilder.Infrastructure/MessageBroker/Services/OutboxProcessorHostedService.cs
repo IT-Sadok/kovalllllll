@@ -1,4 +1,5 @@
-﻿using System.Text;
+using System.Text;
+using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -73,25 +74,27 @@ public class OutboxProcessorHostedService(
 
     private async Task ProcessOutboxMessagesAsync(CancellationToken cancellationToken)
     {
-        using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using IServiceScope scope = serviceProvider.CreateScope();
+        ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        var messages = await context.Messages
+        List<Message> messages = await context.Messages
             .Where(m => m.ProcessedAt == null && m.RetryCount < 3)
             .OrderBy(m => m.CreatedAt)
             .Take(10)
             .ToListAsync(cancellationToken);
 
         if (messages.Count == 0)
+        {
             return;
+        }
 
         logger.LogInformation("Processing {Count} outbox messages", messages.Count);
 
-        foreach (var message in messages)
+        foreach (Message? message in messages)
         {
             try
             {
-                var body = Encoding.UTF8.GetBytes(message.Payload);
+                byte[] body = Encoding.UTF8.GetBytes(message.Payload);
 
                 await _channel.BasicPublishAsync(
                     exchange: "",
@@ -131,8 +134,16 @@ public class OutboxProcessorHostedService(
     {
         try
         {
-            if (_channel != null) await _channel.CloseAsync();
-            if (_connection != null) await _connection.CloseAsync();
+            if (_channel != null)
+            {
+                await _channel.CloseAsync();
+            }
+
+            if (_connection != null)
+            {
+                await _connection.CloseAsync();
+            }
+
             logger.LogInformation("OutboxProcessorHostedService disposed");
         }
         catch (Exception ex)

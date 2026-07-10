@@ -1,12 +1,9 @@
-﻿using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Models.NotificationModels;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
-using DroneBuilder.Domain.Events;
 using DroneBuilder.Domain.Events.UserEvents;
 using Microsoft.AspNetCore.Identity;
 
@@ -21,11 +18,11 @@ public class SignUpCommandHandler(
 {
     public async Task ExecuteCommandAsync(SignUpUserCommand command, CancellationToken cancellationToken)
     {
-        var user = command.Model.ToEntity();
-        var createResult = await userManager.CreateAsync(user, command.Model.Password);
+        User user = command.Model.ToEntity();
+        IdentityResult createResult = await userManager.CreateAsync(user, command.Model.Password);
         if (!createResult.Succeeded)
         {
-            var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
+            string errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"User creation failed: {errors}");
         }
 
