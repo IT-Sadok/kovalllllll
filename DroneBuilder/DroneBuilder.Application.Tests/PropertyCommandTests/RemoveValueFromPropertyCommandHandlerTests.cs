@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.PropertyCommandTests;
@@ -72,7 +73,10 @@ public class RemoveValueFromPropertyCommandHandlerTests
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotFoundException>(() => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
     }
 
     [Fact]
@@ -84,6 +88,9 @@ public class RemoveValueFromPropertyCommandHandlerTests
         _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotFoundException>(() => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
     }
 }

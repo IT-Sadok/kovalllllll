@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.ProductCommandTests;
@@ -50,7 +51,10 @@ public class RemovePropertyFromProductCommandHandlerTests
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotFoundException>(() => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
     }
 
     [Fact]

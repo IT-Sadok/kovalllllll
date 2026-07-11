@@ -1,9 +1,11 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
+using DroneBuilder.API.Extensions;
 using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.ImageQueries;
 using DroneBuilder.Application.Models.ProductModels;
+using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DroneBuilder.API.Endpoints;
@@ -22,12 +24,12 @@ public static class ImageEndpointExtensions
 
                     var command = new UploadImageCommand(file, productId);
 
-                    ImageModel result =
+                    Result<ImageModel> result =
                         await mediator.ExecuteCommandAsync<UploadImageCommand, ImageModel>(
                             command,
                             cancellationToken);
 
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Images")
             .DisableAntiforgery()
@@ -38,9 +40,9 @@ public static class ImageEndpointExtensions
                 {
                     var command = new DeleteImageCommand(imageId);
 
-                    await mediator.ExecuteCommandAsync(command, cancellationToken);
+                    Result result = await mediator.ExecuteCommandAsync(command, cancellationToken);
 
-                    return Results.NoContent();
+                    return result.ToHttpResult();
                 })
             .WithTags("Images")
             .RequireAuthorization(PolicyNames.Admin);
@@ -50,12 +52,12 @@ public static class ImageEndpointExtensions
                 {
                     var query = new GetImagesQuery();
 
-                    ICollection<ImageModel> result =
+                    Result<ICollection<ImageModel>> result =
                         await mediator.ExecuteQueryAsync<GetImagesQuery, ICollection<ImageModel>>(
                             query,
                             cancellationToken);
 
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Images")
             .RequireAuthorization(PolicyNames.Admin);
@@ -65,12 +67,12 @@ public static class ImageEndpointExtensions
                 {
                     var query = new GetImagesByProductIdQuery(productId);
 
-                    ICollection<ImageModel> result =
+                    Result<ICollection<ImageModel>> result =
                         await mediator.ExecuteQueryAsync<GetImagesByProductIdQuery, ICollection<ImageModel>>(
                             query,
                             cancellationToken);
 
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Images")
             .RequireAuthorization(PolicyNames.Admin);
@@ -80,12 +82,12 @@ public static class ImageEndpointExtensions
                 {
                     var query = new GetImageByIdQuery(imageId);
 
-                    ImageModel result =
+                    Result<ImageModel> result =
                         await mediator.ExecuteQueryAsync<GetImageByIdQuery, ImageModel>(
                             query,
                             cancellationToken);
 
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Images")
             .RequireAuthorization(PolicyNames.Admin);
@@ -95,9 +97,9 @@ public static class ImageEndpointExtensions
                 {
                     var command = new SetPrimaryImageCommand(imageId);
 
-                    await mediator.ExecuteCommandAsync(command, cancellationToken);
+                    Result result = await mediator.ExecuteCommandAsync(command, cancellationToken);
 
-                    return Results.Ok();
+                    return result.ToHttpResult();
                 })
             .WithTags("Images")
             .RequireAuthorization(PolicyNames.Admin);

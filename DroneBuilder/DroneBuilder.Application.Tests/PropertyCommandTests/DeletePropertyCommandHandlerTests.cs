@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.PropertyCommandTests;
@@ -61,10 +62,12 @@ public class DeletePropertyCommandHandlerTests
             .Returns((Property)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Property with id {PropertyId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Property with id {PropertyId} not found.", result.Errors[0].Message);
 
         _propertyRepository.DidNotReceive().RemoveProperty(Arg.Any<Property>());
 

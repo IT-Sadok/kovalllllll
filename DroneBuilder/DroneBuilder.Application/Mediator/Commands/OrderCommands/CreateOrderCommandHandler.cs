@@ -1,13 +1,14 @@
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.OrderEvents;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
@@ -22,12 +23,12 @@ public class CreateOrderCommandHandler(
     IUserContext userContext,
     IMapper mapper) : ICommandHandler<CreateOrderCommand, OrderModel>
 {
-    public async Task<OrderModel> ExecuteCommandAsync(CreateOrderCommand command, CancellationToken cancellationToken)
+    public async Task<Result<OrderModel>> ExecuteCommandAsync(CreateOrderCommand command, CancellationToken cancellationToken)
     {
         Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
         if (cart is null || cart.CartItems.Count == 0)
         {
-            throw new BadRequestException("Cart is empty.");
+            return Result.Fail<OrderModel>(new BadRequestError("Cart is empty."));
         }
 
         var productIds = cart.CartItems.Select(ci => ci.ProductId).ToList();
@@ -39,7 +40,7 @@ public class CreateOrderCommandHandler(
         {
             if (warehouseItem is null)
             {
-                throw new NotFoundException($"Product {item.ProductId} not found in warehouse.");
+                return Result.Fail<OrderModel>(new NotFoundError($"Product {item.ProductId} not found in warehouse."));
             }
         }
 
@@ -76,7 +77,7 @@ public class CreateOrderCommandHandler(
 
         await orderRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<OrderModel>(order);
+        return Result.Ok(mapper.Map<OrderModel>(order));
     }
 }
 

@@ -1,9 +1,11 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
+using DroneBuilder.API.Extensions;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.CartQueries;
 using DroneBuilder.Application.Models.CartModels;
+using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DroneBuilder.API.Endpoints;
@@ -19,8 +21,8 @@ public static class CartEndpointExtensions
                 {
                     var command = new AddItemToCartCommand(model.ProductId, model.Quantity);
 
-                    await mediator.ExecuteCommandAsync(command, cancellationToken);
-                    return Results.Ok();
+                    Result result = await mediator.ExecuteCommandAsync(command, cancellationToken);
+                    return result.ToHttpResult();
                 })
             .WithTags("Cart")
             .RequireAuthorization();
@@ -31,19 +33,20 @@ public static class CartEndpointExtensions
                 {
                     var command = new ClearCartCommand();
 
-                    await mediator.ExecuteCommandAsync(command, cancellationToken);
-                    return Results.NoContent();
+                    Result result = await mediator.ExecuteCommandAsync(command, cancellationToken);
+                    return result.ToHttpResult();
                 })
             .WithTags("Cart")
             .RequireAuthorization();
+
         app.MapDelete(ApiRoutes.Cart.RemoveItemFromCart,
                 async (IMediator mediator, Guid itemId,
                     CancellationToken cancellationToken) =>
                 {
                     var command = new RemoveItemFromCartCommand(itemId);
 
-                    await mediator.ExecuteCommandAsync(command, cancellationToken);
-                    return Results.NoContent();
+                    Result result = await mediator.ExecuteCommandAsync(command, cancellationToken);
+                    return result.ToHttpResult();
                 })
             .WithTags("Cart")
             .RequireAuthorization();
@@ -54,8 +57,8 @@ public static class CartEndpointExtensions
                 {
                     var command = new UpdateCartItemQuantityCommand(productId, quantity);
 
-                    await mediator.ExecuteCommandAsync(command, cancellationToken);
-                    return Results.NoContent();
+                    Result result = await mediator.ExecuteCommandAsync(command, cancellationToken);
+                    return result.ToHttpResult();
                 })
             .WithTags("Cart")
             .RequireAuthorization();
@@ -65,10 +68,10 @@ public static class CartEndpointExtensions
                     CancellationToken cancellationToken) =>
                 {
                     var query = new GetCartItemsQuery();
-                    ICollection<CartItemModel> cartItems = await mediator.ExecuteQueryAsync<GetCartItemsQuery, ICollection<CartItemModel>>(
+                    Result<ICollection<CartItemModel>> result = await mediator.ExecuteQueryAsync<GetCartItemsQuery, ICollection<CartItemModel>>(
                         query,
                         cancellationToken);
-                    return Results.Ok(cartItems);
+                    return result.ToHttpResult();
                 })
             .WithTags("Cart")
             .RequireAuthorization();
@@ -78,9 +81,9 @@ public static class CartEndpointExtensions
                     CancellationToken cancellationToken) =>
                 {
                     var query = new GetCartByUserIdQuery();
-                    CartModel cart = await mediator.ExecuteQueryAsync<GetCartByUserIdQuery, CartModel>(query,
+                    Result<CartModel> result = await mediator.ExecuteQueryAsync<GetCartByUserIdQuery, CartModel>(query,
                         cancellationToken);
-                    return Results.Ok(cart);
+                    return result.ToHttpResult();
                 })
             .WithTags("Cart")
             .RequireAuthorization(PolicyNames.Admin);

@@ -1,12 +1,13 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.WarehouseEvents;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
@@ -18,18 +19,18 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
     IMapper mapper)
     : ICommandHandler<RemoveQuantityFromWarehouseItemCommand, WarehouseItemModel>
 {
-    public async Task<WarehouseItemModel> ExecuteCommandAsync(RemoveQuantityFromWarehouseItemCommand command,
+    public async Task<Result<WarehouseItemModel>> ExecuteCommandAsync(RemoveQuantityFromWarehouseItemCommand command,
         CancellationToken cancellationToken)
     {
         if (command.Model.QuantityToRemove <= 0)
         {
-            throw new BadRequestException("Quantity to remove must be greater than 0.");
+            return Result.Fail<WarehouseItemModel>(new BadRequestError("Quantity to remove must be greater than 0."));
         }
 
         Warehouse? warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
         if (warehouse == null)
         {
-            throw new NotFoundException("Warehouse not found.");
+            return Result.Fail<WarehouseItemModel>(new NotFoundError("Warehouse not found."));
         }
 
         WarehouseItem? warehouseItem =
@@ -37,21 +38,29 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
 
         if (warehouseItem == null)
         {
-            throw new NotFoundException($"Warehouse item with id {command.WarehouseItemId} not found.");
+            return Result.Fail<WarehouseItemModel>(new NotFoundError($"Warehouse item with id {command.WarehouseItemId} not found."));
         }
 
-        WarehouseValidation.ValidateState(warehouseItem);
+        Result validationResult = WarehouseValidation.ValidateState(warehouseItem);
+        if (validationResult.IsFailed)
+        {
+            return validationResult.ToResult<WarehouseItemModel>();
+        }
 
         warehouseItem.Quantity -= command.Model.QuantityToRemove;
 
-        WarehouseValidation.ValidateState(warehouseItem);
+        validationResult = WarehouseValidation.ValidateState(warehouseItem);
+        if (validationResult.IsFailed)
+        {
+            return validationResult.ToResult<WarehouseItemModel>();
+        }
 
         var @event = new RemovedQuantityFromWarehouseItemEvent(warehouseItem.Id, command.Model.QuantityToRemove);
         await outboxService.StoreEventAsync(@event, queuesConfig.WarehouseQueue.Name, cancellationToken);
 
         await warehouseRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<WarehouseItemModel>(warehouseItem);
+        return Result.Ok(mapper.Map<WarehouseItemModel>(warehouseItem));
     }
 }
 

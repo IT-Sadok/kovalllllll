@@ -1,20 +1,21 @@
-using System.ComponentModel.DataAnnotations;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.ImageCommands;
 
 public class SetPrimaryImageCommandHandler(IImageRepository imageRepository)
     : ICommandHandler<SetPrimaryImageCommand>
 {
-    public async Task ExecuteCommandAsync(SetPrimaryImageCommand command, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(SetPrimaryImageCommand command, CancellationToken cancellationToken)
     {
         Image? targetImage = await imageRepository.GetImageByIdAsync(command.ImageId, cancellationToken);
 
         if (targetImage == null)
         {
-            throw new ValidationException("Image not found.");
+            return Result.Fail(new ValidationError("Image not found."));
         }
 
         ICollection<Image> productImages = await imageRepository.GetImagesByProductIdAsync(targetImage.ProductId, cancellationToken);
@@ -25,6 +26,8 @@ public class SetPrimaryImageCommandHandler(IImageRepository imageRepository)
         }
 
         await imageRepository.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }
 

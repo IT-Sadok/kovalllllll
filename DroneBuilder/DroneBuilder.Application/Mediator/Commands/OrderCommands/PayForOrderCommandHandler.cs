@@ -1,33 +1,36 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
 
 public class PayForOrderCommandHandler(IOrderRepository orderRepository) : ICommandHandler<PayForOrderCommand>
 {
-    public async Task ExecuteCommandAsync(PayForOrderCommand payForOrderCommand, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(PayForOrderCommand payForOrderCommand, CancellationToken cancellationToken)
     {
         Order? order = await orderRepository.GetOrderByIdAsync(payForOrderCommand.OrderId, cancellationToken);
         if (order is null)
         {
-            throw new NotFoundException($"Order with id {payForOrderCommand.OrderId} not found.");
+            return Result.Fail(new NotFoundError($"Order with id {payForOrderCommand.OrderId} not found."));
         }
 
         if (order.Status == Status.Paid)
         {
-            throw new BadRequestException("Order is already paid.");
+            return Result.Fail(new BadRequestError("Order is already paid."));
         }
 
         if (order.Status != Status.New)
         {
-            throw new BadRequestException("Order is not in new status.");
+            return Result.Fail(new BadRequestError("Order is not in new status."));
         }
 
         order.Status = Status.Paid;
 
         await orderRepository.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }
 

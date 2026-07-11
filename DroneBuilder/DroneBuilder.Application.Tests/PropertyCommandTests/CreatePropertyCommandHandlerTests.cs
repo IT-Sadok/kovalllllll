@@ -2,6 +2,7 @@ using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 using NSubstitute;
 
@@ -58,12 +59,13 @@ public class CreatePropertyCommandHandlerTests
             .Returns(expectedPropertyModel);
 
         // Act
-        PropertyModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<PropertyModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(PropertyId, result.Id);
-        Assert.Equal(PropertyName, result.Name);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(PropertyId, result.Value.Id);
+        Assert.Equal(PropertyName, result.Value.Name);
 
         await _propertyRepository.Received(1).AddPropertyAsync(
             Arg.Is<Property>(p => p.Name == PropertyName),
@@ -127,10 +129,11 @@ public class CreatePropertyCommandHandlerTests
             .Returns(expectedModel);
 
         // Act
-        PropertyModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<PropertyModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Same(expectedModel, result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Same(expectedModel, result.Value);
     }
 }

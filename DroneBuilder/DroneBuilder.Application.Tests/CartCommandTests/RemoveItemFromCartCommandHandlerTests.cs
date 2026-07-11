@@ -1,8 +1,9 @@
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.CartCommandTests;
@@ -102,10 +103,12 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns((Cart)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Cart for User ID {UserId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Cart for User ID {UserId} not found.", result.Errors[0].Message);
 
         await _productRepository.DidNotReceive().GetProductByIdAsync(
             Arg.Is<Guid>(id => id == ProductId),
@@ -138,10 +141,12 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns((Product)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Product with ID {ProductId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Product with ID {ProductId} not found.", result.Errors[0].Message);
 
         await _cartRepository.DidNotReceive().RemoveCartItemAsync(
             Arg.Is<Guid>(id => id == CartItemId),
@@ -184,10 +189,12 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns(product);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Product with ID {ProductId} not found in the cart.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Product with ID {ProductId} not found in the cart.", result.Errors[0].Message);
 
         await _warehouseRepository.DidNotReceive().GetWarehouseItemByProductIdAsync(
             Arg.Is<Guid>(id => id == ProductId),
@@ -237,10 +244,12 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns((WarehouseItem)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Warehouse item for Product ID {ProductId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Warehouse item for Product ID {ProductId} not found.", result.Errors[0].Message);
 
         await _cartRepository.DidNotReceive().RemoveCartItemAsync(
             Arg.Is<Guid>(id => id == CartItemId),
@@ -387,10 +396,12 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns(product);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Product with ID {ProductId} not found in the cart.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Product with ID {ProductId} not found in the cart.", result.Errors[0].Message);
 
         await _cartRepository.DidNotReceive().RemoveCartItemAsync(
             Arg.Is<Guid>(id => id == CartItemId),

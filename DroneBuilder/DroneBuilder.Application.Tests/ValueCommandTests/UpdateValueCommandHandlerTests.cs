@@ -1,8 +1,9 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 using NSubstitute;
 
@@ -62,11 +63,12 @@ public class UpdateValueCommandHandlerTests
             .Returns(expectedValueModel);
 
         // Act
-        ValueModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(UpdatedText, result.Text);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(UpdatedText, result.Value.Text);
         Assert.Equal(UpdatedText, existingValue.Text);
 
         await _valueRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -88,10 +90,12 @@ public class UpdateValueCommandHandlerTests
             .Returns((Value)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Value with id {ValueId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Value with id {ValueId} not found.", result.Errors[0].Message);
 
         await _valueRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 

@@ -1,10 +1,11 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.CartCommandTests;
@@ -118,7 +119,10 @@ public class UpdateCartItemQuantityCommandHandlerTests
         _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(warehouseItem);
 
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
     }
 
     [Fact]
@@ -128,6 +132,9 @@ public class UpdateCartItemQuantityCommandHandlerTests
         var command = new UpdateCartItemQuantityCommand(ProductId, -1);
 
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
     }
 }

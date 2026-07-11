@@ -1,9 +1,10 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ProductQueries;
@@ -14,7 +15,7 @@ public class GetProductsQueryHandler(
     IMapper mapper)
     : IQueryHandler<GetProductsQuery, PagedResult<ProductModel>>
 {
-    public async Task<PagedResult<ProductModel>> ExecuteAsync(GetProductsQuery query,
+    public async Task<Result<PagedResult<ProductModel>>> ExecuteAsync(GetProductsQuery query,
         CancellationToken cancellationToken)
     {
         PagedResult<Product>? products = await productRepository.GetFilteredPagedProductsAsync(
@@ -24,7 +25,7 @@ public class GetProductsQueryHandler(
 
         if (products is null)
         {
-            throw new NotFoundException("No products found.");
+            return Result.Fail<PagedResult<ProductModel>>(new NotFoundError("No products found."));
         }
 
         List<ProductModel> mappedItems = mapper.Map<List<ProductModel>>(products.Items);
@@ -45,13 +46,13 @@ public class GetProductsQueryHandler(
             }
         }
 
-        return new PagedResult<ProductModel>
+        return Result.Ok(new PagedResult<ProductModel>
         {
             Items = mappedItems,
             TotalCount = products.TotalCount,
             Page = products.Page,
             PageSize = products.PageSize
-        };
+        });
     }
 }
 

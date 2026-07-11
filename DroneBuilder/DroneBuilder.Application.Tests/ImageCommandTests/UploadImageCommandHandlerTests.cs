@@ -1,11 +1,12 @@
-using System.ComponentModel.DataAnnotations;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.ImageEvents;
+using FluentResults;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using NSubstitute;
@@ -73,12 +74,13 @@ public class UploadImageCommandHandlerTests
             .Returns(expectedImageModel);
 
         // Act
-        ImageModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<ImageModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(UploadedImageUrl, result.Url);
-        Assert.Equal(FileName, result.FileName);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(UploadedImageUrl, result.Value.Url);
+        Assert.Equal(FileName, result.Value.FileName);
 
         await _azureStorageService.Received(1).UploadFileAsync(
             Arg.Is<IFormFile>(f => f.FileName == FileName),
@@ -119,10 +121,11 @@ public class UploadImageCommandHandlerTests
             .Returns((false, string.Empty));
 
         // Act & Assert
-        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<ImageModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Failed to upload image to storage.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<ValidationError>());
+        Assert.Equal("Failed to upload image to storage.", result.Errors[0].Message);
 
         await _imageRepository.DidNotReceive().AddImageAsync(
             Arg.Is<Image>(img =>
@@ -278,14 +281,14 @@ public class UploadImageCommandHandlerTests
             .Returns(expectedImageModel);
 
         // Act
-        ImageModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<ImageModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(mappedImage);
         Assert.Equal(UploadedImageUrl, mappedImage.Url);
         Assert.Equal(FileName, mappedImage.FileName);
         Assert.Equal(ProductId, mappedImage.ProductId);
-        Assert.Same(expectedImageModel, result);
+        Assert.Same(expectedImageModel, result.Value);
     }
 
     [Fact]

@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.OrderCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.OrderCommandTests;
@@ -44,7 +45,10 @@ public class UpdateOrderStatusCommandHandlerTests
         _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns((Order)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotFoundException>(() => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
     }
 
     [Fact]
@@ -57,6 +61,9 @@ public class UpdateOrderStatusCommandHandlerTests
         _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns(order);
 
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
     }
 }

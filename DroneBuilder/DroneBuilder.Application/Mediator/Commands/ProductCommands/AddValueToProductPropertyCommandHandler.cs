@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
@@ -11,30 +12,30 @@ public class AddValueToProductPropertyCommandHandler(
     IValueRepository valueRepository)
     : ICommandHandler<AddValueToProductPropertyCommand>
 {
-    public async Task ExecuteCommandAsync(AddValueToProductPropertyCommand command, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(AddValueToProductPropertyCommand command, CancellationToken cancellationToken)
     {
         Product? product = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
         if (product == null)
         {
-            throw new NotFoundException($"Product with ID {command.ProductId} not found.");
+            return Result.Fail(new NotFoundError($"Product with ID {command.ProductId} not found."));
         }
 
         Property? property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
         if (property == null)
         {
-            throw new NotFoundException($"Property with ID {command.PropertyId} not found.");
+            return Result.Fail(new NotFoundError($"Property with ID {command.PropertyId} not found."));
         }
 
         Value? value = await valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken);
         if (value == null)
         {
-            throw new NotFoundException($"Value with ID {command.ValueId} not found.");
+            return Result.Fail(new NotFoundError($"Value with ID {command.ValueId} not found."));
         }
 
         if (product.ProductPropertyValues != null &&
             product.ProductPropertyValues.Any(p => p.PropertyId == command.PropertyId && p.ValueId == command.ValueId))
         {
-            throw new ValidationException($"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId} on Product ID {command.ProductId}.");
+            return Result.Fail(new ValidationError($"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId} on Product ID {command.ProductId}."));
         }
 
         product.ProductPropertyValues?.Add(new ProductPropertyValue
@@ -45,6 +46,8 @@ public class AddValueToProductPropertyCommandHandler(
         });
 
         await productRepository.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }
 

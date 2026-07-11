@@ -1,7 +1,8 @@
-using System.ComponentModel.DataAnnotations;
 using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.ImageCommandTests;
@@ -49,6 +50,9 @@ public class SetPrimaryImageCommandHandlerTests
         _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>()).Returns((Image)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<ValidationException>(() => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<ValidationError>());
     }
 }

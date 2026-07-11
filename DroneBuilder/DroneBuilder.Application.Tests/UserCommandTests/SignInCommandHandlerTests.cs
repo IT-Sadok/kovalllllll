@@ -1,11 +1,12 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.UserEvents;
+using FluentResults;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
@@ -97,10 +98,11 @@ public class SignInCommandHandlerTests
             .Returns(Task.CompletedTask);
 
         // Act
-        AuthUserModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<AuthUserModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
         _mockUserManager.Verify(
             x => x.FindByEmailAsync(ValidEmail),
             Times.Once);
@@ -132,10 +134,12 @@ public class SignInCommandHandlerTests
             .ReturnsAsync((User)null);
 
         // Act & Assert
-        InvalidEmailOrPasswordException exception = await Assert.ThrowsAsync<InvalidEmailOrPasswordException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<AuthUserModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Invalid email or password.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<UnauthorizedError>());
+
+        Assert.Equal("Invalid email or password.", result.Errors[0].Message);
 
         _mockUserManager.Verify(
             x => x.CheckPasswordAsync(It.Is<User>(u => u.Email == NotExistingEmail),
@@ -174,10 +178,12 @@ public class SignInCommandHandlerTests
             .ReturnsAsync(false);
 
         // Act & Assert
-        InvalidEmailOrPasswordException exception = await Assert.ThrowsAsync<InvalidEmailOrPasswordException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<AuthUserModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Invalid email or password.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<UnauthorizedError>());
+
+        Assert.Equal("Invalid email or password.", result.Errors[0].Message);
 
         _mockUserManager.Verify(
             x => x.FindByEmailAsync(ValidEmail),

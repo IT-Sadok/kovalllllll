@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.PropertyCommandTests;
@@ -75,10 +76,12 @@ public class AddValueToPropertyCommandHandlerTests
             .Returns((Property)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Property with ID {PropertyId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Property with ID {PropertyId} not found.", result.Errors[0].Message);
 
         await _valueRepository.DidNotReceive().GetValueByIdAsync(
             Arg.Any<Guid>(),
@@ -110,10 +113,12 @@ public class AddValueToPropertyCommandHandlerTests
             .Returns((Value)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Value with ID {ValueId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Value with ID {ValueId} not found.", result.Errors[0].Message);
 
         await _propertyRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
@@ -146,11 +151,13 @@ public class AddValueToPropertyCommandHandlerTests
             .Returns(value);
 
         // Act & Assert
-        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<ValidationError>());
 
         Assert.Contains($"Value with ID {ValueId} is already associated with Property ID {PropertyId}",
-            exception.Message);
+            result.Errors[0].Message);
 
         Assert.Single(property.Values);
 

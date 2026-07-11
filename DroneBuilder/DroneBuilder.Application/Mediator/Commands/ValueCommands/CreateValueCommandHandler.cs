@@ -1,7 +1,9 @@
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.ValueCommands;
@@ -12,13 +14,13 @@ public class CreateValueCommandHandler(
     IMapper mapper) :
     ICommandHandler<CreateValueCommand, ValueModel>
 {
-    public async Task<ValueModel> ExecuteCommandAsync(CreateValueCommand command,
+    public async Task<Result<ValueModel>> ExecuteCommandAsync(CreateValueCommand command,
         CancellationToken cancellationToken)
     {
         Property? property = await propertyRepository.GetPropertyByIdAsync(command.Model.PropertyId, cancellationToken);
         if (property == null)
         {
-            throw new Exception($"Property with ID {command.Model.PropertyId} not found");
+            return Result.Fail<ValueModel>(new NotFoundError($"Property with ID {command.Model.PropertyId} not found"));
         }
 
         Value value = mapper.Map<Value>(command.Model);
@@ -30,7 +32,7 @@ public class CreateValueCommandHandler(
 
         await valueRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<ValueModel>(value);
+        return Result.Ok(mapper.Map<ValueModel>(value));
     }
 }
 

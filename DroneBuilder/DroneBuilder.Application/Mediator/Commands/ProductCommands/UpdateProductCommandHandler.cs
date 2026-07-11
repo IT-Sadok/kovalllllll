@@ -1,8 +1,9 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
@@ -10,13 +11,13 @@ namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 public class UpdateProductCommandHandler(IProductRepository productRepository, IMapper mapper)
     : ICommandHandler<UpdateProductCommand, ProductModel>
 {
-    public async Task<ProductModel> ExecuteCommandAsync(UpdateProductCommand command,
+    public async Task<Result<ProductModel>> ExecuteCommandAsync(UpdateProductCommand command,
         CancellationToken cancellationToken)
     {
         Product? existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
         if (existingProduct is null)
         {
-            throw new NotFoundException($"Product with id {command.ProductId} not found.");
+            return Result.Fail<ProductModel>(new NotFoundError($"Product with id {command.ProductId} not found."));
         }
 
         if (command.Model.Name is not null)
@@ -36,7 +37,7 @@ public class UpdateProductCommandHandler(IProductRepository productRepository, I
 
         await productRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<ProductModel>(existingProduct);
+        return Result.Ok(mapper.Map<ProductModel>(existingProduct));
     }
 }
 

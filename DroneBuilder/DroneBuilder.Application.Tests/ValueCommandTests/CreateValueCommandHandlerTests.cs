@@ -2,6 +2,7 @@ using DroneBuilder.Application.Mediator.Commands.ValueCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 using NSubstitute;
 
@@ -67,12 +68,13 @@ public class CreateValueCommandHandlerTests
             .Returns(expectedValueModel);
 
         // Act
-        ValueModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(ValueId, result.Id);
-        Assert.Equal(TextValue, result.Text);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(ValueId, result.Value.Id);
+        Assert.Equal(TextValue, result.Value.Text);
         Assert.Contains(mappedValue, property.Values);
 
         await _valueRepository.Received(1).AddValueAsync(
@@ -139,10 +141,11 @@ public class CreateValueCommandHandlerTests
             .Returns(expectedModel);
 
         // Act
-        ValueModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Same(expectedModel, result);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Same(expectedModel, result.Value);
     }
 }

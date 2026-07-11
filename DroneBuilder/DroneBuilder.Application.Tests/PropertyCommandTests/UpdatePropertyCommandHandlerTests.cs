@@ -1,8 +1,9 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 using NSubstitute;
 
@@ -62,11 +63,12 @@ public class UpdatePropertyCommandHandlerTests
             .Returns(expectedPropertyModel);
 
         // Act
-        PropertyModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<PropertyModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(UpdatedName, result.Name);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(UpdatedName, result.Value.Name);
         Assert.Equal(UpdatedName, existingProperty.Name);
 
         await _propertyRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -88,10 +90,12 @@ public class UpdatePropertyCommandHandlerTests
             .Returns((Property)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<PropertyModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Property with id {PropertyId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Property with id {PropertyId} not found.", result.Errors[0].Message);
 
         await _propertyRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 

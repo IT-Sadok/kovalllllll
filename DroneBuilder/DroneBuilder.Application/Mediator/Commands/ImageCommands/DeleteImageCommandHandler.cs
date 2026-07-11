@@ -1,20 +1,21 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.ImageCommands;
 
 public class DeleteImageCommandHandler(IAzureStorageService azureStorageService, IImageRepository imageRepository)
     : ICommandHandler<DeleteImageCommand>
 {
-    public async Task ExecuteCommandAsync(DeleteImageCommand command, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(DeleteImageCommand command, CancellationToken cancellationToken)
     {
         Image? existingImage = await imageRepository.GetImageByIdAsync(command.ImageId, cancellationToken);
         if (existingImage is null)
         {
-            throw new NotFoundException($"Image with id {command.ImageId} not found.");
+            return Result.Fail(new NotFoundError($"Image with id {command.ImageId} not found."));
         }
 
         await azureStorageService.DeleteFileAsync(existingImage.Url, cancellationToken);
@@ -33,6 +34,8 @@ public class DeleteImageCommandHandler(IAzureStorageService azureStorageService,
 
         imageRepository.RemoveImage(existingImage);
         await imageRepository.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }
 

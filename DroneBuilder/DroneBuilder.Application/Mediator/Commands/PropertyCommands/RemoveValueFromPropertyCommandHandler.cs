@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 
@@ -10,18 +11,18 @@ public class RemoveValueFromPropertyCommandHandler(
     IValueRepository valueRepository)
     : ICommandHandler<RemoveValueFromPropertyCommand>
 {
-    public async Task ExecuteCommandAsync(RemoveValueFromPropertyCommand command, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(RemoveValueFromPropertyCommand command, CancellationToken cancellationToken)
     {
         Property? property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
         if (property == null)
         {
-            throw new NotFoundException($"Property with ID {command.PropertyId} not found.");
+            return Result.Fail(new NotFoundError($"Property with ID {command.PropertyId} not found."));
         }
 
         Value? value = await valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken);
         if (value == null)
         {
-            throw new NotFoundException($"Value with ID {command.ValueId} not found.");
+            return Result.Fail(new NotFoundError($"Value with ID {command.ValueId} not found."));
         }
 
         // Remove the link
@@ -44,6 +45,8 @@ public class RemoveValueFromPropertyCommandHandler(
                 await valueRepository.SaveChangesAsync(cancellationToken);
             }
         }
+
+        return Result.Ok();
     }
 }
 
