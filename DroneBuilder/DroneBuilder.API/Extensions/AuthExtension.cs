@@ -1,5 +1,9 @@
 using System.Security.Claims;
 using System.Text;
+using DroneBuilder.API.Authorization;
+using DroneBuilder.Domain.Constants;
+using DroneBuilder.Domain.Entities;
+using DroneBuilder.Infrastructure;
 using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +15,14 @@ public static class AuthExtension
 {
     public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
+        services
+            .AddIdentity<User, IdentityRole<Guid>>(options => options.SignIn.RequireConfirmedAccount = true)
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy(PolicyNames.Admin, policy => policy.RequireRole(RoleNames.Admin))
+            .AddPolicy(PolicyNames.User, policy => policy.RequireRole(RoleNames.User));
+
         services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequireDigit = true;
@@ -44,7 +56,7 @@ public static class AuthExtension
                     (Encoding.UTF8.GetBytes(configuration["JwtOptions:Key"]!)),
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = false,
+                ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 RoleClaimType = ClaimTypes.Role
             };
