@@ -1,8 +1,9 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.ImageCommandTests;
@@ -65,10 +66,12 @@ public class DeleteImageCommandHandlerTests
             .Returns((Image)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Image with id {ImageId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Image with id {ImageId} not found.", result.Errors[0].Message);
 
         await _azureStorageService.DidNotReceive().DeleteFileAsync(Arg.Is<string>(url => url == ImageUrl));
         _imageRepository.DidNotReceive().RemoveImage(Arg.Is<Image>(img => img.Id == ImageId && img.Url == ImageUrl));

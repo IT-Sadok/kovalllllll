@@ -1,11 +1,12 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.ProductEvents;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
@@ -18,13 +19,13 @@ public class CreateProductCommandHandler(
     IMapper mapper)
     : ICommandHandler<CreateProductCommand, ProductModel>
 {
-    public async Task<ProductModel> ExecuteCommandAsync(CreateProductCommand command,
+    public async Task<Result<ProductModel>> ExecuteCommandAsync(CreateProductCommand command,
         CancellationToken cancellationToken)
     {
         Warehouse? warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
         if (warehouse == null)
         {
-            throw new NotFoundException("Warehouse not found.");
+            return Result.Fail<ProductModel>(new NotFoundError("Warehouse not found."));
         }
 
         Product product = mapper.Map<Product>(command.Model);
@@ -46,7 +47,7 @@ public class CreateProductCommandHandler(
 
         Product? createdProduct = await productRepository.GetProductByIdAsync(product.Id, cancellationToken);
 
-        return mapper.Map<ProductModel>(createdProduct!);
+        return Result.Ok(mapper.Map<ProductModel>(createdProduct!));
     }
 }
 

@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.OrderCommands;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.OrderCommandTests;
@@ -63,10 +64,12 @@ public class PayForOrderCommandHandlerTests
             .Returns((Order)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Order with id {OrderId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Order with id {OrderId} not found.", result.Errors[0].Message);
 
         await _orderRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
@@ -89,10 +92,12 @@ public class PayForOrderCommandHandlerTests
             .Returns(order);
 
         // Act & Assert
-        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Order is not in new status.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Equal("Order is not in new status.", result.Errors[0].Message);
 
         Assert.NotEqual(Status.Paid, order.Status);
 
@@ -117,10 +122,12 @@ public class PayForOrderCommandHandlerTests
             .Returns(order);
 
         // Act & Assert
-        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Order is already paid.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Equal("Order is already paid.", result.Errors[0].Message);
 
         await _orderRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }

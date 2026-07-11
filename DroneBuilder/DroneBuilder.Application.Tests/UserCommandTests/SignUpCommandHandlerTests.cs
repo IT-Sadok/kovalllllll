@@ -3,8 +3,10 @@ using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.UserEvents;
+using FluentResults;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 
@@ -117,12 +119,13 @@ public class SignUpCommandHandlerTests
             .ReturnsAsync(failedResult);
 
         // Act
-        InvalidOperationException exception =
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Contains("User creation failed", exception.Message);
-        Assert.Contains("Password too weak", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Contains("User creation failed", result.Errors[0].Message);
+        Assert.Contains("Password too weak", result.Errors[0].Message);
 
         // Assert
         _mockOutboxService.Verify(

@@ -1,11 +1,12 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.CartCommandTests;
@@ -225,10 +226,12 @@ public class AddItemToCartCommandHandlerTests
             .Returns((Product)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Product with ID {ProductId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Product with ID {ProductId} not found.", result.Errors[0].Message);
 
         await _warehouseRepository.DidNotReceive().GetWarehouseItemByProductIdAsync(
             Arg.Is<Guid>(id => id == ProductId),
@@ -256,10 +259,12 @@ public class AddItemToCartCommandHandlerTests
             .Returns((WarehouseItem)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Warehouse item for product ID {ProductId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Warehouse item for product ID {ProductId} not found.", result.Errors[0].Message);
 
         await _cartRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
@@ -289,10 +294,12 @@ public class AddItemToCartCommandHandlerTests
             .Returns(warehouseItem);
 
         // Act & Assert
-        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Quantity must be greater than zero.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Equal("Quantity must be greater than zero.", result.Errors[0].Message);
 
         await _cartRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
@@ -322,9 +329,11 @@ public class AddItemToCartCommandHandlerTests
             .Returns(warehouseItem);
 
         // Act & Assert
-        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Quantity must be greater than zero.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Equal("Quantity must be greater than zero.", result.Errors[0].Message);
     }
 }

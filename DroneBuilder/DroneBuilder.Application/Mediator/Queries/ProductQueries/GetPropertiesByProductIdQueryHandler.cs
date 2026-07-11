@@ -1,8 +1,9 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ProductQueries;
@@ -13,14 +14,14 @@ public class GetPropertiesByProductIdQueryHandler(
     IMapper mapper)
     : IQueryHandler<GetPropertiesByProductIdQuery, ProductPropertiesResponseModel>
 {
-    public async Task<ProductPropertiesResponseModel> ExecuteAsync(GetPropertiesByProductIdQuery query,
+    public async Task<Result<ProductPropertiesResponseModel>> ExecuteAsync(GetPropertiesByProductIdQuery query,
         CancellationToken cancellationToken)
     {
         Product? product = await productRepository.GetPropertiesByProductIdAsync(query.ProductId, cancellationToken);
 
         if (product is null)
         {
-            throw new NotFoundException($"Product with id {query.ProductId} not found.");
+            return Result.Fail<ProductPropertiesResponseModel>(new NotFoundError($"Product with id {query.ProductId} not found."));
         }
 
         ProductPropertiesResponseModel model = mapper.Map<ProductPropertiesResponseModel>(product);
@@ -31,7 +32,7 @@ public class GetPropertiesByProductIdQueryHandler(
             model.StockQuantity = warehouseItem.Quantity;
         }
 
-        return model;
+        return Result.Ok(model);
     }
 }
 

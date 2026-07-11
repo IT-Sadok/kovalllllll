@@ -2,6 +2,7 @@ using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.PropertyCommands;
@@ -9,7 +10,7 @@ namespace DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 public class CreatePropertyCommandHandler(IPropertyRepository propertyRepository, IMapper mapper)
     : ICommandHandler<CreatePropertyCommand, PropertyModel>
 {
-    public async Task<PropertyModel> ExecuteCommandAsync(CreatePropertyCommand command,
+    public async Task<Result<PropertyModel>> ExecuteCommandAsync(CreatePropertyCommand command,
         CancellationToken cancellationToken)
     {
         Property property = mapper.Map<Property>(command.Model);
@@ -17,7 +18,7 @@ public class CreatePropertyCommandHandler(IPropertyRepository propertyRepository
         await propertyRepository.AddPropertyAsync(property, cancellationToken);
         await propertyRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<PropertyModel>(property);
+        return Result.Ok(mapper.Map<PropertyModel>(property));
     }
 }
 

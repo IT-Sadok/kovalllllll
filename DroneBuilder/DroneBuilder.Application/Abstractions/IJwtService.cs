@@ -1,6 +1,8 @@
+using FluentResults;
+
 namespace DroneBuilder.Application.Abstractions;
 
 public interface IJwtService
 {
-    Task<string> GenerateJwtTokenAsync(string userId);
+    Task<Result<string>> GenerateJwtTokenAsync(string userId);
 }

@@ -1,7 +1,9 @@
 using DroneBuilder.API.Endpoints.Routes;
+using DroneBuilder.API.Extensions;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.UserModels;
+using FluentResults;
 
 namespace DroneBuilder.API.Endpoints;
 
@@ -11,15 +13,18 @@ public static class UserEndpointsExtensions
     {
         app.MapPost(ApiRoutes.Users.SignUp,
             async (IMediator mediator, SignUpModel model, CancellationToken cancellationToken) =>
-                await mediator.ExecuteCommandAsync(new SignUpUserCommand(model), cancellationToken)).WithTags("Users");
+            {
+                Result result = await mediator.ExecuteCommandAsync(new SignUpUserCommand(model), cancellationToken);
+                return result.ToHttpResult();
+            }).WithTags("Users");
 
         app.MapPost(ApiRoutes.Users.SignIn,
             async (IMediator mediator, SignInModel model, CancellationToken cancellationToken) =>
             {
-                AuthUserModel result = await mediator.ExecuteCommandAsync<SignInCommand, AuthUserModel>(
+                Result<AuthUserModel> result = await mediator.ExecuteCommandAsync<SignInCommand, AuthUserModel>(
                     new SignInCommand(model.Email, model.Password),
                     cancellationToken);
-                return Results.Ok(result);
+                return result.ToHttpResult();
             }).WithTags("Users");
 
         return app;

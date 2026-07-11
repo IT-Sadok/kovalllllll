@@ -1,13 +1,14 @@
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.OrderCommands;
 using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.OrderEvents;
+using FluentResults;
 using MapsterMapper;
 using NSubstitute;
 
@@ -133,11 +134,12 @@ public class CreateOrderCommandHandlerTests
             .Returns(expectedOrderModel);
 
         // Act
-        OrderModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(expectedTotalPrice, result.TotalPrice);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(expectedTotalPrice, result.Value.TotalPrice);
 
         await _orderRepository.Received(1).CreateOrderAsync(
             Arg.Is<Order>(o =>
@@ -184,10 +186,12 @@ public class CreateOrderCommandHandlerTests
             .Returns(cart);
 
         // Act & Assert
-        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Cart is empty.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Equal("Cart is empty.", result.Errors[0].Message);
 
         await _orderRepository.DidNotReceive().CreateOrderAsync(
             Arg.Is<Order>(o => o.UserId == UserId),
@@ -222,10 +226,12 @@ public class CreateOrderCommandHandlerTests
             .Returns((Cart)null);
 
         // Act & Assert
-        BadRequestException exception = await Assert.ThrowsAsync<BadRequestException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Cart is empty.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Equal("Cart is empty.", result.Errors[0].Message);
 
         await _productRepository.DidNotReceive().GetProductsByIdsAsync(
             Arg.Is<List<Guid>>(ids => ids.Contains(ProductId1) && ids.Contains(ProductId2)),
@@ -273,10 +279,12 @@ public class CreateOrderCommandHandlerTests
             .Returns((List<WarehouseItem>)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Contains($"Product {ProductId1} not found in warehouse.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Contains($"Product {ProductId1} not found in warehouse.", result.Errors[0].Message);
 
         await _orderRepository.DidNotReceive().CreateOrderAsync(
             Arg.Any<Order>(),

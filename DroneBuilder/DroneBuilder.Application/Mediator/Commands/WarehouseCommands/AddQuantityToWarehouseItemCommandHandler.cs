@@ -1,11 +1,12 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.WarehouseEvents;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
@@ -17,18 +18,18 @@ public class AddQuantityToWarehouseItemCommandHandler(
     IMapper mapper)
     : ICommandHandler<AddQuantityToWarehouseItemCommand, WarehouseItemModel>
 {
-    public async Task<WarehouseItemModel> ExecuteCommandAsync(AddQuantityToWarehouseItemCommand command,
+    public async Task<Result<WarehouseItemModel>> ExecuteCommandAsync(AddQuantityToWarehouseItemCommand command,
         CancellationToken cancellationToken)
     {
         if (command.Model.QuantityToAdd <= 0)
         {
-            throw new BadRequestException("Quantity to add must be greater than 0.");
+            return Result.Fail<WarehouseItemModel>(new BadRequestError("Quantity to add must be greater than 0."));
         }
 
         Warehouse? warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
         if (warehouse == null)
         {
-            throw new NotFoundException("Warehouse not found.");
+            return Result.Fail<WarehouseItemModel>(new NotFoundError("Warehouse not found."));
         }
 
         WarehouseItem? warehouseItem =
@@ -36,7 +37,7 @@ public class AddQuantityToWarehouseItemCommandHandler(
 
         if (warehouseItem == null)
         {
-            throw new NotFoundException($"Warehouse item with id {command.WarehouseItemId} not found.");
+            return Result.Fail<WarehouseItemModel>(new NotFoundError($"Warehouse item with id {command.WarehouseItemId} not found."));
         }
 
         warehouseItem.Quantity += command.Model.QuantityToAdd;
@@ -46,7 +47,7 @@ public class AddQuantityToWarehouseItemCommandHandler(
 
         await warehouseRepository.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<WarehouseItemModel>(warehouseItem);
+        return Result.Ok(mapper.Map<WarehouseItemModel>(warehouseItem));
     }
 }
 

@@ -1,11 +1,12 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
+using FluentResults;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.CartCommandTests;
@@ -124,10 +125,12 @@ public class ClearCartCommandHandlerTests
             .Returns((Cart)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Cart for user ID {UserId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Cart for user ID {UserId} not found.", result.Errors[0].Message);
 
         await _warehouseRepository.DidNotReceive().GetWarehouseItemByProductIdAsync(
             Arg.Is<Guid>(id => id == ProductId1),
@@ -172,10 +175,12 @@ public class ClearCartCommandHandlerTests
             .Returns((WarehouseItem)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Contains($"Warehouse item for product {ProductId1} not found while clearing cart.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Contains($"Warehouse item for product {ProductId1} not found while clearing cart.", result.Errors[0].Message);
 
         await _cartRepository.DidNotReceive().ClearCartAsync(
             Arg.Is<Guid>(id => id == CartId),

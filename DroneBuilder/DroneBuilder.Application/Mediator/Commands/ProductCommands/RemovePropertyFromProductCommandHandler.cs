@@ -1,19 +1,20 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
 public class RemovePropertyFromProductCommandHandler(IProductRepository productRepository)
     : ICommandHandler<RemovePropertyFromProductCommand>
 {
-    public async Task ExecuteCommandAsync(RemovePropertyFromProductCommand command, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(RemovePropertyFromProductCommand command, CancellationToken cancellationToken)
     {
         Product? product = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
         if (product == null)
         {
-            throw new NotFoundException($"Product with ID {command.ProductId} not found.");
+            return Result.Fail(new NotFoundError($"Product with ID {command.ProductId} not found."));
         }
 
         if (product.ProductPropertyValues != null)
@@ -29,6 +30,8 @@ public class RemovePropertyFromProductCommandHandler(IProductRepository productR
                 await productRepository.SaveChangesAsync(cancellationToken);
             }
         }
+
+        return Result.Ok();
     }
 }
 

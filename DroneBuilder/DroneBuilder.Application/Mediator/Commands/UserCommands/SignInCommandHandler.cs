@@ -1,11 +1,12 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.UserEvents;
+using FluentResults;
 using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
 
@@ -20,24 +21,28 @@ public class SignInCommandHandler(
     IMapper mapper)
     : ICommandHandler<SignInCommand, AuthUserModel>
 {
-    public async Task<AuthUserModel> ExecuteCommandAsync(SignInCommand command, CancellationToken cancellationToken)
+    public async Task<Result<AuthUserModel>> ExecuteCommandAsync(SignInCommand command, CancellationToken cancellationToken)
     {
         User? user = await userManager.FindByEmailAsync(command.Email);
         if (user == null || !await userManager.CheckPasswordAsync(user, command.Password))
         {
-            throw new InvalidEmailOrPasswordException("Invalid email or password.");
+            return Result.Fail<AuthUserModel>(new UnauthorizedError("Invalid email or password."));
         }
 
-        string token = await jwtService.GenerateJwtTokenAsync(user.Id.ToString());
+        Result<string> tokenResult = await jwtService.GenerateJwtTokenAsync(user.Id.ToString());
+        if (tokenResult.IsFailed)
+        {
+            return tokenResult.ToResult<AuthUserModel>();
+        }
 
-        AuthUserModel authUserModel = mapper.Map<AuthUserModel>(token);
+        AuthUserModel authUserModel = mapper.Map<AuthUserModel>(tokenResult.Value);
 
         var @event = new UserSignedInEvent(user.Id, user.Email);
         await outboxService.StoreEventAsync(@event, queuesConfig.UserQueue.Name, cancellationToken);
 
         await userRepository.SaveChangesAsync(cancellationToken);
 
-        return authUserModel;
+        return Result.Ok(authUserModel);
     }
 }
 

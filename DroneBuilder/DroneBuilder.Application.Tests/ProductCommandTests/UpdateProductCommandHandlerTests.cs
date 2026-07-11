@@ -1,8 +1,9 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 using NSubstitute;
 
@@ -74,13 +75,14 @@ public class UpdateProductCommandHandlerTests
             .Returns(expectedProductModel);
 
         // Act
-        ProductModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(UpdatedName, result.Name);
-        Assert.Equal(UpdatedPrice, result.Price);
-        Assert.Equal(UpdatedCategory, result.Category);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(UpdatedName, result.Value.Name);
+        Assert.Equal(UpdatedPrice, result.Value.Price);
+        Assert.Equal(UpdatedCategory, result.Value.Category);
 
         Assert.Equal(UpdatedName, existingProduct.Name);
         Assert.Equal(UpdatedPrice, existingProduct.Price);
@@ -105,10 +107,12 @@ public class UpdateProductCommandHandlerTests
             .Returns((Product)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal($"Product with id {ProductId} not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Product with id {ProductId} not found.", result.Errors[0].Message);
 
         await _productRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 
@@ -242,12 +246,13 @@ public class UpdateProductCommandHandlerTests
             .Returns(expectedProductModel);
 
         // Act
-        ProductModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(UpdatedName, result.Name);
-        Assert.Equal(UpdatedPrice, result.Price);
-        Assert.Equal(OriginalCategory, result.Category);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(UpdatedName, result.Value.Name);
+        Assert.Equal(UpdatedPrice, result.Value.Price);
+        Assert.Equal(OriginalCategory, result.Value.Category);
     }
 }

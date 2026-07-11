@@ -2,9 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure.Options;
+using FluentResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,12 +17,12 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userM
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public async Task<string> GenerateJwtTokenAsync(string userId)
+    public async Task<Result<string>> GenerateJwtTokenAsync(string userId)
     {
         User? user = await userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            throw new NotFoundException($"User with id {userId} not found.");
+            return Result.Fail<string>(new NotFoundError($"User with id {userId} not found."));
         }
 
         IList<string> roles = await userManager.GetRolesAsync(user);
@@ -46,6 +47,6 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userM
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return Result.Ok(new JwtSecurityTokenHandler().WriteToken(token));
     }
 }

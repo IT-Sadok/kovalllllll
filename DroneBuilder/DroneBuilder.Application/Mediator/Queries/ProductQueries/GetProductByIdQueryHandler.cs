@@ -1,8 +1,9 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ProductQueries;
@@ -13,13 +14,13 @@ public class GetProductByIdQueryHandler(
     IMapper mapper)
     : IQueryHandler<GetProductByIdQuery, ProductModel>
 {
-    public async Task<ProductModel> ExecuteAsync(GetProductByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<ProductModel>> ExecuteAsync(GetProductByIdQuery query, CancellationToken cancellationToken)
     {
         Product? product = await productRepository.GetProductByIdAsync(query.ProductId, cancellationToken);
 
         if (product is null)
         {
-            throw new NotFoundException($"Product with id {query.ProductId} not found.");
+            return Result.Fail<ProductModel>(new NotFoundError($"Product with id {query.ProductId} not found."));
         }
 
         ProductModel model = mapper.Map<ProductModel>(product);
@@ -30,7 +31,7 @@ public class GetProductByIdQueryHandler(
             model.StockQuantity = warehouseItem.Quantity;
         }
 
-        return model;
+        return Result.Ok(model);
     }
 }
 

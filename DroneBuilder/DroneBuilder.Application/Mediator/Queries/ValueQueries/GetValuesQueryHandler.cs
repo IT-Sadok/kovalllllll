@@ -1,8 +1,9 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.ValueQueries;
@@ -10,16 +11,16 @@ namespace DroneBuilder.Application.Mediator.Queries.ValueQueries;
 public class GetValuesQueryHandler(IValueRepository valueRepository, IMapper mapper)
     : IQueryHandler<GetValuesQuery, ICollection<ValueModel>>
 {
-    public async Task<ICollection<ValueModel>> ExecuteAsync(GetValuesQuery query, CancellationToken cancellationToken)
+    public async Task<Result<ICollection<ValueModel>>> ExecuteAsync(GetValuesQuery query, CancellationToken cancellationToken)
     {
         ICollection<Value> values = await valueRepository.GetValuesAsync(cancellationToken);
 
         if (values == null)
         {
-            throw new NotFoundException("Values not found.");
+            return Result.Fail<ICollection<ValueModel>>(new NotFoundError("Values not found."));
         }
 
-        return mapper.Map<ICollection<ValueModel>>(values);
+        return Result.Ok(mapper.Map<ICollection<ValueModel>>(values));
     }
 }
 

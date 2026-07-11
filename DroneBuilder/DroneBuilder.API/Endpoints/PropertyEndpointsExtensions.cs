@@ -1,9 +1,11 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
+using DroneBuilder.API.Extensions;
 using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.PropertyQueries;
 using DroneBuilder.Application.Models.ProductModels;
+using FluentResults;
 
 namespace DroneBuilder.API.Endpoints;
 
@@ -14,10 +16,10 @@ public static class PropertyEndpointsExtensions
         app.MapPost(ApiRoutes.Properties.Create,
                 async (IMediator mediator, CreatePropertyModel model, CancellationToken cancellationToken) =>
                 {
-                    PropertyModel result = await mediator.ExecuteCommandAsync<CreatePropertyCommand, PropertyModel>(
+                    Result<PropertyModel> result = await mediator.ExecuteCommandAsync<CreatePropertyCommand, PropertyModel>(
                         new CreatePropertyCommand(model),
                         cancellationToken);
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Properties")
             .RequireAuthorization(PolicyNames.Admin);
@@ -25,28 +27,28 @@ public static class PropertyEndpointsExtensions
         app.MapDelete(ApiRoutes.Properties.Delete,
                 async (IMediator mediator, Guid propertyId, CancellationToken cancellationToken) =>
                 {
-                    await mediator.ExecuteCommandAsync(new DeletePropertyCommand(propertyId), cancellationToken);
-                    return Results.NoContent();
+                    Result result = await mediator.ExecuteCommandAsync(new DeletePropertyCommand(propertyId), cancellationToken);
+                    return result.ToHttpResult();
                 }).WithTags("Properties")
             .RequireAuthorization(PolicyNames.Admin);
 
         app.MapPatch(ApiRoutes.Properties.Update, async (IMediator mediator, Guid propertyId,
                 UpdatePropertyModel model, CancellationToken cancellationToken) =>
             {
-                PropertyModel result = await mediator.ExecuteCommandAsync<UpdatePropertyCommand, PropertyModel>(
+                Result<PropertyModel> result = await mediator.ExecuteCommandAsync<UpdatePropertyCommand, PropertyModel>(
                     new UpdatePropertyCommand(propertyId, model),
                     cancellationToken);
-                return Results.Ok(result);
+                return result.ToHttpResult();
             }).WithTags("Properties")
             .RequireAuthorization(PolicyNames.Admin);
 
         app.MapGet(ApiRoutes.Properties.GetAll,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    ICollection<PropertyModel> result = await mediator.ExecuteQueryAsync<GetPropertiesQuery, ICollection<PropertyModel>>(
+                    Result<ICollection<PropertyModel>> result = await mediator.ExecuteQueryAsync<GetPropertiesQuery, ICollection<PropertyModel>>(
                         new GetPropertiesQuery(),
                         cancellationToken);
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Properties")
             .RequireAuthorization();
@@ -54,28 +56,28 @@ public static class PropertyEndpointsExtensions
         app.MapGet(ApiRoutes.Properties.GetValuesByPropertyId,
                 async (IMediator mediator, Guid propertyId, CancellationToken cancellationToken) =>
                 {
-                    PropertyModel result = await mediator.ExecuteQueryAsync<GetValuesByPropertyIdQuery, PropertyModel>(
+                    Result<PropertyModel> result = await mediator.ExecuteQueryAsync<GetValuesByPropertyIdQuery, PropertyModel>(
                         new GetValuesByPropertyIdQuery(propertyId),
                         cancellationToken);
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 }).WithTags("Properties")
             .RequireAuthorization();
 
         app.MapPost(ApiRoutes.Properties.AssignValueToProperty, async (IMediator mediator, Guid propertyId, Guid valueId,
                 CancellationToken cancellationToken) =>
             {
-                await mediator.ExecuteCommandAsync(new AddValueToPropertyCommand(propertyId, valueId),
+                Result result = await mediator.ExecuteCommandAsync(new AddValueToPropertyCommand(propertyId, valueId),
                     cancellationToken);
-                return Results.NoContent();
+                return result.ToHttpResult();
             }).WithTags("Properties")
             .RequireAuthorization(PolicyNames.Admin);
 
         app.MapDelete(ApiRoutes.Properties.RemoveValueFromProperty, async (IMediator mediator, Guid propertyId, Guid valueId,
                 CancellationToken cancellationToken) =>
             {
-                await mediator.ExecuteCommandAsync(new RemoveValueFromPropertyCommand(propertyId, valueId),
+                Result result = await mediator.ExecuteCommandAsync(new RemoveValueFromPropertyCommand(propertyId, valueId),
                     cancellationToken);
-                return Results.NoContent();
+                return result.ToHttpResult();
             }).WithTags("Properties")
             .RequireAuthorization(PolicyNames.Admin);
 

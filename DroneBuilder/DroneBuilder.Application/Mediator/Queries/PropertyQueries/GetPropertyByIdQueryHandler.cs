@@ -1,7 +1,9 @@
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 using MapsterMapper;
 
 namespace DroneBuilder.Application.Mediator.Queries.PropertyQueries;
@@ -9,17 +11,17 @@ namespace DroneBuilder.Application.Mediator.Queries.PropertyQueries;
 public class GetPropertyByIdQueryHandler(IPropertyRepository propertyRepository, IMapper mapper)
     : IQueryHandler<GetPropertyByIdQuery, PropertyModel>
 {
-    public async Task<PropertyModel> ExecuteAsync(GetPropertyByIdQuery query,
+    public async Task<Result<PropertyModel>> ExecuteAsync(GetPropertyByIdQuery query,
         CancellationToken cancellationToken)
     {
         Property? property = await propertyRepository.GetPropertyByIdAsync(query.PropertyId, cancellationToken);
 
         if (property is null)
         {
-            throw new Exception($"Property with id {query.PropertyId} not found.");
+            return Result.Fail<PropertyModel>(new NotFoundError($"Property with id {query.PropertyId} not found."));
         }
 
-        return mapper.Map<PropertyModel>(property);
+        return Result.Ok(mapper.Map<PropertyModel>(property));
     }
 }
 

@@ -1,33 +1,38 @@
-using DroneBuilder.Application.Exceptions;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Validation;
 
 public class WarehouseValidation
 {
-    public static void ValidateState(WarehouseItem warehouseItem)
+    public static Result ValidateState(WarehouseItem? warehouseItem)
     {
         if (warehouseItem == null)
         {
-            throw new NotFoundException("Warehouse item not found.");
+            return Result.Fail(new NotFoundError("Warehouse item not found."));
         }
 
         if (warehouseItem.Quantity < 0)
         {
-            throw new InvalidOperationException("Total quantity cannot be negative.");
+            return Result.Fail(new BadRequestError("Total quantity cannot be negative."));
         }
+
+        return Result.Ok();
     }
 
-    public static void EnsureEnoughAvailable(WarehouseItem warehouseItem, int requested)
+    public static Result EnsureEnoughAvailable(WarehouseItem warehouseItem, int requested)
     {
         if (requested <= 0)
         {
-            throw new BadRequestException("Quantity must be greater than zero.");
+            return Result.Fail(new BadRequestError("Quantity must be greater than zero."));
         }
 
         if (warehouseItem.Quantity < requested)
         {
-            throw new BadRequestException($"Not enough stock. Available: {warehouseItem.Quantity}, requested: {requested}.");
+            return Result.Fail(new BadRequestError($"Not enough stock. Available: {warehouseItem.Quantity}, requested: {requested}."));
         }
+
+        return Result.Ok();
     }
 }

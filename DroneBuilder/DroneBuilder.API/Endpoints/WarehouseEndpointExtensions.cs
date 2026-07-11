@@ -1,10 +1,12 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
+using DroneBuilder.API.Extensions;
 using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.WarehouseModels;
+using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DroneBuilder.API.Endpoints;
@@ -16,10 +18,10 @@ public static class WarehouseEndpointExtensions
         app.MapGet(ApiRoutes.Warehouses.Get,
                 async (IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    WarehouseModel result = await mediator.ExecuteQueryAsync<GetWarehouseQuery, WarehouseModel>(
+                    Result<WarehouseModel> result = await mediator.ExecuteQueryAsync<GetWarehouseQuery, WarehouseModel>(
                         new GetWarehouseQuery(),
                         cancellationToken);
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Warehouse")
             .RequireAuthorization(PolicyNames.Admin);
@@ -27,10 +29,10 @@ public static class WarehouseEndpointExtensions
         app.MapGet(ApiRoutes.Warehouses.GetItemById,
                 async (IMediator mediator, Guid itemId, CancellationToken cancellationToken) =>
                 {
-                    WarehouseItemModel result = await mediator.ExecuteQueryAsync<GetWarehouseItemByIdQuery, WarehouseItemModel>(
+                    Result<WarehouseItemModel> result = await mediator.ExecuteQueryAsync<GetWarehouseItemByIdQuery, WarehouseItemModel>(
                         new GetWarehouseItemByIdQuery(itemId),
                         cancellationToken);
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Warehouse")
             .RequireAuthorization(PolicyNames.Admin);
@@ -39,11 +41,11 @@ public static class WarehouseEndpointExtensions
                 [FromBody] AddQuantityModel model,
                 CancellationToken cancellationToken) =>
             {
-                WarehouseItemModel result =
+                Result<WarehouseItemModel> result =
                     await mediator.ExecuteCommandAsync<AddQuantityToWarehouseItemCommand, WarehouseItemModel>(
                         new AddQuantityToWarehouseItemCommand(itemId, model),
                         cancellationToken);
-                return Results.Ok(result);
+                return result.ToHttpResult();
             })
             .WithTags("Warehouse")
             .RequireAuthorization(PolicyNames.Admin);
@@ -52,11 +54,11 @@ public static class WarehouseEndpointExtensions
                 [FromBody] RemoveQuantityModel model,
                 CancellationToken cancellationToken) =>
             {
-                WarehouseItemModel result =
+                Result<WarehouseItemModel> result =
                     await mediator.ExecuteCommandAsync<RemoveQuantityFromWarehouseItemCommand, WarehouseItemModel>(
                         new RemoveQuantityFromWarehouseItemCommand(itemId, model),
                         cancellationToken);
-                return Results.Ok(result);
+                return result.ToHttpResult();
             })
             .WithTags("Warehouse")
             .RequireAuthorization(PolicyNames.Admin);
@@ -65,11 +67,11 @@ public static class WarehouseEndpointExtensions
                 async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
                 {
                     var pagination = new PaginationParams(page, pageSize);
-                    PagedResult<WarehouseItemModel> result =
+                    Result<PagedResult<WarehouseItemModel>> result =
                         await mediator.ExecuteQueryAsync<GetWarehouseItemsQuery, PagedResult<WarehouseItemModel>>(
                             new GetWarehouseItemsQuery(pagination),
                             cancellationToken);
-                    return Results.Ok(result);
+                    return result.ToHttpResult();
                 })
             .WithTags("Warehouse")
             .RequireAuthorization();

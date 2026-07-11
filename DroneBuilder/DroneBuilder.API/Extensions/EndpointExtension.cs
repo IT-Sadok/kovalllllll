@@ -14,7 +14,7 @@ public static class EndpointExtension
             .MapCartEndpoints()
             .MapWarehouseEndpoints()
             .MapOrderEndpoints();
-            
+
         return app;
     }
 }

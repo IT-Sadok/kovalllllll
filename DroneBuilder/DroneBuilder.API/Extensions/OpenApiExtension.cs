@@ -46,7 +46,7 @@ public static class OpenApiExtension
                 options.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
             });
         }
-        
+
         return app;
     }
 }

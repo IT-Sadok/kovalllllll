@@ -1,7 +1,8 @@
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 
@@ -9,29 +10,31 @@ public class AddValueToPropertyCommandHandler(IPropertyRepository propertyReposi
     :
         ICommandHandler<AddValueToPropertyCommand>
 {
-    public async Task ExecuteCommandAsync(AddValueToPropertyCommand command, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(AddValueToPropertyCommand command, CancellationToken cancellationToken)
     {
         Property? property = await propertyRepository.GetPropertyByIdAsync(command.PropertyId, cancellationToken);
 
         if (property == null)
         {
-            throw new NotFoundException($"Property with ID {command.PropertyId} not found.");
+            return Result.Fail(new NotFoundError($"Property with ID {command.PropertyId} not found."));
         }
 
         Value? value = await valueRepository.GetValueByIdAsync(command.ValueId, cancellationToken);
         if (value == null)
         {
-            throw new NotFoundException($"Value with ID {command.ValueId} not found.");
+            return Result.Fail(new NotFoundError($"Value with ID {command.ValueId} not found."));
         }
 
         if (property.Values != null && property.Values.Any(v => v.Id == command.ValueId))
         {
-            throw new ValidationException(
-                $"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId}.");
+            return Result.Fail(new ValidationError(
+                $"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId}."));
         }
 
         property.Values?.Add(value);
         await propertyRepository.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }
 

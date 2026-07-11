@@ -1,12 +1,13 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
@@ -18,28 +19,32 @@ public class AddItemToCartCommandHandler(
     MessageQueuesConfiguration queuesConfig,
     IUserContext userContext) : ICommandHandler<AddItemToCartCommand>
 {
-    public async Task ExecuteCommandAsync(AddItemToCartCommand command,
+    public async Task<Result> ExecuteCommandAsync(AddItemToCartCommand command,
         CancellationToken cancellationToken)
     {
         Product? existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
         if (existingProduct == null)
         {
-            throw new NotFoundException($"Product with ID {command.ProductId} not found.");
+            return Result.Fail(new NotFoundError($"Product with ID {command.ProductId} not found."));
         }
 
         WarehouseItem? warehouseItem =
             await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
         if (warehouseItem == null)
         {
-            throw new NotFoundException($"Warehouse item for product ID {command.ProductId} not found.");
+            return Result.Fail(new NotFoundError($"Warehouse item for product ID {command.ProductId} not found."));
         }
 
         if (command.Quantity <= 0)
         {
-            throw new BadRequestException("Quantity must be greater than zero.");
+            return Result.Fail(new BadRequestError("Quantity must be greater than zero."));
         }
 
-        WarehouseValidation.ValidateState(warehouseItem);
+        Result validationResult = WarehouseValidation.ValidateState(warehouseItem);
+        if (validationResult.IsFailed)
+        {
+            return validationResult;
+        }
 
         Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
@@ -74,13 +79,19 @@ public class AddItemToCartCommandHandler(
 
         warehouseItem.Quantity -= command.Quantity;
 
-        WarehouseValidation.ValidateState(warehouseItem);
+        validationResult = WarehouseValidation.ValidateState(warehouseItem);
+        if (validationResult.IsFailed)
+        {
+            return validationResult;
+        }
 
         var @event = new AddedItemToCartEvent(userContext.UserId, command.ProductId, existingProduct.Name,
             command.Quantity);
         await outboxService.StoreEventAsync(@event, queuesConfig.CartQueue.Name, cancellationToken);
 
         await cartRepository.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }
 

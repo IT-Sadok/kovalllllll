@@ -1,11 +1,12 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Commands.ProductCommands;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.ProductEvents;
+using FluentResults;
 using MapsterMapper;
 using NSubstitute;
 
@@ -102,13 +103,14 @@ public class CreateProductCommandHandlerTests
             .Returns(expectedProductModel);
 
         // Act
-        ProductModel result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(ProductId, result.Id);
-        Assert.Equal(ProductName, result.Name);
-        Assert.Equal(ProductPrice, result.Price);
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(ProductId, result.Value.Id);
+        Assert.Equal(ProductName, result.Value.Name);
+        Assert.Equal(ProductPrice, result.Value.Price);
 
         await _productRepository.Received(1).AddProductAsync(
             Arg.Is<Product>(p =>
@@ -149,10 +151,12 @@ public class CreateProductCommandHandlerTests
             .Returns((Warehouse)null);
 
         // Act & Assert
-        NotFoundException exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.ExecuteCommandAsync(command, CancellationToken.None));
+        Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        Assert.Equal("Warehouse not found.", exception.Message);
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal("Warehouse not found.", result.Errors[0].Message);
 
         await _productRepository.DidNotReceive().AddProductAsync(
             Arg.Any<Product>(),

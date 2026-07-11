@@ -16,7 +16,7 @@ public static class SpaExtension
             app.UseDefaultFiles();
             app.UseStaticFiles();
         }
-        
+
         return app;
     }
 
@@ -26,7 +26,7 @@ public static class SpaExtension
         {
             app.MapFallbackToFile("index.html");
         }
-        
+
         return app;
     }
 }

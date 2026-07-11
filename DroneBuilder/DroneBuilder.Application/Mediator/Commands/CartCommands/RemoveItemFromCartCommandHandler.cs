@@ -1,9 +1,10 @@
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Exceptions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
+using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
@@ -14,27 +15,27 @@ public class RemoveItemFromCartCommandHandler(
     IUserContext userContext)
     : ICommandHandler<RemoveItemFromCartCommand>
 {
-    public async Task ExecuteCommandAsync(RemoveItemFromCartCommand command, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(RemoveItemFromCartCommand command, CancellationToken cancellationToken)
     {
         Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
         if (cart == null)
         {
-            throw new NotFoundException($"Cart for User ID {userContext.UserId} not found.");
+            return Result.Fail(new NotFoundError($"Cart for User ID {userContext.UserId} not found."));
         }
 
         Product? product = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
 
         if (product == null)
         {
-            throw new NotFoundException($"Product with ID {command.ProductId} not found.");
+            return Result.Fail(new NotFoundError($"Product with ID {command.ProductId} not found."));
         }
 
         CartItem? cartItem = cart.CartItems.FirstOrDefault(item => item.ProductId == command.ProductId);
 
         if (cartItem == null)
         {
-            throw new NotFoundException($"Product with ID {command.ProductId} not found in the cart.");
+            return Result.Fail(new NotFoundError($"Product with ID {command.ProductId} not found in the cart."));
         }
 
         WarehouseItem? warehouseItem =
@@ -42,17 +43,27 @@ public class RemoveItemFromCartCommandHandler(
 
         if (warehouseItem == null)
         {
-            throw new NotFoundException($"Warehouse item for Product ID {command.ProductId} not found.");
+            return Result.Fail(new NotFoundError($"Warehouse item for Product ID {command.ProductId} not found."));
         }
 
-        WarehouseValidation.ValidateState(warehouseItem);
+        Result validationResult = WarehouseValidation.ValidateState(warehouseItem);
+        if (validationResult.IsFailed)
+        {
+            return validationResult;
+        }
 
         warehouseItem.Quantity += cartItem.Quantity;
 
-        WarehouseValidation.ValidateState(warehouseItem);
+        validationResult = WarehouseValidation.ValidateState(warehouseItem);
+        if (validationResult.IsFailed)
+        {
+            return validationResult;
+        }
 
         await cartRepository.RemoveCartItemAsync(cartItem.Id, cancellationToken);
         await cartRepository.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
     }
 }
 
