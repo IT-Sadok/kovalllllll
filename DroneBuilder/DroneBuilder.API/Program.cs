@@ -1,15 +1,7 @@
-using DroneBuilder.API.Authorization;
-using DroneBuilder.API.Documentation;
-using DroneBuilder.API.Endpoints;
 using DroneBuilder.API.Extensions;
 using DroneBuilder.API.Middleware;
 using DroneBuilder.Application;
 using DroneBuilder.Infrastructure;
-using DroneBuilder.Infrastructure.Data;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Scalar.AspNetCore;
 
 namespace DroneBuilder.API;
 
