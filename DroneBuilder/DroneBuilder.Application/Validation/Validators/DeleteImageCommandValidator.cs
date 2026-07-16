@@ -11,4 +11,3 @@ public class DeleteImageCommandValidator : AbstractValidator<DeleteImageCommand>
     }
 }
 
-

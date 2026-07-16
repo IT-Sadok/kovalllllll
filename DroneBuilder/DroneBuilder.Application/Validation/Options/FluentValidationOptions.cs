@@ -10,8 +10,8 @@ public class FluentValidationOptions<TOptions>(IServiceProvider serviceProvider)
 {
     public ValidateOptionsResult Validate(string? name, TOptions options)
     {
-        using var scope = serviceProvider.CreateScope();
-        var validator = scope.ServiceProvider.GetService<IValidator<TOptions>>();
+        using IServiceScope scope = serviceProvider.CreateScope();
+        IValidator<TOptions>? validator = scope.ServiceProvider.GetService<IValidator<TOptions>>();
 
         if (validator == null)
         {

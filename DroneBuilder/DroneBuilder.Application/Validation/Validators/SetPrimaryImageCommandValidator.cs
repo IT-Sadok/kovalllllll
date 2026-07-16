@@ -11,4 +11,3 @@ public class SetPrimaryImageCommandValidator : AbstractValidator<SetPrimaryImage
     }
 }
 
-

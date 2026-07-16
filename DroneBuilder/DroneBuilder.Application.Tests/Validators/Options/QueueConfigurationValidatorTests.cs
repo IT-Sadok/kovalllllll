@@ -1,7 +1,6 @@
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Validation.Validators.Options;
 using FluentValidation.TestHelper;
-using Xunit;
 
 namespace DroneBuilder.Application.Tests.Validators.Options;
 
@@ -21,7 +20,7 @@ public class QueueConfigurationValidatorTests
         var model = new QueueConfiguration { Name = string.Empty };
 
         // Act
-        var result = _validator.TestValidate(model);
+        TestValidationResult<QueueConfiguration> result = _validator.TestValidate(model);
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Name)
@@ -32,7 +31,7 @@ public class QueueConfigurationValidatorTests
     public void Should_Have_Error_When_MaxRetryCount_Is_Negative()
     {
         var model = new QueueConfiguration { Name = "test", MaxRetryCount = -1 };
-        var result = _validator.TestValidate(model);
+        TestValidationResult<QueueConfiguration> result = _validator.TestValidate(model);
         result.ShouldHaveValidationErrorFor(x => x.MaxRetryCount);
     }
 
@@ -40,7 +39,7 @@ public class QueueConfigurationValidatorTests
     public void Should_Have_Error_When_PrefetchCount_Is_Zero_Or_Negative()
     {
         var model = new QueueConfiguration { Name = "test", PrefetchCount = 0 };
-        var result = _validator.TestValidate(model);
+        TestValidationResult<QueueConfiguration> result = _validator.TestValidate(model);
         result.ShouldHaveValidationErrorFor(x => x.PrefetchCount);
     }
 
@@ -54,7 +53,7 @@ public class QueueConfigurationValidatorTests
             PrefetchCount = 10
         };
 
-        var result = _validator.TestValidate(model);
+        TestValidationResult<QueueConfiguration> result = _validator.TestValidate(model);
         result.ShouldNotHaveAnyValidationErrors();
     }
 }

@@ -11,4 +11,3 @@ public class DeletePropertyCommandValidator : AbstractValidator<DeletePropertyCo
     }
 }
 
-

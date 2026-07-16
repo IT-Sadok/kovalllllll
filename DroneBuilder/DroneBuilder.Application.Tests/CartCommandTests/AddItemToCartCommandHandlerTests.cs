@@ -268,8 +268,5 @@ public class AddItemToCartCommandHandlerTests
 
         await _cartRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
-
 }
-
-
 

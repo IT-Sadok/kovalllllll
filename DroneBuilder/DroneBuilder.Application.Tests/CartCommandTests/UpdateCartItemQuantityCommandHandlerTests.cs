@@ -124,8 +124,5 @@ public class UpdateCartItemQuantityCommandHandlerTests
         Assert.True(result.IsFailed);
         Assert.True(result.HasError<BadRequestError>());
     }
-
 }
-
-
 

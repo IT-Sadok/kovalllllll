@@ -11,4 +11,3 @@ public class PayForOrderCommandValidator : AbstractValidator<PayForOrderCommand>
     }
 }
 
-

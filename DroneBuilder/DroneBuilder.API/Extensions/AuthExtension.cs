@@ -1,9 +1,9 @@
 using System.Security.Claims;
 using System.Text;
 using DroneBuilder.API.Authorization;
+using DroneBuilder.Application.Validation.Options;
 using DroneBuilder.Domain.Constants;
 using DroneBuilder.Domain.Entities;
-using DroneBuilder.Application.Validation.Options;
 using DroneBuilder.Infrastructure;
 using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

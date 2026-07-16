@@ -12,4 +12,3 @@ public class RemoveValueFromPropertyCommandValidator : AbstractValidator<RemoveV
     }
 }
 
-

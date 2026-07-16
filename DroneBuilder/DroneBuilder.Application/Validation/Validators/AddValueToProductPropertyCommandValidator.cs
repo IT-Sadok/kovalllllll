@@ -13,4 +13,3 @@ public class AddValueToProductPropertyCommandValidator : AbstractValidator<AddVa
     }
 }
 
-
