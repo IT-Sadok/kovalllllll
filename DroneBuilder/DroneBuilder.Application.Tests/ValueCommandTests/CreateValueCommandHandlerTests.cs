@@ -3,7 +3,6 @@ using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.ValueCommandTests;
@@ -12,7 +11,6 @@ public class CreateValueCommandHandlerTests
 {
     private readonly IValueRepository _valueRepository;
     private readonly IPropertyRepository _propertyRepository;
-    private readonly IMapper _mapper;
     private readonly CreateValueCommandHandler _handler;
 
     private static readonly Guid ValueId = Guid.NewGuid();
@@ -24,12 +22,10 @@ public class CreateValueCommandHandlerTests
         // Arrange
         _valueRepository = Substitute.For<IValueRepository>();
         _propertyRepository = Substitute.For<IPropertyRepository>();
-        _mapper = Substitute.For<IMapper>();
 
         _handler = new CreateValueCommandHandler(
             _valueRepository,
-            _propertyRepository,
-            _mapper);
+            _propertyRepository);
     }
 
     [Fact]
@@ -59,23 +55,14 @@ public class CreateValueCommandHandlerTests
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>())
             .Returns(property);
 
-        _mapper.Map<Value>(Arg.Is<CreateValueModel>(m => m.Text == TextValue))
-            .Returns(mappedValue);
-
-        _mapper.Map<ValueModel>(Arg.Is<Value>(v =>
-                v.Id == ValueId &&
-                v.Text == TextValue))
-            .Returns(expectedValueModel);
-
         // Act
         Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Equal(ValueId, result.Value.Id);
         Assert.Equal(TextValue, result.Value.Text);
-        Assert.Contains(mappedValue, property.Values);
+        Assert.Contains(property.Values, v => v.Text == TextValue);
 
         await _valueRepository.Received(1).AddValueAsync(
             Arg.Is<Value>(v => v.Text == TextValue),
@@ -100,12 +87,6 @@ public class CreateValueCommandHandlerTests
 
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>())
             .Returns(property);
-
-        _mapper.Map<Value>(Arg.Is<CreateValueModel>(m => m.Text == TextValue))
-            .Returns(mappedValue);
-
-        _mapper.Map<ValueModel>(Arg.Is<Value>(v => v.Text == TextValue))
-            .Returns(new ValueModel());
 
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -134,18 +115,13 @@ public class CreateValueCommandHandlerTests
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>())
             .Returns(property);
 
-        _mapper.Map<Value>(Arg.Any<CreateValueModel>())
-            .Returns(mappedValue);
-
-        _mapper.Map<ValueModel>(Arg.Is<Value>(v => v.Id == ValueId))
-            .Returns(expectedModel);
-
         // Act
         Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Same(expectedModel, result.Value);
+        Assert.Equal(TextValue, result.Value.Text);
     }
 }
+

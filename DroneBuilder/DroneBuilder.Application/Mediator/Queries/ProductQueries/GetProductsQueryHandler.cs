@@ -5,14 +5,12 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
+using DroneBuilder.Application.Mappings;
 namespace DroneBuilder.Application.Mediator.Queries.ProductQueries;
 
 public class GetProductsQueryHandler(
     IProductRepository productRepository,
-    IWarehouseRepository warehouseRepository,
-    IMapper mapper)
+    IWarehouseRepository warehouseRepository)
     : IQueryHandler<GetProductsQuery, PagedResult<ProductModel>>
 {
     public async Task<Result<PagedResult<ProductModel>>> ExecuteAsync(GetProductsQuery query,
@@ -28,7 +26,7 @@ public class GetProductsQueryHandler(
             return Result.Fail<PagedResult<ProductModel>>(new NotFoundError("No products found."));
         }
 
-        List<ProductModel> mappedItems = mapper.Map<List<ProductModel>>(products.Items);
+        List<ProductModel> mappedItems = products.Items.Select(x => x.ToModel()).ToList();
 
         // Fetch stock levels from WarehouseRepository
         var productIds = mappedItems.Select(i => i.Id).ToList();

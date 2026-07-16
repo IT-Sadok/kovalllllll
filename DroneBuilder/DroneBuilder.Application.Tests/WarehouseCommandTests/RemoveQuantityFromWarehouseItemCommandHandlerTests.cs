@@ -7,7 +7,6 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.WarehouseEvents;
 using FluentResults;
-using MapsterMapper;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.WarehouseCommandTests;
@@ -16,7 +15,6 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
 {
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IOutboxEventService _outboxService;
-    private readonly IMapper _mapper;
     private readonly RemoveQuantityFromWarehouseItemCommandHandler _handler;
 
     private const string WarehouseQueueName = "warehouse-queue";
@@ -30,7 +28,6 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         // Arrange
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
-        _mapper = Substitute.For<IMapper>();
 
         var queuesConfig = new MessageQueuesConfiguration
         {
@@ -40,8 +37,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         _handler = new RemoveQuantityFromWarehouseItemCommandHandler(
             _warehouseRepository,
             _outboxService,
-            queuesConfig,
-            _mapper);
+            queuesConfig);
     }
 
     [Fact]
@@ -75,11 +71,6 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
                 Arg.Is<Guid>(id => id == WarehouseItemId),
                 Arg.Any<CancellationToken>())
             .Returns(warehouseItem);
-
-        _mapper.Map<WarehouseItemModel>(Arg.Is<WarehouseItem>(wi =>
-                wi.Id == WarehouseItemId &&
-                wi.Quantity == InitialQuantity - QuantityToRemove))
-            .Returns(expectedModel);
 
         // Act
         Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -164,4 +155,5 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         await _warehouseRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }
+
 

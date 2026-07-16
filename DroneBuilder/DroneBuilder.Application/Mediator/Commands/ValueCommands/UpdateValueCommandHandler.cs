@@ -4,11 +4,10 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
+using DroneBuilder.Application.Mappings;
 namespace DroneBuilder.Application.Mediator.Commands.ValueCommands;
 
-public class UpdateValueCommandHandler(IValueRepository valueRepository, IMapper mapper) :
+public class UpdateValueCommandHandler(IValueRepository valueRepository) :
     ICommandHandler<UpdateValueCommand, ValueModel>
 {
     public async Task<Result<ValueModel>> ExecuteCommandAsync(UpdateValueCommand command,
@@ -28,7 +27,7 @@ public class UpdateValueCommandHandler(IValueRepository valueRepository, IMapper
 
         await valueRepository.SaveChangesAsync(cancellationToken);
 
-        return Result.Ok(mapper.Map<ValueModel>(value));
+        return Result.Ok(value.ToModel());
     }
 }
 

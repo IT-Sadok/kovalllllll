@@ -4,11 +4,10 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
+using DroneBuilder.Application.Mappings;
 namespace DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
 
-public class GetWarehouseQueryHandler(IWarehouseRepository warehouseRepository, IMapper mapper)
+public class GetWarehouseQueryHandler(IWarehouseRepository warehouseRepository)
     : IQueryHandler<GetWarehouseQuery, WarehouseModel>
 {
     public async Task<Result<WarehouseModel>> ExecuteAsync(GetWarehouseQuery query, CancellationToken cancellationToken)
@@ -19,7 +18,7 @@ public class GetWarehouseQueryHandler(IWarehouseRepository warehouseRepository, 
             return Result.Fail<WarehouseModel>(new NotFoundError("Warehouse not found."));
         }
 
-        return Result.Ok(mapper.Map<WarehouseModel>(warehouse));
+        return Result.Ok(warehouse.ToModel());
     }
 }
 

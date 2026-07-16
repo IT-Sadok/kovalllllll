@@ -7,8 +7,8 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.UserEvents;
 using FluentResults;
-using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
+using DroneBuilder.Application.Mappings;
 
 namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
 
@@ -17,8 +17,7 @@ public class SignInCommandHandler(
     IJwtService jwtService,
     IUserRepository userRepository,
     IOutboxEventService outboxService,
-    MessageQueuesConfiguration queuesConfig,
-    IMapper mapper)
+    MessageQueuesConfiguration queuesConfig)
     : ICommandHandler<SignInCommand, AuthUserModel>
 {
     public async Task<Result<AuthUserModel>> ExecuteCommandAsync(SignInCommand command, CancellationToken cancellationToken)
@@ -35,7 +34,7 @@ public class SignInCommandHandler(
             return tokenResult.ToResult<AuthUserModel>();
         }
 
-        AuthUserModel authUserModel = mapper.Map<AuthUserModel>(tokenResult.Value);
+        AuthUserModel authUserModel = new AuthUserModel { AccessToken = tokenResult.Value };
 
         var @event = new UserSignedInEvent(user.Id, user.Email);
         await outboxService.StoreEventAsync(@event, queuesConfig.UserQueue.Name, cancellationToken);

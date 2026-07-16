@@ -4,11 +4,10 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
+using DroneBuilder.Application.Mappings;
 namespace DroneBuilder.Application.Mediator.Commands.PropertyCommands;
 
-public class UpdatePropertyCommandHandler(IPropertyRepository propertyRepository, IMapper mapper)
+public class UpdatePropertyCommandHandler(IPropertyRepository propertyRepository)
     : ICommandHandler<UpdatePropertyCommand, PropertyModel>
 {
     public async Task<Result<PropertyModel>> ExecuteCommandAsync(UpdatePropertyCommand command,
@@ -28,7 +27,7 @@ public class UpdatePropertyCommandHandler(IPropertyRepository propertyRepository
 
         await propertyRepository.SaveChangesAsync(cancellationToken);
 
-        return Result.Ok(mapper.Map<PropertyModel>(property));
+        return Result.Ok(property.ToModel());
     }
 }
 

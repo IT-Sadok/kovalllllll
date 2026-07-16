@@ -4,7 +4,6 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.ProductCommandTests;
@@ -12,7 +11,6 @@ namespace DroneBuilder.Application.Tests.ProductCommandTests;
 public class UpdateProductCommandHandlerTests
 {
     private readonly IProductRepository _productRepository;
-    private readonly IMapper _mapper;
     private readonly UpdateProductCommandHandler _handler;
 
     private static readonly Guid ProductId = Guid.NewGuid();
@@ -27,11 +25,9 @@ public class UpdateProductCommandHandlerTests
     {
         // Arrange - створення substitutes
         _productRepository = Substitute.For<IProductRepository>();
-        _mapper = Substitute.For<IMapper>();
 
         _handler = new UpdateProductCommandHandler(
-            _productRepository,
-            _mapper);
+            _productRepository);
     }
 
     [Fact]
@@ -66,13 +62,6 @@ public class UpdateProductCommandHandlerTests
                 Arg.Is<Guid>(id => id == ProductId),
                 Arg.Any<CancellationToken>())
             .Returns(existingProduct);
-
-        _mapper.Map<ProductModel>(Arg.Is<Product>(p =>
-                p.Id == ProductId &&
-                p.Name == UpdatedName &&
-                p.Price == UpdatedPrice &&
-                p.Category == UpdatedCategory))
-            .Returns(expectedProductModel);
 
         // Act
         Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -116,10 +105,6 @@ public class UpdateProductCommandHandlerTests
 
         await _productRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 
-        _mapper.DidNotReceive().Map<ProductModel>(Arg.Is<Product>(p =>
-            p.Name == UpdatedName &&
-            p.Price == OriginalPrice &&
-            p.Category == OriginalCategory));
     }
 
     [Fact]
@@ -146,12 +131,6 @@ public class UpdateProductCommandHandlerTests
                 Arg.Is<Guid>(id => id == ProductId),
                 Arg.Any<CancellationToken>())
             .Returns(existingProduct);
-
-        _mapper.Map<ProductModel>(Arg.Is<Product>(p =>
-                p.Name == UpdatedName &&
-                p.Price == OriginalPrice &&
-                p.Category == OriginalCategory))
-            .Returns(new ProductModel());
 
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -188,12 +167,6 @@ public class UpdateProductCommandHandlerTests
                 Arg.Is<Guid>(id => id == ProductId),
                 Arg.Any<CancellationToken>())
             .Returns(existingProduct);
-
-        _mapper.Map<ProductModel>(Arg.Is<Product>(p =>
-                p.Name == OriginalName &&
-                p.Price == UpdatedPrice &&
-                p.Category == OriginalCategory))
-            .Returns(new ProductModel());
 
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -239,12 +212,6 @@ public class UpdateProductCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(existingProduct);
 
-        _mapper.Map<ProductModel>(Arg.Is<Product>(p =>
-                p.Name == UpdatedName &&
-                p.Price == UpdatedPrice &&
-                p.Category == OriginalCategory))
-            .Returns(expectedProductModel);
-
         // Act
         Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
@@ -256,3 +223,4 @@ public class UpdateProductCommandHandlerTests
         Assert.Equal(OriginalCategory, result.Value.Category);
     }
 }
+

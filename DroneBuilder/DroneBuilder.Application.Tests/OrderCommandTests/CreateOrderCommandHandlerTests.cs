@@ -9,7 +9,6 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.OrderEvents;
 using FluentResults;
-using MapsterMapper;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.OrderCommandTests;
@@ -21,7 +20,6 @@ public class CreateOrderCommandHandlerTests
     private readonly IProductRepository _productRepository;
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IOutboxEventService _outboxService;
-    private readonly IMapper _mapper;
     private readonly CreateOrderCommandHandler _handler;
 
     private const string OrderQueueName = "order-queue";
@@ -43,7 +41,6 @@ public class CreateOrderCommandHandlerTests
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
         IUserContext userContext = Substitute.For<IUserContext>();
-        _mapper = Substitute.For<IMapper>();
 
         var queuesConfig = new MessageQueuesConfiguration
         {
@@ -59,8 +56,7 @@ public class CreateOrderCommandHandlerTests
             _warehouseRepository,
             _outboxService,
             queuesConfig,
-            userContext,
-            _mapper);
+            userContext);
     }
 
     [Fact]
@@ -126,12 +122,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Is<List<Guid>>(ids => ids.Contains(ProductId1) && ids.Contains(ProductId2)),
                 Arg.Any<CancellationToken>())
             .Returns(products);
-
-        _mapper.Map<OrderModel>(Arg.Is<Order>(o =>
-                o.UserId == UserId &&
-                o.TotalPrice == expectedTotalPrice &&
-                o.OrderItems.Count == 2))
-            .Returns(expectedOrderModel);
 
         // Act
         Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -344,9 +334,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        _mapper.Map<OrderModel>(Arg.Any<Order>())
-            .Returns(new OrderModel());
-
         Order capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
@@ -410,9 +397,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Is<List<Guid>>(ids => ids.Contains(ProductId1)),
                 Arg.Any<CancellationToken>())
             .Returns(products);
-
-        _mapper.Map<OrderModel>(Arg.Any<Order>())
-            .Returns(new OrderModel());
 
         Order capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
@@ -484,9 +468,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        _mapper.Map<OrderModel>(Arg.Any<Order>())
-            .Returns(new OrderModel());
-
         Guid capturedOrderId = Guid.Empty;
         Guid capturedUserId = Guid.Empty;
 
@@ -551,9 +532,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        _mapper.Map<OrderModel>(Arg.Any<Order>())
-            .Returns(new OrderModel());
-
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
@@ -613,9 +591,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Is<List<Guid>>(ids => ids.Contains(ProductId1)),
                 Arg.Any<CancellationToken>())
             .Returns(products);
-
-        _mapper.Map<OrderModel>(Arg.Any<Order>())
-            .Returns(new OrderModel());
 
         Order capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
@@ -680,9 +655,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        _mapper.Map<OrderModel>(Arg.Any<Order>())
-            .Returns(new OrderModel());
-
         Order capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
@@ -706,3 +678,4 @@ public class CreateOrderCommandHandlerTests
         Assert.Equal(250m, capturedOrder.TotalPrice);
     }
 }
+

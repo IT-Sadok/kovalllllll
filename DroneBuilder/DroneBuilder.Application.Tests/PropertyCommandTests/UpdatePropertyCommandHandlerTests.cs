@@ -4,7 +4,6 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.PropertyCommandTests;
@@ -12,7 +11,6 @@ namespace DroneBuilder.Application.Tests.PropertyCommandTests;
 public class UpdatePropertyCommandHandlerTests
 {
     private readonly IPropertyRepository _propertyRepository;
-    private readonly IMapper _mapper;
     private readonly UpdatePropertyCommandHandler _handler;
 
     private static readonly Guid PropertyId = Guid.NewGuid();
@@ -23,11 +21,9 @@ public class UpdatePropertyCommandHandlerTests
     {
         // Arrange
         _propertyRepository = Substitute.For<IPropertyRepository>();
-        _mapper = Substitute.For<IMapper>();
 
         _handler = new UpdatePropertyCommandHandler(
-            _propertyRepository,
-            _mapper);
+            _propertyRepository);
     }
 
     [Fact]
@@ -56,11 +52,6 @@ public class UpdatePropertyCommandHandlerTests
                 Arg.Is<Guid>(id => id == PropertyId),
                 Arg.Any<CancellationToken>())
             .Returns(existingProperty);
-
-        _mapper.Map<PropertyModel>(Arg.Is<Property>(p =>
-                p.Id == PropertyId &&
-                p.Name == UpdatedName))
-            .Returns(expectedPropertyModel);
 
         // Act
         Result<PropertyModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -99,7 +90,6 @@ public class UpdatePropertyCommandHandlerTests
 
         await _propertyRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 
-        _mapper.DidNotReceive().Map<PropertyModel>(Arg.Any<Property>());
     }
 
     [Fact]
@@ -123,9 +113,6 @@ public class UpdatePropertyCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(existingProperty);
 
-        _mapper.Map<PropertyModel>(Arg.Any<Property>())
-            .Returns(new PropertyModel());
-
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
@@ -135,3 +122,4 @@ public class UpdatePropertyCommandHandlerTests
         await _propertyRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }
+

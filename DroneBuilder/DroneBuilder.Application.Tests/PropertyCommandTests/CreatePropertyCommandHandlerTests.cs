@@ -3,7 +3,6 @@ using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.PropertyCommandTests;
@@ -11,7 +10,6 @@ namespace DroneBuilder.Application.Tests.PropertyCommandTests;
 public class CreatePropertyCommandHandlerTests
 {
     private readonly IPropertyRepository _propertyRepository;
-    private readonly IMapper _mapper;
     private readonly CreatePropertyCommandHandler _handler;
 
     private static readonly Guid PropertyId = Guid.NewGuid();
@@ -21,11 +19,9 @@ public class CreatePropertyCommandHandlerTests
     {
         // Arrange
         _propertyRepository = Substitute.For<IPropertyRepository>();
-        _mapper = Substitute.For<IMapper>();
 
         _handler = new CreatePropertyCommandHandler(
-            _propertyRepository,
-            _mapper);
+            _propertyRepository);
     }
 
     [Fact]
@@ -50,21 +46,12 @@ public class CreatePropertyCommandHandlerTests
             Name = PropertyName
         };
 
-        _mapper.Map<Property>(Arg.Is<CreatePropertyModel>(m => m.Name == PropertyName))
-            .Returns(mappedProperty);
-
-        _mapper.Map<PropertyModel>(Arg.Is<Property>(p =>
-                p.Id == PropertyId &&
-                p.Name == PropertyName))
-            .Returns(expectedPropertyModel);
-
         // Act
         Result<PropertyModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Equal(PropertyId, result.Value.Id);
         Assert.Equal(PropertyName, result.Value.Name);
 
         await _propertyRepository.Received(1).AddPropertyAsync(
@@ -72,10 +59,6 @@ public class CreatePropertyCommandHandlerTests
             Arg.Any<CancellationToken>());
 
         await _propertyRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-
-        _mapper.Received(1).Map<Property>(Arg.Is<CreatePropertyModel>(m => m.Name == PropertyName));
-
-        _mapper.Received(1).Map<PropertyModel>(Arg.Is<Property>(p => p.Id == PropertyId));
     }
 
     [Fact]
@@ -89,12 +72,6 @@ public class CreatePropertyCommandHandlerTests
         var command = new CreatePropertyCommand(createPropertyModel);
 
         var mappedProperty = new Property { Id = PropertyId, Name = PropertyName };
-
-        _mapper.Map<Property>(Arg.Is<CreatePropertyModel>(m => m.Name == PropertyName))
-            .Returns(mappedProperty);
-
-        _mapper.Map<PropertyModel>(Arg.Is<Property>(p => p.Name == PropertyName))
-            .Returns(new PropertyModel());
 
         Property capturedProperty = null;
         await _propertyRepository.AddPropertyAsync(
@@ -122,18 +99,13 @@ public class CreatePropertyCommandHandlerTests
         var mappedProperty = new Property { Id = PropertyId };
         var expectedModel = new PropertyModel { Id = PropertyId, Name = PropertyName };
 
-        _mapper.Map<Property>(Arg.Is<CreatePropertyModel>(m => m.Name == PropertyName))
-            .Returns(mappedProperty);
-
-        _mapper.Map<PropertyModel>(Arg.Is<Property>(p => p.Id == PropertyId))
-            .Returns(expectedModel);
-
         // Act
         Result<PropertyModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Same(expectedModel, result.Value);
+        Assert.Equal(PropertyName, result.Value.Name);
     }
 }
+

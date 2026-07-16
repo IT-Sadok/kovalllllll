@@ -7,7 +7,6 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.ImageEvents;
 using FluentResults;
-using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using NSubstitute;
 
@@ -18,7 +17,6 @@ public class UploadImageCommandHandlerTests
     private readonly IImageRepository _imageRepository;
     private readonly IAzureStorageService _azureStorageService;
     private readonly IOutboxEventService _outboxService;
-    private readonly IMapper _mapper;
     private readonly UploadImageCommandHandler _handler;
 
     private const string ImageQueueName = "image-queue";
@@ -32,7 +30,6 @@ public class UploadImageCommandHandlerTests
         _imageRepository = Substitute.For<IImageRepository>();
         _azureStorageService = Substitute.For<IAzureStorageService>();
         _outboxService = Substitute.For<IOutboxEventService>();
-        _mapper = Substitute.For<IMapper>();
 
         var queuesConfig = new MessageQueuesConfiguration
         {
@@ -43,8 +40,7 @@ public class UploadImageCommandHandlerTests
             _imageRepository,
             _azureStorageService,
             _outboxService,
-            queuesConfig,
-            _mapper);
+            queuesConfig);
     }
 
     [Fact]
@@ -66,12 +62,6 @@ public class UploadImageCommandHandlerTests
                 Arg.Is<IFormFile>(f => f.FileName == FileName),
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
-
-        _mapper.Map<ImageModel>(Arg.Is<Image>(img =>
-                img.ProductId == ProductId &&
-                img.Url == UploadedImageUrl &&
-                img.FileName == FileName))
-            .Returns(expectedImageModel);
 
         // Act
         Result<ImageModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -100,10 +90,6 @@ public class UploadImageCommandHandlerTests
 
         await _imageRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
 
-        _mapper.Received(1).Map<ImageModel>(Arg.Is<Image>(img =>
-            img.ProductId == ProductId &&
-            img.Url == UploadedImageUrl &&
-            img.FileName == FileName));
     }
 
     [Fact]
@@ -141,10 +127,6 @@ public class UploadImageCommandHandlerTests
 
         await _imageRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 
-        _mapper.DidNotReceive().Map<ImageModel>(Arg.Is<Image>(img =>
-            img.ProductId == ProductId &&
-            img.Url == UploadedImageUrl &&
-            img.FileName == FileName));
     }
 
     [Fact]
@@ -160,12 +142,6 @@ public class UploadImageCommandHandlerTests
                 Arg.Is<IFormFile>(f => f.FileName == FileName),
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
-
-        _mapper.Map<ImageModel>(Arg.Is<Image>(img =>
-                img.ProductId == ProductId &&
-                img.Url == UploadedImageUrl &&
-                img.FileName == FileName))
-            .Returns(new ImageModel());
 
         Image capturedImage = null;
         await _imageRepository.AddImageAsync(
@@ -196,12 +172,6 @@ public class UploadImageCommandHandlerTests
                 Arg.Is<IFormFile>(f => f.FileName == FileName),
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
-
-        _mapper.Map<ImageModel>(Arg.Is<Image>(img =>
-                img.ProductId == ProductId &&
-                img.Url == UploadedImageUrl &&
-                img.FileName == FileName))
-            .Returns(new ImageModel());
 
         Guid capturedImageId = Guid.Empty;
         Guid capturedProductId = Guid.Empty;
@@ -237,12 +207,6 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        _mapper.Map<ImageModel>(Arg.Is<Image>(img =>
-                img.ProductId == ProductId &&
-                img.Url == UploadedImageUrl &&
-                img.FileName == FileName))
-            .Returns(new ImageModel());
-
         string capturedQueueName = null;
         await _outboxService.StoreEventAsync(
             Arg.Any<ImageUploadedEvent>(),
@@ -276,19 +240,14 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        Image mappedImage = null;
-        _mapper.Map<ImageModel>(Arg.Do<Image>(img => mappedImage = img))
-            .Returns(expectedImageModel);
+
 
         // Act
         Result<ImageModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        // Assert
-        Assert.NotNull(mappedImage);
-        Assert.Equal(UploadedImageUrl, mappedImage.Url);
-        Assert.Equal(FileName, mappedImage.FileName);
-        Assert.Equal(ProductId, mappedImage.ProductId);
-        Assert.Same(expectedImageModel, result.Value);
+        Assert.NotNull(result.Value);
+        Assert.Equal(UploadedImageUrl, result.Value.Url);
+        Assert.Equal(FileName, result.Value.FileName);
     }
 
     [Fact]
@@ -307,9 +266,6 @@ public class UploadImageCommandHandlerTests
                 Arg.Is<IFormFile>(f => f.FileName == FileName),
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
-
-        _mapper.Map<ImageModel>(Arg.Is<Image>(img => img.ProductId == productId1))
-            .Returns(new ImageModel());
 
         // Act
         await _handler.ExecuteCommandAsync(command1, CancellationToken.None);
@@ -339,9 +295,6 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        _mapper.Map<ImageModel>(Arg.Is<Image>(img => img.UploadedAt >= beforeExecution))
-            .Returns(new ImageModel());
-
         Image capturedImage = null;
         await _imageRepository.AddImageAsync(
             Arg.Do<Image>(img => capturedImage = img),
@@ -357,3 +310,4 @@ public class UploadImageCommandHandlerTests
         Assert.InRange(capturedImage.UploadedAt, beforeExecution, afterExecution);
     }
 }
+
