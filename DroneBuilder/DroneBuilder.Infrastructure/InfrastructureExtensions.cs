@@ -2,11 +2,13 @@ using System.Reflection;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Validation.Options;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using DroneBuilder.Infrastructure.MessageBroker.Services;
 using DroneBuilder.Infrastructure.Options;
 using DroneBuilder.Infrastructure.Repositories;
 using DroneBuilder.Infrastructure.Services;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,12 +25,23 @@ public static class InfrastructureExtensions
 
         services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
-        services.Configure<AzureStorageConfig>(configuration.GetSection("AzureStorage"));
+        services.AddValidatorsFromAssembly(typeof(InfrastructureExtensions).Assembly);
 
-        services.Configure<RabbitMqConfiguration>(configuration.GetSection("RabbitMQ"));
+        services.AddOptions<AzureStorageConfig>()
+            .Bind(configuration.GetSection("AzureStorage"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
+
+        services.AddOptions<RabbitMqConfiguration>()
+            .Bind(configuration.GetSection("RabbitMQ"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value);
 
-        services.Configure<MessageQueuesConfiguration>(configuration.GetSection("MessageQueues"));
+        services.AddOptions<MessageQueuesConfiguration>()
+            .Bind(configuration.GetSection("MessageQueues"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageQueuesConfiguration>>().Value);
 
         services.AddScoped<IUserRepository, UserRepository>();

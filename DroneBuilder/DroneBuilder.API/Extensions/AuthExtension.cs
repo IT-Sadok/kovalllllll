@@ -3,6 +3,7 @@ using System.Text;
 using DroneBuilder.API.Authorization;
 using DroneBuilder.Domain.Constants;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Application.Validation.Options;
 using DroneBuilder.Infrastructure;
 using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -62,8 +63,10 @@ public static class AuthExtension
             };
         });
 
-        services.Configure<JwtOptions>(
-            configuration.GetSection(nameof(JwtOptions)));
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(nameof(JwtOptions)))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
 
         return services;
     }

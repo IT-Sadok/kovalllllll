@@ -35,11 +35,6 @@ public class AddItemToCartCommandHandler(
             return Result.Fail(new NotFoundError($"Warehouse item for product ID {command.ProductId} not found."));
         }
 
-        if (command.Quantity <= 0)
-        {
-            return Result.Fail(new BadRequestError("Quantity must be greater than zero."));
-        }
-
         Result validationResult = WarehouseValidation.ValidateState(warehouseItem);
         if (validationResult.IsFailed)
         {

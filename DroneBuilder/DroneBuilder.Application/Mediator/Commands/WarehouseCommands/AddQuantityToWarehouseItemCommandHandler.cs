@@ -21,11 +21,6 @@ public class AddQuantityToWarehouseItemCommandHandler(
     public async Task<Result<WarehouseItemModel>> ExecuteCommandAsync(AddQuantityToWarehouseItemCommand command,
         CancellationToken cancellationToken)
     {
-        if (command.Model.QuantityToAdd <= 0)
-        {
-            return Result.Fail<WarehouseItemModel>(new BadRequestError("Quantity to add must be greater than 0."));
-        }
-
         Warehouse? warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
         if (warehouse == null)
         {
