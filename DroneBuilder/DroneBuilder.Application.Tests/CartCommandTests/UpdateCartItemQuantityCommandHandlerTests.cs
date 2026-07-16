@@ -124,17 +124,5 @@ public class UpdateCartItemQuantityCommandHandlerTests
         Assert.True(result.IsFailed);
         Assert.True(result.HasError<BadRequestError>());
     }
-
-    [Fact]
-    public async Task ExecuteCommandAsync_WhenNegativeQuantity_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        var command = new UpdateCartItemQuantityCommand(ProductId, -1);
-
-        // Act & Assert
-        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
-
-        Assert.True(result.IsFailed);
-        Assert.True(result.HasError<BadRequestError>());
-    }
 }
+

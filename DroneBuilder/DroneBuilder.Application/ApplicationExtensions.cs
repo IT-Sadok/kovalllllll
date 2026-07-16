@@ -1,6 +1,7 @@
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
+using FluentValidation;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ public static class ApplicationExtensions
         services.AddScoped<IMapper, ServiceMapper>();
         services.AddScoped<IUserContext, UserContext>();
         services.AddSingleton(MapsterConfig.Configure());
+        services.AddValidatorsFromAssembly(typeof(ApplicationExtensions).Assembly);
 
         services.Scan(scan => scan
             .FromAssemblies(typeof(ApplicationExtensions).Assembly)

@@ -21,11 +21,6 @@ public class UpdateCartItemQuantityCommandHandler(
 {
     public async Task<Result> ExecuteCommandAsync(UpdateCartItemQuantityCommand command, CancellationToken cancellationToken)
     {
-        if (command.Quantity < 0)
-        {
-            return Result.Fail(new BadRequestError("Quantity cannot be negative."));
-        }
-
         Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
         if (cart == null)
         {

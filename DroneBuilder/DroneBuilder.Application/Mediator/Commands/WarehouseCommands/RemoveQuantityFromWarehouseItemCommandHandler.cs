@@ -22,11 +22,6 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
     public async Task<Result<WarehouseItemModel>> ExecuteCommandAsync(RemoveQuantityFromWarehouseItemCommand command,
         CancellationToken cancellationToken)
     {
-        if (command.Model.QuantityToRemove <= 0)
-        {
-            return Result.Fail<WarehouseItemModel>(new BadRequestError("Quantity to remove must be greater than 0."));
-        }
-
         Warehouse? warehouse = await warehouseRepository.GetWarehouseAsync(cancellationToken);
         if (warehouse == null)
         {

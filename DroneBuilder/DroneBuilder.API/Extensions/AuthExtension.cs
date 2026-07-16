@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using DroneBuilder.API.Authorization;
+using DroneBuilder.Application.Validation.Options;
 using DroneBuilder.Domain.Constants;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure;
@@ -62,8 +63,10 @@ public static class AuthExtension
             };
         });
 
-        services.Configure<JwtOptions>(
-            configuration.GetSection(nameof(JwtOptions)));
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(nameof(JwtOptions)))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
 
         return services;
     }
