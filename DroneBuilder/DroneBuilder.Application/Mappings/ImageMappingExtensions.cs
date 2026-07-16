@@ -7,7 +7,11 @@ public static class ImageMappingExtensions
 {
     public static ImageModel ToModel(this Image image)
     {
-        if (image == null) return null!;
+        if (image == null)
+        {
+            return null!;
+        }
+
         return new ImageModel
         {
             Id = image.Id,
@@ -20,7 +24,11 @@ public static class ImageMappingExtensions
 
     public static Image ToEntity(this UploadImageModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new Image
         {
             ProductId = model.ProductId,
@@ -30,7 +38,11 @@ public static class ImageMappingExtensions
 
     public static ProductImagesResponseModel ToImagesResponseModel(this Product product)
     {
-        if (product == null) return null!;
+        if (product == null)
+        {
+            return null!;
+        }
+
         return new ProductImagesResponseModel
         {
             Id = product.Id,

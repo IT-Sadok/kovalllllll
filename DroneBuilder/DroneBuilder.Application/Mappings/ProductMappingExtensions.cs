@@ -7,7 +7,11 @@ public static class ProductMappingExtensions
 {
     public static ProductModel ToModel(this Product product)
     {
-        if (product == null) return null!;
+        if (product == null)
+        {
+            return null!;
+        }
+
         return new ProductModel
         {
             Id = product.Id,
@@ -32,7 +36,11 @@ public static class ProductMappingExtensions
 
     public static ProductPropertiesResponseModel ToPropertiesResponseModel(this Product product)
     {
-        if (product == null) return null!;
+        if (product == null)
+        {
+            return null!;
+        }
+
         return new ProductPropertiesResponseModel
         {
             Id = product.Id,
@@ -55,7 +63,11 @@ public static class ProductMappingExtensions
 
     public static Product ToEntity(this CreateProductModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new Product
         {
             Name = model.Name,
@@ -66,9 +78,24 @@ public static class ProductMappingExtensions
 
     public static void UpdateEntity(this UpdateProductRequestModel model, Product entity)
     {
-        if (model == null || entity == null) return;
-        if (model.Name != null) entity.Name = model.Name;
-        if (model.Price.HasValue) entity.Price = model.Price.Value;
-        if (model.Category != null) entity.Category = model.Category;
+        if (model == null || entity == null)
+        {
+            return;
+        }
+
+        if (model.Name != null)
+        {
+            entity.Name = model.Name;
+        }
+
+        if (model.Price.HasValue)
+        {
+            entity.Price = model.Price.Value;
+        }
+
+        if (model.Category != null)
+        {
+            entity.Category = model.Category;
+        }
     }
 }

@@ -1,4 +1,5 @@
 using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Options;
@@ -7,7 +8,6 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.ProductEvents;
 using FluentResults;
-using DroneBuilder.Application.Mappings;
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
 public class CreateProductCommandHandler(

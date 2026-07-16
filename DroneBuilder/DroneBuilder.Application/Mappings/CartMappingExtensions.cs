@@ -7,7 +7,11 @@ public static class CartMappingExtensions
 {
     public static CartModel ToModel(this Cart cart)
     {
-        if (cart == null) return null!;
+        if (cart == null)
+        {
+            return null!;
+        }
+
         return new CartModel
         {
             UserId = cart.UserId,
@@ -19,7 +23,11 @@ public static class CartMappingExtensions
 
     public static Cart ToEntity(this CreateCartModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new Cart
         {
             UserId = model.UserId,
@@ -30,7 +38,11 @@ public static class CartMappingExtensions
 
     public static CartItemModel ToModel(this CartItem item)
     {
-        if (item == null) return null!;
+        if (item == null)
+        {
+            return null!;
+        }
+
         return new CartItemModel
         {
             ProductId = item.ProductId,
@@ -45,7 +57,11 @@ public static class CartMappingExtensions
 
     public static CartItem ToEntity(this CreateCartItemModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new CartItem
         {
             ProductId = model.ProductId,
@@ -55,7 +71,11 @@ public static class CartMappingExtensions
 
     public static CartItem ToEntity(this CartItemModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new CartItem
         {
             ProductId = model.ProductId,
@@ -65,7 +85,11 @@ public static class CartMappingExtensions
 
     public static void UpdateEntity(this UpdateCartItemModel model, CartItem entity)
     {
-        if (model == null || entity == null) return;
+        if (model == null || entity == null)
+        {
+            return;
+        }
+
         entity.Quantity = model.Quantity;
     }
 }

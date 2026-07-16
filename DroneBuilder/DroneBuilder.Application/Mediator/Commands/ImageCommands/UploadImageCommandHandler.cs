@@ -1,4 +1,5 @@
 using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Options;
@@ -8,7 +9,6 @@ using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.ImageEvents;
 using FluentResults;
 using Microsoft.AspNetCore.Http;
-using DroneBuilder.Application.Mappings;
 
 namespace DroneBuilder.Application.Mediator.Commands.ImageCommands;
 

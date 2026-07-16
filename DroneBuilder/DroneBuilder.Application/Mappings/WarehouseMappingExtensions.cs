@@ -7,7 +7,11 @@ public static class WarehouseMappingExtensions
 {
     public static WarehouseItem ToEntity(this CreateWarehouseItemModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new WarehouseItem
         {
             WarehouseId = model.WarehouseId,
@@ -18,7 +22,11 @@ public static class WarehouseMappingExtensions
 
     public static WarehouseItemModel ToModel(this WarehouseItem item)
     {
-        if (item == null) return null!;
+        if (item == null)
+        {
+            return null!;
+        }
+
         return new WarehouseItemModel
         {
             Id = item.Id,
@@ -31,7 +39,11 @@ public static class WarehouseMappingExtensions
 
     public static WarehouseModel ToModel(this Warehouse warehouse)
     {
-        if (warehouse == null) return null!;
+        if (warehouse == null)
+        {
+            return null!;
+        }
+
         return new WarehouseModel
         {
             Name = warehouse.Name,

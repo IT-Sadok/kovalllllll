@@ -8,7 +8,6 @@ using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.UserEvents;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
-using DroneBuilder.Application.Mappings;
 
 namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
 
@@ -34,7 +33,8 @@ public class SignInCommandHandler(
             return tokenResult.ToResult<AuthUserModel>();
         }
 
-        AuthUserModel authUserModel = new AuthUserModel { AccessToken = tokenResult.Value };
+        AuthUserModel authUserModel = new()
+        { AccessToken = tokenResult.Value };
 
         var @event = new UserSignedInEvent(user.Id, user.Email);
         await outboxService.StoreEventAsync(@event, queuesConfig.UserQueue.Name, cancellationToken);

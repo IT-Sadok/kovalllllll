@@ -1,4 +1,5 @@
 using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Options;
@@ -8,7 +9,6 @@ using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.WarehouseEvents;
 using FluentResults;
-using DroneBuilder.Application.Mappings;
 namespace DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 
 public class RemoveQuantityFromWarehouseItemCommandHandler(

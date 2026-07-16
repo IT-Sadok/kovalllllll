@@ -7,7 +7,11 @@ public static class PropertyMappingExtensions
 {
     public static PropertyModel ToModel(this Property property)
     {
-        if (property == null) return null!;
+        if (property == null)
+        {
+            return null!;
+        }
+
         return new PropertyModel
         {
             Id = property.Id,
@@ -18,7 +22,11 @@ public static class PropertyMappingExtensions
 
     public static Property ToEntity(this CreatePropertyModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new Property
         {
             Name = model.Name,
@@ -28,7 +36,14 @@ public static class PropertyMappingExtensions
 
     public static void UpdateEntity(this UpdatePropertyModel model, Property entity)
     {
-        if (model == null || entity == null) return;
-        if (model.Name != null) entity.Name = model.Name;
+        if (model == null || entity == null)
+        {
+            return;
+        }
+
+        if (model.Name != null)
+        {
+            entity.Name = model.Name;
+        }
     }
 }

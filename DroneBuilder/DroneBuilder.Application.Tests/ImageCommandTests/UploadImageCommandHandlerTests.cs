@@ -240,8 +240,6 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-
-
         // Act
         Result<ImageModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Options;
@@ -9,7 +10,6 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.OrderEvents;
 using FluentResults;
-using DroneBuilder.Application.Mappings;
 namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
 
 public class CreateOrderCommandHandler(

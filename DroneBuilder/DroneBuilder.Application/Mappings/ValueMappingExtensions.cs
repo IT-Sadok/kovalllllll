@@ -7,7 +7,11 @@ public static class ValueMappingExtensions
 {
     public static ValueModel ToModel(this Value value)
     {
-        if (value == null) return null!;
+        if (value == null)
+        {
+            return null!;
+        }
+
         return new ValueModel
         {
             Id = value.Id,
@@ -17,7 +21,11 @@ public static class ValueMappingExtensions
 
     public static Value ToEntity(this CreateValueModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new Value
         {
             Text = model.Text
@@ -26,7 +34,14 @@ public static class ValueMappingExtensions
 
     public static void UpdateEntity(this UpdateValueModel model, Value entity)
     {
-        if (model == null || entity == null) return;
-        if (model.Text != null) entity.Text = model.Text;
+        if (model == null || entity == null)
+        {
+            return;
+        }
+
+        if (model.Text != null)
+        {
+            entity.Text = model.Text;
+        }
     }
 }

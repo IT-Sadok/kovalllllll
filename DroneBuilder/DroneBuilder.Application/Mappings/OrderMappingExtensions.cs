@@ -7,7 +7,11 @@ public static class OrderMappingExtensions
 {
     public static OrderModel ToModel(this Order order)
     {
-        if (order == null) return null!;
+        if (order == null)
+        {
+            return null!;
+        }
+
         return new OrderModel
         {
             Id = order.Id,
@@ -23,7 +27,11 @@ public static class OrderMappingExtensions
 
     public static Order ToEntity(this CreateOrderModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new Order
         {
             UserId = model.UserId,
@@ -37,7 +45,11 @@ public static class OrderMappingExtensions
 
     public static OrderItemModel ToModel(this OrderItem item)
     {
-        if (item == null) return null!;
+        if (item == null)
+        {
+            return null!;
+        }
+
         return new OrderItemModel
         {
             ProductId = item.ProductId,
@@ -52,7 +64,11 @@ public static class OrderMappingExtensions
 
     public static OrderItem ToEntity(this CreateOrderItemModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new OrderItem
         {
             ProductId = model.ProductId,
@@ -63,7 +79,11 @@ public static class OrderMappingExtensions
 
     public static OrderItem ToEntity(this OrderItemModel model)
     {
-        if (model == null) return null!;
+        if (model == null)
+        {
+            return null!;
+        }
+
         return new OrderItem
         {
             ProductId = model.ProductId,
