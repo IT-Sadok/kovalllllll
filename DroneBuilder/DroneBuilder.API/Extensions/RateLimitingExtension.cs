@@ -7,7 +7,7 @@ public static class RateLimitingExtension
 {
     public static IServiceCollection AddRateLimitingConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        var rateLimitConfig = configuration.GetSection("RateLimiting:Login").Get<LoginRateLimitOptions>() ?? new LoginRateLimitOptions();
+        LoginRateLimitOptions rateLimitConfig = configuration.GetSection("RateLimiting:Login").Get<LoginRateLimitOptions>() ?? new LoginRateLimitOptions();
 
         services.AddRateLimiter(options =>
         {
@@ -15,29 +15,29 @@ public static class RateLimitingExtension
 
             options.OnRejected = async (context, token) =>
             {
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                ILogger<Program> logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
                 var ipAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown IP";
-                
+
                 logger.LogWarning("Login rate limit exceeded for IP {IpAddress}", ipAddress);
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                
-                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
                 {
                     context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
                 }
 
-                await context.HttpContext.Response.WriteAsJsonAsync(new 
+                await context.HttpContext.Response.WriteAsJsonAsync(new
                 {
                     Error = "Too many requests. Please try again later.",
-                    RetryAfterSeconds = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var wait) ? (int)wait.TotalSeconds : 0
+                    RetryAfterSeconds = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan wait) ? (int)wait.TotalSeconds : 0
                 }, cancellationToken: token);
             };
 
             options.AddPolicy("LoginPolicy", context =>
             {
                 var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                
+
                 return RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: ipAddress,
                     factory: partition => new FixedWindowRateLimiterOptions
