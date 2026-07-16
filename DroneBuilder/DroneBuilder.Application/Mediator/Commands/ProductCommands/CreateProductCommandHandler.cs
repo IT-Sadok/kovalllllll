@@ -1,4 +1,5 @@
 using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Options;
@@ -7,16 +8,13 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.ProductEvents;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
 public class CreateProductCommandHandler(
     IProductRepository productRepository,
     IWarehouseRepository warehouseRepository,
     IOutboxEventService outboxService,
-    MessageQueuesConfiguration queuesConfig,
-    IMapper mapper)
+    MessageQueuesConfiguration queuesConfig)
     : ICommandHandler<CreateProductCommand, ProductModel>
 {
     public async Task<Result<ProductModel>> ExecuteCommandAsync(CreateProductCommand command,
@@ -28,7 +26,7 @@ public class CreateProductCommandHandler(
             return Result.Fail<ProductModel>(new NotFoundError("Warehouse not found."));
         }
 
-        Product product = mapper.Map<Product>(command.Model);
+        Product product = command.Model.ToEntity();
 
         await productRepository.AddProductAsync(product, cancellationToken);
 
@@ -47,7 +45,7 @@ public class CreateProductCommandHandler(
 
         Product? createdProduct = await productRepository.GetProductByIdAsync(product.Id, cancellationToken);
 
-        return Result.Ok(mapper.Map<ProductModel>(createdProduct!));
+        return Result.Ok(createdProduct!.ToModel());
     }
 }
 

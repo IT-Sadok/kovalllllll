@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Options;
@@ -9,8 +10,6 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.OrderEvents;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
 
 public class CreateOrderCommandHandler(
@@ -20,8 +19,7 @@ public class CreateOrderCommandHandler(
     IWarehouseRepository warehouseRepository,
     IOutboxEventService outboxService,
     MessageQueuesConfiguration queuesConfig,
-    IUserContext userContext,
-    IMapper mapper) : ICommandHandler<CreateOrderCommand, OrderModel>
+    IUserContext userContext) : ICommandHandler<CreateOrderCommand, OrderModel>
 {
     public async Task<Result<OrderModel>> ExecuteCommandAsync(CreateOrderCommand command, CancellationToken cancellationToken)
     {
@@ -77,7 +75,7 @@ public class CreateOrderCommandHandler(
 
         await orderRepository.SaveChangesAsync(cancellationToken);
 
-        return Result.Ok(mapper.Map<OrderModel>(order));
+        return Result.Ok(order.ToModel());
     }
 }
 

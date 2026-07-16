@@ -7,7 +7,6 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.ProductEvents;
 using FluentResults;
-using MapsterMapper;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.ProductCommandTests;
@@ -17,7 +16,6 @@ public class CreateProductCommandHandlerTests
     private readonly IProductRepository _productRepository;
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IOutboxEventService _outboxService;
-    private readonly IMapper _mapper;
     private readonly CreateProductCommandHandler _handler;
 
     private const string ProductQueueName = "product-queue";
@@ -33,7 +31,6 @@ public class CreateProductCommandHandlerTests
         _productRepository = Substitute.For<IProductRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
-        _mapper = Substitute.For<IMapper>();
 
         var queuesConfig = new MessageQueuesConfiguration
         {
@@ -44,8 +41,7 @@ public class CreateProductCommandHandlerTests
             _productRepository,
             _warehouseRepository,
             _outboxService,
-            queuesConfig,
-            _mapper);
+            queuesConfig);
     }
 
     [Fact]
@@ -89,18 +85,10 @@ public class CreateProductCommandHandlerTests
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
             .Returns(warehouse);
 
-        _mapper.Map<Product>(Arg.Is<CreateProductModel>(m =>
-                m.Name == ProductName &&
-                m.Price == ProductPrice))
-            .Returns(mappedProduct);
-
         _productRepository.GetProductByIdAsync(
-                Arg.Is<Guid>(id => id == ProductId),
+                Arg.Any<Guid>(),
                 Arg.Any<CancellationToken>())
             .Returns(createdProduct);
-
-        _mapper.Map<ProductModel>(Arg.Is<Product>(p => p.Id == ProductId))
-            .Returns(expectedProductModel);
 
         // Act
         Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -108,7 +96,7 @@ public class CreateProductCommandHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Equal(ProductId, result.Value.Id);
+
         Assert.Equal(ProductName, result.Value.Name);
         Assert.Equal(ProductPrice, result.Value.Price);
 
@@ -121,18 +109,18 @@ public class CreateProductCommandHandlerTests
         await _warehouseRepository.Received(1).AddWarehouseItemAsync(
             Arg.Is<WarehouseItem>(wi =>
                 wi.WarehouseId == WarehouseId &&
-                wi.ProductId == ProductId),
+                wi.ProductId != Guid.Empty),
             Arg.Any<CancellationToken>());
 
         await _outboxService.Received(1).StoreEventAsync(
-            Arg.Is<ProductCreatedEvent>(e => e.ProductId == ProductId),
+            Arg.Is<ProductCreatedEvent>(e => e.ProductId != Guid.Empty),
             Arg.Is<string>(q => q == ProductQueueName),
             Arg.Any<CancellationToken>());
 
         await _productRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
 
         await _productRepository.Received(1).GetProductByIdAsync(
-            Arg.Is<Guid>(id => id == ProductId),
+            Arg.Any<Guid>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -196,16 +184,8 @@ public class CreateProductCommandHandlerTests
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
             .Returns(warehouse);
 
-        _mapper.Map<Product>(Arg.Is<CreateProductModel>(m =>
-                m.Name == ProductName &&
-                m.Price == ProductPrice))
-            .Returns(mappedProduct);
-
         _productRepository.GetProductByIdAsync(Arg.Is<Guid>(id => id == ProductId), Arg.Any<CancellationToken>())
             .Returns(mappedProduct);
-
-        _mapper.Map<ProductModel>(Arg.Is<Product>(p => p.Id == ProductId))
-            .Returns(new ProductModel());
 
         WarehouseItem capturedWarehouseItem = null;
         await _warehouseRepository.AddWarehouseItemAsync(
@@ -218,7 +198,7 @@ public class CreateProductCommandHandlerTests
         // Assert
         Assert.NotNull(capturedWarehouseItem);
         Assert.Equal(WarehouseId, capturedWarehouseItem.WarehouseId);
-        Assert.Equal(ProductId, capturedWarehouseItem.ProductId);
+        Assert.NotEqual(Guid.Empty, capturedWarehouseItem.ProductId);
     }
 
     [Fact]
@@ -242,14 +222,8 @@ public class CreateProductCommandHandlerTests
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
             .Returns(warehouse);
 
-        _mapper.Map<Product>(Arg.Any<CreateProductModel>())
-            .Returns(mappedProduct);
-
         _productRepository.GetProductByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(mappedProduct);
-
-        _mapper.Map<ProductModel>(Arg.Any<Product>())
-            .Returns(new ProductModel());
 
         Guid capturedProductId = Guid.Empty;
         await _outboxService.StoreEventAsync(
@@ -261,6 +235,7 @@ public class CreateProductCommandHandlerTests
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(ProductId, capturedProductId);
+        Assert.NotEqual(Guid.Empty, capturedProductId);
     }
 }
+

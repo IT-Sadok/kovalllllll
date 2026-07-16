@@ -1,14 +1,13 @@
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Queries.ValueQueries;
 
-public class GetValueByIdQueryHandler(IValueRepository valueRepository, IMapper mapper)
+public class GetValueByIdQueryHandler(IValueRepository valueRepository)
     : IQueryHandler<GetValueByIdQuery, ValueModel>
 {
     public async Task<Result<ValueModel>> ExecuteAsync(GetValueByIdQuery query, CancellationToken cancellationToken)
@@ -20,7 +19,7 @@ public class GetValueByIdQueryHandler(IValueRepository valueRepository, IMapper 
             return Result.Fail<ValueModel>(new NotFoundError($"Value with id {query.PropertyId} not found."));
         }
 
-        return Result.Ok(mapper.Map<ValueModel>(value));
+        return Result.Ok(value.ToModel());
     }
 }
 

@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.WarehouseModels;
@@ -5,11 +6,9 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
 
-public class GetWarehouseItemsQueryHandler(IWarehouseRepository warehouseRepository, IMapper mapper)
+public class GetWarehouseItemsQueryHandler(IWarehouseRepository warehouseRepository)
     : IQueryHandler<GetWarehouseItemsQuery, PagedResult<WarehouseItemModel>>
 {
     public async Task<Result<PagedResult<WarehouseItemModel>>> ExecuteAsync(GetWarehouseItemsQuery query,
@@ -26,7 +25,7 @@ public class GetWarehouseItemsQueryHandler(IWarehouseRepository warehouseReposit
 
         return Result.Ok(new PagedResult<WarehouseItemModel>
         {
-            Items = mapper.Map<IEnumerable<WarehouseItemModel>>(warehouseItems.Items),
+            Items = warehouseItems.Items.Select(i => i.ToModel()),
             TotalCount = warehouseItems.TotalCount,
             Page = warehouseItems.Page,
             PageSize = warehouseItems.PageSize

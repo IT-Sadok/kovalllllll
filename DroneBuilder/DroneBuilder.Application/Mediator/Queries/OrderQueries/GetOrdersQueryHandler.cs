@@ -1,15 +1,14 @@
 using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Queries.OrderQueries;
 
-public class GetOrdersQueryHandler(IOrderRepository orderRepository, IMapper mapper, IUserContext userContext)
+public class GetOrdersQueryHandler(IOrderRepository orderRepository, IUserContext userContext)
     : IQueryHandler<GetOrdersQuery, PagedResult<OrderModel>>
 {
     public async Task<Result<PagedResult<OrderModel>>> ExecuteAsync(GetOrdersQuery query, CancellationToken cancellationToken)
@@ -19,7 +18,7 @@ public class GetOrdersQueryHandler(IOrderRepository orderRepository, IMapper map
 
         return Result.Ok(new PagedResult<OrderModel>
         {
-            Items = mapper.Map<IEnumerable<OrderModel>>(orders.Items),
+            Items = orders.Items.Select(o => o.ToModel()).ToList(),
             TotalCount = orders.TotalCount,
             Page = orders.Page,
             PageSize = orders.PageSize

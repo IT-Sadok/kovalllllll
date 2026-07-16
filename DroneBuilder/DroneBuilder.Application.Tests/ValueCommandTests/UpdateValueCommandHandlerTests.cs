@@ -4,7 +4,6 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
 using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.ValueCommandTests;
@@ -12,7 +11,6 @@ namespace DroneBuilder.Application.Tests.ValueCommandTests;
 public class UpdateValueCommandHandlerTests
 {
     private readonly IValueRepository _valueRepository;
-    private readonly IMapper _mapper;
     private readonly UpdateValueCommandHandler _handler;
 
     private static readonly Guid ValueId = Guid.NewGuid();
@@ -23,11 +21,9 @@ public class UpdateValueCommandHandlerTests
     {
         // Arrange
         _valueRepository = Substitute.For<IValueRepository>();
-        _mapper = Substitute.For<IMapper>();
 
         _handler = new UpdateValueCommandHandler(
-            _valueRepository,
-            _mapper);
+            _valueRepository);
     }
 
     [Fact]
@@ -56,11 +52,6 @@ public class UpdateValueCommandHandlerTests
                 Arg.Is<Guid>(id => id == ValueId),
                 Arg.Any<CancellationToken>())
             .Returns(existingValue);
-
-        _mapper.Map<ValueModel>(Arg.Is<Value>(v =>
-                v.Id == ValueId &&
-                v.Text == UpdatedText))
-            .Returns(expectedValueModel);
 
         // Act
         Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -99,7 +90,6 @@ public class UpdateValueCommandHandlerTests
 
         await _valueRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 
-        _mapper.DidNotReceive().Map<ValueModel>(Arg.Is<Value>(v => v.Text == UpdatedText));
     }
 
     [Fact]
@@ -123,9 +113,6 @@ public class UpdateValueCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(existingValue);
 
-        _mapper.Map<ValueModel>(Arg.Is<Value>(v => v.Text == OriginalText))
-            .Returns(new ValueModel());
-
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
@@ -135,3 +122,4 @@ public class UpdateValueCommandHandlerTests
         await _valueRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }
+

@@ -1,13 +1,12 @@
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Queries.PropertyQueries;
 
-public class GetValuesByPropertyIdQueryHandler(IPropertyRepository propertyRepository, IMapper mapper)
+public class GetValuesByPropertyIdQueryHandler(IPropertyRepository propertyRepository)
     : IQueryHandler<GetValuesByPropertyIdQuery, PropertyModel>
 {
     public async Task<Result<PropertyModel>> ExecuteAsync(GetValuesByPropertyIdQuery query,
@@ -15,7 +14,7 @@ public class GetValuesByPropertyIdQueryHandler(IPropertyRepository propertyRepos
     {
         Property property = await propertyRepository.GetValuesByPropertyIdAsync(query.PropertyId, cancellationToken);
 
-        return Result.Ok(mapper.Map<PropertyModel>(property));
+        return Result.Ok(property.ToModel());
     }
 }
 

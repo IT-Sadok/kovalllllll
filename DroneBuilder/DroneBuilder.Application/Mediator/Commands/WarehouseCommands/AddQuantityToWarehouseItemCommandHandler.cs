@@ -1,4 +1,5 @@
 using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Options;
@@ -7,15 +8,12 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.WarehouseEvents;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 
 public class AddQuantityToWarehouseItemCommandHandler(
     IWarehouseRepository warehouseRepository,
     IOutboxEventService outboxService,
-    MessageQueuesConfiguration queuesConfig,
-    IMapper mapper)
+    MessageQueuesConfiguration queuesConfig)
     : ICommandHandler<AddQuantityToWarehouseItemCommand, WarehouseItemModel>
 {
     public async Task<Result<WarehouseItemModel>> ExecuteCommandAsync(AddQuantityToWarehouseItemCommand command,
@@ -42,7 +40,7 @@ public class AddQuantityToWarehouseItemCommandHandler(
 
         await warehouseRepository.SaveChangesAsync(cancellationToken);
 
-        return Result.Ok(mapper.Map<WarehouseItemModel>(warehouseItem));
+        return Result.Ok(warehouseItem.ToModel());
     }
 }
 

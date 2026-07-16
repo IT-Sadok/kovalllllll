@@ -7,8 +7,6 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.UserEvents;
 using FluentResults;
-using Mapster;
-using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 
@@ -46,19 +44,12 @@ public class SignInCommandHandlerTests
             UserQueue = new QueueConfiguration { Name = UserQueueName }
         };
 
-        var config = new TypeAdapterConfig();
-        config.NewConfig<string, AuthUserModel>()
-            .MapWith(token => new AuthUserModel { AccessToken = token });
-
-        IMapper mapper = new Mapper(config);
-
         _handler = new SignInCommandHandler(
             _mockUserManager.Object,
             _mockJwtService.Object,
             _mockUserRepository.Object,
             _mockOutboxService.Object,
-            _queuesConfig,
-            mapper);
+            _queuesConfig);
     }
 
     [Fact]
@@ -246,3 +237,4 @@ public class SignInCommandHandlerTests
         Assert.Equal(ValidEmail, capturedEvent.Email);
     }
 }
+

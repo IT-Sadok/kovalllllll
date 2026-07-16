@@ -1,14 +1,13 @@
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Queries.PropertyQueries;
 
-public class GetPropertiesQueryHandler(IPropertyRepository propertyRepository, IMapper mapper)
+public class GetPropertiesQueryHandler(IPropertyRepository propertyRepository)
     : IQueryHandler<GetPropertiesQuery, ICollection<PropertyModel>>
 {
     public async Task<Result<ICollection<PropertyModel>>> ExecuteAsync(GetPropertiesQuery query,
@@ -21,7 +20,7 @@ public class GetPropertiesQueryHandler(IPropertyRepository propertyRepository, I
             return Result.Fail<ICollection<PropertyModel>>(new NotFoundError("No properties found."));
         }
 
-        return Result.Ok(mapper.Map<ICollection<PropertyModel>>(properties));
+        return Result.Ok<ICollection<PropertyModel>>(properties.Select(x => x.ToModel()).ToList());
     }
 }
 

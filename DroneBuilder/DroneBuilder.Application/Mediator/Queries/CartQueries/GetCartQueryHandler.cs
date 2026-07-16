@@ -1,15 +1,14 @@
 using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.CartModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-using MapsterMapper;
-
 namespace DroneBuilder.Application.Mediator.Queries.CartQueries;
 
-public class GetCartQueryHandler(ICartRepository cartRepository, IMapper mapper, IUserContext userContext)
+public class GetCartQueryHandler(ICartRepository cartRepository, IUserContext userContext)
     : IQueryHandler<GetCartByUserIdQuery, CartModel>
 {
     public async Task<Result<CartModel>> ExecuteAsync(GetCartByUserIdQuery query, CancellationToken cancellationToken)
@@ -21,7 +20,7 @@ public class GetCartQueryHandler(ICartRepository cartRepository, IMapper mapper,
             return Result.Fail<CartModel>(new NotFoundError($"Cart for user with ID {userContext.UserId} not found."));
         }
 
-        return Result.Ok(mapper.Map<CartModel>(cart));
+        return Result.Ok(cart.ToModel());
     }
 }
 
