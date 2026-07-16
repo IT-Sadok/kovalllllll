@@ -25,7 +25,8 @@ public static class UserEndpointsExtensions
                     new SignInCommand(model.Email, model.Password),
                     cancellationToken);
                 return result.ToHttpResult();
-            }).WithTags("Users");
+            }).WithTags("Users")
+            .RequireRateLimiting("LoginPolicy");
 
         return app;
     }
