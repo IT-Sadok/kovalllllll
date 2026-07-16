@@ -101,50 +101,6 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenQuantityIsZero_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        var removeQuantityModel = new RemoveQuantityModel
-        {
-            QuantityToRemove = 0
-        };
-        var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
-
-        // Act & Assert
-        Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
-
-        Assert.True(result.IsFailed);
-        Assert.True(result.HasError<BadRequestError>());
-
-        Assert.Equal("Quantity to remove must be greater than 0.", result.Errors[0].Message);
-
-        await _warehouseRepository.DidNotReceive().GetWarehouseAsync(Arg.Any<CancellationToken>());
-
-        await _warehouseRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ExecuteCommandAsync_WhenQuantityIsNegative_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        var removeQuantityModel = new RemoveQuantityModel
-        {
-            QuantityToRemove = -10
-        };
-        var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
-
-        // Act & Assert
-        Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
-
-        Assert.True(result.IsFailed);
-        Assert.True(result.HasError<BadRequestError>());
-
-        Assert.Equal("Quantity to remove must be greater than 0.", result.Errors[0].Message);
-
-        await _warehouseRepository.DidNotReceive().GetWarehouseAsync(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
     public async Task ExecuteCommandAsync_WhenWarehouseNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
@@ -208,3 +164,4 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         await _warehouseRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }
+

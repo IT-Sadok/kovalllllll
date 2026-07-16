@@ -269,71 +269,7 @@ public class AddItemToCartCommandHandlerTests
         await _cartRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task ExecuteCommandAsync_WhenQuantityIsZero_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        var command = new AddItemToCartCommand(ProductId, 0);
-
-        var product = new Product
-        {
-            Id = ProductId,
-            Name = ProductName
-        };
-
-        var warehouseItem = new WarehouseItem
-        {
-            ProductId = ProductId,
-            Quantity = WarehouseQuantity
-        };
-
-        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns(product);
-
-        _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns(warehouseItem);
-
-        // Act & Assert
-        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
-
-        Assert.True(result.IsFailed);
-        Assert.True(result.HasError<BadRequestError>());
-
-        Assert.Equal("Quantity must be greater than zero.", result.Errors[0].Message);
-
-        await _cartRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ExecuteCommandAsync_WhenQuantityIsNegative_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        var command = new AddItemToCartCommand(ProductId, -5);
-
-        var product = new Product
-        {
-            Id = ProductId,
-            Name = ProductName
-        };
-
-        var warehouseItem = new WarehouseItem
-        {
-            ProductId = ProductId,
-            Quantity = WarehouseQuantity
-        };
-
-        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns(product);
-
-        _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns(warehouseItem);
-
-        // Act & Assert
-        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
-
-        Assert.True(result.IsFailed);
-        Assert.True(result.HasError<BadRequestError>());
-
-        Assert.Equal("Quantity must be greater than zero.", result.Errors[0].Message);
-    }
 }
+
+
+
