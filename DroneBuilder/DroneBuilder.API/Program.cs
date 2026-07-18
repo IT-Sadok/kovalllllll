@@ -22,6 +22,8 @@ public abstract class Program
             .AddInfrastructure(builder.Configuration)
             .AddAuth(builder.Configuration);
 
+        builder.Services.AddRateLimitingConfig(builder.Configuration);
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", policy =>
@@ -40,6 +42,8 @@ public abstract class Program
         app.MapOpenApiUi();
 
         app.UseCors("AllowAll");
+
+        app.UseRateLimiter();
 
         app.UseAuthentication();
         app.UseAuthorization();
