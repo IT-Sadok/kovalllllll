@@ -16,7 +16,7 @@ public static class RateLimitingExtension
             options.OnRejected = async (context, token) =>
             {
                 ILogger<Program> logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                var ipAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown IP";
+                string ipAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown IP";
 
                 logger.LogWarning("Login rate limit exceeded for IP {IpAddress}", ipAddress);
 
@@ -36,7 +36,7 @@ public static class RateLimitingExtension
 
             options.AddPolicy("LoginPolicy", context =>
             {
-                var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                string ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
                 return RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: ipAddress,
