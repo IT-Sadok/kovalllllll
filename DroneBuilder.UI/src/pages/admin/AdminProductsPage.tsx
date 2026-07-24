@@ -31,8 +31,10 @@ const updateSchema = z.object({
   category: z.string().min(1, 'Category is required').optional(),
 });
 
-type CreateFormData = z.infer<typeof createSchema>;
-type UpdateFormData = z.infer<typeof updateSchema>;
+type CreateFormInput = z.input<typeof createSchema>;
+type CreateFormData = z.output<typeof createSchema>;
+type UpdateFormInput = z.input<typeof updateSchema>;
+type UpdateFormData = z.output<typeof updateSchema>;
 
 const AdminProductsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -58,10 +60,12 @@ const AdminProductsPage: React.FC = () => {
   // Combine and deduplicate default and server categories
   const categoriesList = Array.from(new Set([...DEFAULT_CATEGORIES, ...(serverCategories || [])]));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createForm = useForm<CreateFormData>({ resolver: zodResolver(createSchema) as any });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateForm = useForm<UpdateFormData>({ resolver: zodResolver(updateSchema) as any });
+  const createForm = useForm<CreateFormInput, unknown, CreateFormData>({
+    resolver: zodResolver(createSchema),
+  });
+  const updateForm = useForm<UpdateFormInput, unknown, UpdateFormData>({
+    resolver: zodResolver(updateSchema),
+  });
 
   // POST /products — requires all required fields + properties (empty array for simple product)
   const createMutation = useMutation({

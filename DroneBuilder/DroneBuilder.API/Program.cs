@@ -24,13 +24,30 @@ public abstract class Program
 
         builder.Services.AddRateLimitingConfig(builder.Configuration);
 
+        string[] allowedOrigins = builder.Configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>()?
+            .Where(origin => !string.IsNullOrWhiteSpace(origin))
+            .Select(origin => origin.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray() ?? [];
+
+        if (allowedOrigins.Contains("*", StringComparer.Ordinal))
+        {
+            throw new InvalidOperationException("Cors:AllowedOrigins must contain explicit origins; wildcard is not allowed.");
+        }
+
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll", policy =>
+            options.AddPolicy("ConfiguredOrigins", policy =>
             {
-                policy.AllowAnyOrigin()
-                    .AllowAnyMethod()
+                policy.AllowAnyMethod()
                     .AllowAnyHeader();
+
+                if (allowedOrigins.Length > 0)
+                {
+                    policy.WithOrigins(allowedOrigins);
+                }
             });
         });
 
@@ -41,7 +58,7 @@ public abstract class Program
         app.UseExceptionHandler();
         app.MapOpenApiUi();
 
-        app.UseCors("AllowAll");
+        app.UseCors("ConfiguredOrigins");
 
         app.UseRateLimiter();
 

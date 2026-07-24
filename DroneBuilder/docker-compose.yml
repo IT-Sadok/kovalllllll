@@ -1,14 +1,12 @@
-version: '3.9'
-
 services:
   db:
     image: postgres:16
     container_name: dronebuilder-db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: DroneBuilderDb
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-DroneBuilderDb}
     ports:
       - "5432:5432"
     volumes:
@@ -21,11 +19,11 @@ services:
     container_name: dronebuilder-rabbitmq
     restart: always
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?RABBITMQ_USER is required}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD is required}
     ports:
-      - "5672:5672"   
-      - "15672:15672" 
+      - "5672:5672"
+      - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -43,11 +41,22 @@ services:
     container_name: dronebuilder-api
     restart: always
     environment:
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=DroneBuilderDb;Username=postgres;Password=postgres
-      - RabbitMQ__HostName=rabbitmq
-      - RabbitMQ__UserName=guest
-      - RabbitMQ__Password=guest
-      - ASPNETCORE_ENVIRONMENT=Development
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-DroneBuilderDb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__UserName: ${RABBITMQ_USER}
+      RabbitMQ__Password: ${RABBITMQ_PASSWORD}
+      JwtOptions__Issuer: ${JWT_ISSUER:?JWT_ISSUER is required}
+      JwtOptions__Audience: ${JWT_AUDIENCE:?JWT_AUDIENCE is required}
+      JwtOptions__Key: ${JWT_KEY:?JWT_KEY is required}
+      AzureStorage__ConnectionString: ${AZURE_STORAGE_CONNECTION_STRING:?AZURE_STORAGE_CONNECTION_STRING is required}
+      AzureStorage__ContainerName: ${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required}
+      DatabaseInitialization__ApplyMigrations: "true"
+      DatabaseInitialization__SeedIdentity: "true"
+      IdentitySeed__Admin__Email: ${IDENTITY_ADMIN_EMAIL:?IDENTITY_ADMIN_EMAIL is required}
+      IdentitySeed__Admin__Password: ${IDENTITY_ADMIN_PASSWORD:?IDENTITY_ADMIN_PASSWORD is required}
+      IdentitySeed__User__Email: ${IDENTITY_USER_EMAIL:?IDENTITY_USER_EMAIL is required}
+      IdentitySeed__User__Password: ${IDENTITY_USER_PASSWORD:?IDENTITY_USER_PASSWORD is required}
+      ASPNETCORE_ENVIRONMENT: Development
     ports:
       - "8080:8080"
     depends_on:

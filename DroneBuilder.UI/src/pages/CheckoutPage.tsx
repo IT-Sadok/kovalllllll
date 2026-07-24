@@ -6,6 +6,7 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { createOrder } from '../api/orders';
 import { clearCart } from '../api/cart';
+import { getErrorMessage } from '../api/errors';
 import { useCartStore } from '../store/cartStore';
 import { useQueryClient } from '@tanstack/react-query';
 import Input from '../components/ui/Input';
@@ -22,16 +23,16 @@ const schema = z.object({
   phoneNumber: z.string().min(7, 'Phone number is required'),
 });
 
-type FormData = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { setItemCount } = useCartStore();
   const queryClient = useQueryClient();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(schema) as any,
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
+    resolver: zodResolver(schema),
   });
 
   const onSubmit = async (data: FormData) => {
@@ -44,8 +45,8 @@ const CheckoutPage: React.FC = () => {
       setItemCount(0);
       toast.success('Order placed successfully! 🚁');
       navigate('/orders');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to place order');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to place order'));
     }
   };
 

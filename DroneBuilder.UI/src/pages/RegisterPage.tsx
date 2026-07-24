@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { signUp, signIn } from '../api/auth';
+import { getErrorMessage } from '../api/errors';
 import { useAuthStore } from '../store/authStore';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -35,8 +36,8 @@ const RegisterPage: React.FC = () => {
       login(res.accessToken);
       toast.success('Account created! Welcome aboard 🚁');
       navigate('/');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Registration failed');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Registration failed'));
     }
   };
 

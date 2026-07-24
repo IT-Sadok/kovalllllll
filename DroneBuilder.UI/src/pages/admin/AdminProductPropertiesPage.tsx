@@ -12,7 +12,9 @@ import {
   removePropertyFromProduct,
   removeValueFromProductProperty
 } from '../../api/admin';
+import { getErrorMessage } from '../../api/errors';
 import { getProductProperties } from '../../api/products';
+import type { Property, Value } from '../../types';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
@@ -92,7 +94,7 @@ const AdminProductPropertiesPage: React.FC = () => {
     mutationFn: async ({ pId, vId }: { pId: string; vId: string }) => {
       try {
         await assignValueToProperty(pId, vId);
-      } catch (e: any) {
+      } catch {
         // Ignore "already assigned globally" errors
       }
       await assignValueToProductProperty(id!, pId, vId);
@@ -102,9 +104,9 @@ const AdminProductPropertiesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['product-properties', id] });
       toast.success('Existing value assigned!');
     },
-    onError: (e: any) => {
-      console.error(e);
-      toast.error('Error assigning: ' + (e.response?.data?.message || e.message));
+    onError: (error: unknown) => {
+      console.error(error);
+      toast.error('Error assigning: ' + getErrorMessage(error, 'Unknown error'));
     },
   });
 
@@ -148,7 +150,8 @@ const AdminProductPropertiesPage: React.FC = () => {
   const isLoading = loadingProdProps || loadingAllProps;
 
   const availableProps = allProps.filter(
-    (gProp: any) => !productProps.some((pProp: any) => pProp.id === gProp.id)
+    (globalProperty: Property) =>
+      !productProps.some((productProperty: Property) => productProperty.id === globalProperty.id)
   );
 
   return (
@@ -183,7 +186,7 @@ const AdminProductPropertiesPage: React.FC = () => {
                 className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
               >
                 <option value="">-- Choose from catalogue --</option>
-                {availableProps.map((p: any) => (
+                {availableProps.map((p: Property) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
@@ -202,7 +205,7 @@ const AdminProductPropertiesPage: React.FC = () => {
                     defaultValue=""
                   >
                     <option value="" disabled>Pick value...</option>
-                    {allValues.map((v: any) => (
+                    {allValues.map((v: Value) => (
                         <option key={v.id} value={v.id}>{v.text}</option>
                     ))}
                   </select>
@@ -292,7 +295,7 @@ const AdminProductPropertiesPage: React.FC = () => {
             This product has no properties yet. Add one above.
           </div>
         ) : (
-          productProps.map((prop: any) => (
+          productProps.map((prop: Property) => (
             <div key={prop.id} className="glass-card p-5 border-l-4 border-l-cyan-500/50 hover:bg-white/[0.02] transition-colors group">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-[200px]">
@@ -312,7 +315,7 @@ const AdminProductPropertiesPage: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex flex-wrap gap-2 mb-3">
                     {prop.values && prop.values.length > 0 ? (
-                      prop.values.map((val: any) => (
+                      prop.values.map((val: Value) => (
                          <span key={val.id} className="group/val relative text-sm px-3 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700 shadow-sm flex items-center gap-1.5">
                            {val.text}
                            <button 
@@ -359,9 +362,12 @@ const AdminProductPropertiesPage: React.FC = () => {
                       defaultValue=""
                     >
                       <option value="" disabled>Link existing...</option>
-                      {allValues.filter((v: any) => !prop.values?.some((pv: any) => pv.id === v.id)).map((v: any) => (
-                          <option key={v.id} value={v.id}>{v.text}</option>
-                      ))}
+                      {allValues
+                        .filter((value: Value) =>
+                          !prop.values?.some((propertyValue: Value) => propertyValue.id === value.id))
+                        .map((value: Value) => (
+                          <option key={value.id} value={value.id}>{value.text}</option>
+                        ))}
                     </select>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { signIn } from '../api/auth';
+import { getErrorMessage } from '../api/errors';
 import { useAuthStore } from '../store/authStore';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -32,8 +33,8 @@ const LoginPage: React.FC = () => {
       login(res.accessToken);
       toast.success('Welcome back!');
       navigate(from, { replace: true });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Invalid credentials');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Invalid credentials'));
     }
   };
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { getCartItems, removeCartItem, clearCart, updateCartItemQuantity } from '../api/cart';
+import { getErrorMessage } from '../api/errors';
 import { useCartStore } from '../store/cartStore';
 import type { CartItem } from '../types';
 import Skeleton from '../components/ui/Skeleton';
@@ -39,8 +40,8 @@ const CartPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.Message || 'Failed to update quantity');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Failed to update quantity'));
     },
   });
 
@@ -54,7 +55,7 @@ const CartPage: React.FC = () => {
   });
 
   // CartItem.price is unit price, totalPrice = price * quantity
-  const totalPrice = (items as CartItem[]).reduce(
+  const totalPrice = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
@@ -102,7 +103,7 @@ const CartPage: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {/* Items — keyed by productId (CartItem has no unique id field) */}
-          {(items as CartItem[]).map((item) => (
+          {items.map((item: CartItem) => (
             <div
               key={item.productId}
               className="glass-card p-4 flex items-center gap-4"
