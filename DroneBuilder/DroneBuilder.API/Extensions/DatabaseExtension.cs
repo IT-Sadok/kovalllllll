@@ -8,12 +8,26 @@ public static class DatabaseExtension
 {
     public static async Task InitializeDatabaseAsync(this WebApplication app)
     {
+        bool applyMigrations = app.Configuration.GetValue<bool>("DatabaseInitialization:ApplyMigrations");
+        bool seedIdentity = app.Configuration.GetValue<bool>("DatabaseInitialization:SeedIdentity");
+
+        if (!applyMigrations && !seedIdentity)
+        {
+            return;
+        }
+
         using IServiceScope scope = app.Services.CreateScope();
         IServiceProvider services = scope.ServiceProvider;
 
-        ApplicationDbContext dbContext = services.GetRequiredService<ApplicationDbContext>();
-        await dbContext.Database.MigrateAsync();
+        if (applyMigrations)
+        {
+            ApplicationDbContext dbContext = services.GetRequiredService<ApplicationDbContext>();
+            await dbContext.Database.MigrateAsync();
+        }
 
-        await IdentitySeeder.SeedRolesAndUsersAsync(services);
+        if (seedIdentity)
+        {
+            await IdentitySeeder.SeedRolesAndUsersAsync(services, app.Configuration);
+        }
     }
 }

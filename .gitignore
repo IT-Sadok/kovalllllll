@@ -506,6 +506,9 @@ $RECYCLE.BIN/
 
 ## User-specific files
 appsettings.*.json
+.env
+.env.*
+!.env.example
 
 # Local publish test folders
 test-publish/

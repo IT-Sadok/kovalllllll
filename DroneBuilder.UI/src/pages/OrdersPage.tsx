@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getOrders } from '../api/orders';
-import type { Order, OrderStatus } from '../types';
+import type { Order, OrderItem, OrderStatus, ShippingDetails } from '../types';
+import { getShippingValue, parseShippingDetails } from '../utils/shippingDetails';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
 import { Link } from 'react-router-dom';
 
-const OrderItemView: React.FC<{ item: any }> = ({ item }) => (
+const OrderItemView: React.FC<{ item: OrderItem }> = ({ item }) => (
   <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 group hover:bg-white/[0.08] transition-all">
     <div className="flex items-center gap-4">
       <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-900 border border-white/10 flex-shrink-0">
@@ -32,20 +33,8 @@ const OrderItemView: React.FC<{ item: any }> = ({ item }) => (
 const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
   const [expanded, setExpanded] = useState(false);
   
-  const shipping: any = (() => {
-    try {
-      return JSON.parse(order.shippingDetails);
-    } catch {
-      return null;
-    }
-  })();
-
-  const getShippingValue = (key: string) => {
-    if (!shipping) return 'N/A';
-    // Handle both camelCase and PascalCase
-    const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
-    return shipping[key] || shipping[pascalKey] || 'N/A';
-  };
+  const shipping = parseShippingDetails(order.shippingDetails);
+  const shippingValue = (key: keyof ShippingDetails) => getShippingValue(shipping, key);
 
   const getStatusStyle = (status: OrderStatus) => {
     switch (status) {
@@ -121,12 +110,12 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
               <div className="space-y-1">
                 <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1 font-orbitron">Deployment Destination</p>
                 <div className="text-sm text-slate-300 space-y-0.5 leading-relaxed">
-                  <p className="font-bold text-white mb-1">{getShippingValue('fullName')}</p>
-                  <p>{getShippingValue('addressLine1')}</p>
-                  {getShippingValue('addressLine2') !== 'N/A' && <p>{getShippingValue('addressLine2')}</p>}
-                  <p>{getShippingValue('city')}, {getShippingValue('state')} {getShippingValue('postalCode')}</p>
-                  <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">{getShippingValue('country')}</p>
-                  <p className="text-[10px] text-slate-500 pt-1">Contact: {getShippingValue('phoneNumber')}</p>
+                  <p className="font-bold text-white mb-1">{shippingValue('fullName')}</p>
+                  <p>{shippingValue('addressLine1')}</p>
+                  {shippingValue('addressLine2') !== 'N/A' && <p>{shippingValue('addressLine2')}</p>}
+                  <p>{shippingValue('city')}, {shippingValue('state')} {shippingValue('postalCode')}</p>
+                  <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">{shippingValue('country')}</p>
+                  <p className="text-[10px] text-slate-500 pt-1">Contact: {shippingValue('phoneNumber')}</p>
                 </div>
               </div>
             </div>

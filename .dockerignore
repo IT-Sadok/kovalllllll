@@ -1,0 +1,16 @@
+.git
+.github
+.idea
+.agents
+.codex
+.env
+.env.*
+!.env.example
+**/.idea
+**/appsettings.*.json
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/TestResults
+scratch

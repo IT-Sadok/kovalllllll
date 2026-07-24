@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { getAdminOrders, updateOrderStatus } from '../../api/orders';
-import { OrderStatusLabel, type OrderStatus } from '../../types';
+import { getErrorMessage } from '../../api/errors';
+import { OrderStatusLabel, type OrderStatus, type ShippingDetails } from '../../types';
+import { getShippingValue, parseShippingDetails } from '../../utils/shippingDetails';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 
@@ -24,8 +26,8 @@ const AdminOrdersPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] });
       toast.success('Status updated');
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.Message || 'Update failed');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error, 'Update failed'));
     },
   });
 
@@ -219,25 +221,24 @@ const AdminOrdersPage: React.FC = () => {
                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest font-orbitron">Deployment Coordinates</h4>
                         <div className="p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/10 text-xs leading-relaxed text-slate-400 font-mono">
                           {(() => {
-                            try {
-                              const shipping: any = JSON.parse(order.shippingDetails);
-                              const getVal = (key: string) => {
-                                const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
-                                return shipping[key] || shipping[pascalKey] || 'N/A';
-                              };
-                              return (
-                                <div className="space-y-1">
-                                  <p className="text-cyan-400 font-bold mb-2 uppercase">{getVal('fullName')}</p>
-                                  <p>{getVal('addressLine1')}</p>
-                                  {getVal('addressLine2') !== 'N/A' && <p>{getVal('addressLine2')}</p>}
-                                  <p>{getVal('city')}, {getVal('state')} {getVal('postalCode')}</p>
-                                  <p>{getVal('country')}</p>
-                                  <p className="mt-2 text-slate-500">Contact: {getVal('phoneNumber')}</p>
-                                </div>
-                              );
-                            } catch {
+                            const shipping = parseShippingDetails(order.shippingDetails);
+                            if (!shipping) {
                               return <p>{order.shippingDetails}</p>;
                             }
+
+                            const getVal = (key: keyof ShippingDetails) =>
+                              getShippingValue(shipping, key);
+
+                            return (
+                              <div className="space-y-1">
+                                <p className="text-cyan-400 font-bold mb-2 uppercase">{getVal('fullName')}</p>
+                                <p>{getVal('addressLine1')}</p>
+                                {getVal('addressLine2') !== 'N/A' && <p>{getVal('addressLine2')}</p>}
+                                <p>{getVal('city')}, {getVal('state')} {getVal('postalCode')}</p>
+                                <p>{getVal('country')}</p>
+                                <p className="mt-2 text-slate-500">Contact: {getVal('phoneNumber')}</p>
+                              </div>
+                            );
                           })()}
                         </div>
                       </div>

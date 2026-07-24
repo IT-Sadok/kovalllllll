@@ -18,6 +18,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy solution and all project files
+COPY ["global.json", "./"]
 COPY ["DroneBuilder/DroneBuilder.sln", "DroneBuilder/"]
 COPY ["DroneBuilder/DroneBuilder.API/DroneBuilder.API.csproj", "DroneBuilder/DroneBuilder.API/"]
 COPY ["DroneBuilder/DroneBuilder.Application/DroneBuilder.Application.csproj", "DroneBuilder/DroneBuilder.Application/"]
