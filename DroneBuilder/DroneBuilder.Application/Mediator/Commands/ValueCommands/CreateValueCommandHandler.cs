@@ -21,6 +21,12 @@ public class CreateValueCommandHandler(
             return Result.Fail<ValueModel>(new NotFoundError($"Property with ID {command.Model.PropertyId} not found"));
         }
 
+        if (property.DataType != SpecificationDataType.Option)
+        {
+            return Result.Fail<ValueModel>(new ValidationError(
+                $"Property with ID {property.Id} does not accept predefined option values."));
+        }
+
         Value value = command.Model.ToEntity();
 
         await valueRepository.AddValueAsync(value, cancellationToken);

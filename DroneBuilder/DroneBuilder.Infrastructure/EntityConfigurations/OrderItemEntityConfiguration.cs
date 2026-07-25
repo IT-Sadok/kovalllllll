@@ -17,14 +17,34 @@ public class OrderItemEntityConfiguration : IEntityTypeConfiguration<OrderItem>
             .IsRequired()
             .HasColumnType("decimal(18,2)");
 
+        builder.Property(oi => oi.ProductName)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        builder.Property(oi => oi.Sku)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(oi => oi.CurrencyCode)
+            .IsRequired()
+            .HasMaxLength(3);
+
         builder.HasOne(oi => oi.Order)
             .WithMany(o => o.OrderItems)
             .HasForeignKey(oi => oi.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(oi => oi.Product)
-            .WithMany()
-            .HasForeignKey(oi => oi.ProductId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(oi => oi.ProductVariant)
+            .WithMany(v => v.OrderItems)
+            .HasForeignKey(oi => oi.ProductVariantId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Ignore(oi => oi.Product);
+
+        builder.ToTable(table =>
+        {
+            table.HasCheckConstraint("CK_OrderItems_Quantity_Positive", "\"Quantity\" > 0");
+            table.HasCheckConstraint("CK_OrderItems_Price_NonNegative", "\"PriceAtPurchase\" >= 0");
+        });
     }
 }

@@ -25,6 +25,12 @@ public class AddValueToPropertyCommandHandler(IPropertyRepository propertyReposi
             return Result.Fail(new NotFoundError($"Value with ID {command.ValueId} not found."));
         }
 
+        if (property.DataType != SpecificationDataType.Option)
+        {
+            return Result.Fail(new ValidationError(
+                $"Property with ID {property.Id} does not accept predefined option values."));
+        }
+
         if (property.Values != null && property.Values.Any(v => v.Id == command.ValueId))
         {
             return Result.Fail(new ValidationError(

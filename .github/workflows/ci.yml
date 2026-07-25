@@ -24,6 +24,17 @@ jobs:
       - name: Build
         run: dotnet build ./DroneBuilder/DroneBuilder.sln --configuration Release --no-restore
 
+      - name: Restore local .NET tools
+        run: dotnet tool restore
+
+      - name: Verify EF model matches migrations
+        run: >
+          dotnet ef migrations has-pending-model-changes
+          --project ./DroneBuilder/DroneBuilder.Infrastructure
+          --startup-project ./DroneBuilder/DroneBuilder.API
+          --configuration Release
+          --no-build
+
       - name: Test
         run: dotnet test ./DroneBuilder/DroneBuilder.sln --configuration Release --no-build --verbosity normal
 

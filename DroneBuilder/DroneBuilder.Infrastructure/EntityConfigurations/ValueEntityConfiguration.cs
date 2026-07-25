@@ -14,6 +14,16 @@ public class ValueEntityConfiguration : IEntityTypeConfiguration<Value>
             .IsRequired()
             .HasMaxLength(100);
 
+        builder.Property(v => v.Code)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(v => v.NumericValue)
+            .HasColumnType("decimal(18,6)");
+
+        builder.HasIndex(v => v.Code)
+            .IsUnique();
+
         builder.HasMany(v => v.Properties)
             .WithMany(p => p.Values);
     }

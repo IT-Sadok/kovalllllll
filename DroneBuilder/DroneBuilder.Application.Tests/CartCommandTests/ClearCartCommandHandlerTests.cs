@@ -4,6 +4,7 @@ using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
+using DroneBuilder.Application.Tests.TestSupport;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
 using FluentResults;
@@ -80,14 +81,18 @@ public class ClearCartCommandHandlerTests
         var warehouseItem1 = new WarehouseItem
         {
             ProductId = ProductId1,
-            Quantity = 100
+            Quantity = 100,
+            ReservedQuantity = cartItem1.Quantity
         };
 
         var warehouseItem2 = new WarehouseItem
         {
             ProductId = ProductId2,
-            Quantity = 50
+            Quantity = 50,
+            ReservedQuantity = cartItem2.Quantity
         };
+        ReservationTestData.Attach(cart, cartItem1, warehouseItem1);
+        ReservationTestData.Attach(cart, cartItem2, warehouseItem2);
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -102,8 +107,10 @@ public class ClearCartCommandHandlerTests
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(105, warehouseItem1.Quantity);
-        Assert.Equal(53, warehouseItem2.Quantity);
+        Assert.Equal(100, warehouseItem1.Quantity);
+        Assert.Equal(50, warehouseItem2.Quantity);
+        Assert.Equal(0, warehouseItem1.ReservedQuantity);
+        Assert.Equal(0, warehouseItem2.ReservedQuantity);
 
         await _cartRepository.Received(1).ClearCartAsync(CartId, Arg.Any<CancellationToken>());
 
@@ -256,8 +263,10 @@ public class ClearCartCommandHandlerTests
             var warehouseItem = new WarehouseItem
             {
                 ProductId = cartItem.ProductId,
-                Quantity = 100
+                Quantity = 100,
+                ReservedQuantity = cartItem.Quantity
             };
+            ReservationTestData.Attach(cart, cartItem, warehouseItem);
             _warehouseRepository.GetWarehouseItemByProductIdAsync(cartItem.ProductId, Arg.Any<CancellationToken>())
                 .Returns(warehouseItem);
         }

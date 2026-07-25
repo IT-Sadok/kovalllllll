@@ -20,7 +20,8 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
         IOrderedQueryable<Order> query = dbContext.Orders
             .Where(o => o.UserId == userId)
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+                .ThenInclude(oi => oi.ProductVariant)
+                    .ThenInclude(v => v!.Product)
                     .ThenInclude(p => p.Images)
             .OrderBy(o => o.CreatedAt);
 
@@ -46,7 +47,8 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
     {
         IOrderedQueryable<Order> query = dbContext.Orders
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+                .ThenInclude(oi => oi.ProductVariant)
+                    .ThenInclude(v => v!.Product)
                     .ThenInclude(p => p.Images)
             .Include(o => o.User)
             .OrderByDescending(o => o.CreatedAt);
@@ -71,7 +73,8 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
     {
         return await dbContext.Orders
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+                .ThenInclude(oi => oi.ProductVariant)
+                    .ThenInclude(v => v!.Product)
                     .ThenInclude(p => p.Images)
             .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
     }

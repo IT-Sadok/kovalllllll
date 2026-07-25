@@ -18,9 +18,19 @@ public class CartItemEntityConfiguration : IEntityTypeConfiguration<CartItem>
             .HasForeignKey(ci => ci.CartId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(ci => ci.Product)
-            .WithMany()
-            .HasForeignKey(ci => ci.ProductId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(ci => ci.ProductVariant)
+            .WithMany(v => v.CartItems)
+            .HasForeignKey(ci => ci.ProductVariantId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Ignore(ci => ci.ProductId);
+        builder.Ignore(ci => ci.Product);
+        builder.Ignore(ci => ci.ProductName);
+
+        builder.HasIndex(ci => new { ci.CartId, ci.ProductVariantId })
+            .IsUnique();
+
+        builder.ToTable(table =>
+            table.HasCheckConstraint("CK_CartItems_Quantity_Positive", "\"Quantity\" > 0"));
     }
 }

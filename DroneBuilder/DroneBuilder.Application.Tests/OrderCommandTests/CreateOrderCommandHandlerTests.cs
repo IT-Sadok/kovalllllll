@@ -6,6 +6,7 @@ using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
+using DroneBuilder.Application.Tests.TestSupport;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.OrderEvents;
 using FluentResults;
@@ -101,9 +102,10 @@ public class CreateOrderCommandHandlerTests
 
         var warehouseItems = new List<WarehouseItem>
         {
-            new() { ProductId = ProductId1, Quantity = 100 },
-            new() { ProductId = ProductId2, Quantity = 100 }
+            new() { ProductId = ProductId1, Quantity = 100, ReservedQuantity = Product1Quantity },
+            new() { ProductId = ProductId2, Quantity = 100, ReservedQuantity = Product2Quantity }
         };
+        AttachReservations(cart, warehouseItems);
 
         const decimal expectedTotalPrice = (Product1Price * Product1Quantity) + (Product2Price * Product2Quantity);
         var expectedOrderModel = new OrderModel { TotalPrice = expectedTotalPrice };
@@ -316,8 +318,9 @@ public class CreateOrderCommandHandlerTests
 
         var warehouseItems = new List<WarehouseItem>
         {
-            new() { ProductId = ProductId1, Quantity = 100 }
+            new() { ProductId = ProductId1, Quantity = 100, ReservedQuantity = 3 }
         };
+        AttachReservations(cart, warehouseItems);
 
         _cartRepository.GetCartByUserIdAsync(
                 Arg.Is<Guid>(id => id == UserId),
@@ -380,8 +383,9 @@ public class CreateOrderCommandHandlerTests
 
         var warehouseItems = new List<WarehouseItem>
         {
-            new() { ProductId = ProductId1, Quantity = 100 }
+            new() { ProductId = ProductId1, Quantity = 100, ReservedQuantity = 1 }
         };
+        AttachReservations(cart, warehouseItems);
 
         _cartRepository.GetCartByUserIdAsync(
                 Arg.Is<Guid>(id => id == UserId),
@@ -450,8 +454,9 @@ public class CreateOrderCommandHandlerTests
 
         var warehouseItems = new List<WarehouseItem>
         {
-            new() { ProductId = ProductId1, Quantity = 100 }
+            new() { ProductId = ProductId1, Quantity = 100, ReservedQuantity = 1 }
         };
+        AttachReservations(cart, warehouseItems);
 
         _cartRepository.GetCartByUserIdAsync(
                 Arg.Is<Guid>(id => id == UserId),
@@ -514,8 +519,9 @@ public class CreateOrderCommandHandlerTests
 
         var warehouseItems = new List<WarehouseItem>
         {
-            new() { ProductId = ProductId1, Quantity = 100 }
+            new() { ProductId = ProductId1, Quantity = 100, ReservedQuantity = 1 }
         };
+        AttachReservations(cart, warehouseItems);
 
         _cartRepository.GetCartByUserIdAsync(
                 Arg.Is<Guid>(id => id == UserId),
@@ -574,8 +580,9 @@ public class CreateOrderCommandHandlerTests
 
         var warehouseItems = new List<WarehouseItem>
         {
-            new() { ProductId = ProductId1, Quantity = 100 }
+            new() { ProductId = ProductId1, Quantity = 100, ReservedQuantity = 2 }
         };
+        AttachReservations(cart, warehouseItems);
 
         _cartRepository.GetCartByUserIdAsync(
                 Arg.Is<Guid>(id => id == UserId),
@@ -636,9 +643,10 @@ public class CreateOrderCommandHandlerTests
 
         var warehouseItems = new List<WarehouseItem>
         {
-            new() { ProductId = ProductId1, Quantity = 100 },
-            new() { ProductId = ProductId2, Quantity = 100 }
+            new() { ProductId = ProductId1, Quantity = 100, ReservedQuantity = 2 },
+            new() { ProductId = ProductId2, Quantity = 100, ReservedQuantity = 5 }
         };
+        AttachReservations(cart, warehouseItems);
 
         _cartRepository.GetCartByUserIdAsync(
                 Arg.Is<Guid>(id => id == UserId),
@@ -676,6 +684,18 @@ public class CreateOrderCommandHandlerTests
         Assert.Equal(30m, orderItem2.PriceAtPurchase);
 
         Assert.Equal(250m, capturedOrder.TotalPrice);
+    }
+
+    private static void AttachReservations(
+        Cart cart,
+        IReadOnlyCollection<WarehouseItem> warehouseItems)
+    {
+        foreach (CartItem cartItem in cart.CartItems)
+        {
+            WarehouseItem warehouseItem = warehouseItems.Single(
+                item => item.ProductId == cartItem.ProductId);
+            ReservationTestData.Attach(cart, cartItem, warehouseItem);
+        }
     }
 }
 

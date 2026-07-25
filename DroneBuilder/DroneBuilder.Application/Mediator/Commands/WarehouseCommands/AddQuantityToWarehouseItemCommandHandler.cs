@@ -34,6 +34,7 @@ public class AddQuantityToWarehouseItemCommandHandler(
         }
 
         warehouseItem.Quantity += command.Model.QuantityToAdd;
+        warehouseItem.Version++;
 
         var @event = new AddedQuantityToWarehouseItemEvent(warehouseItem.Id, command.Model.QuantityToAdd);
         await outboxService.StoreEventAsync(@event, queuesConfig.WarehouseQueue.Name, cancellationToken);

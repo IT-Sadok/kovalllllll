@@ -1,5 +1,5 @@
 using System.Text;
-using DroneBuilder.Domain.Entities;
+using DroneBuilder.Infrastructure.Data.Entities;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,7 +77,7 @@ public class OutboxProcessorHostedService(
         using IServiceScope scope = serviceProvider.CreateScope();
         ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        List<Message> messages = await context.Messages
+        List<OutboxMessage> messages = await context.Messages
             .Where(m => m.ProcessedAt == null && m.RetryCount < 3)
             .OrderBy(m => m.CreatedAt)
             .Take(10)
@@ -90,7 +90,7 @@ public class OutboxProcessorHostedService(
 
         logger.LogInformation("Processing {Count} outbox messages", messages.Count);
 
-        foreach (Message? message in messages)
+        foreach (OutboxMessage? message in messages)
         {
             try
             {

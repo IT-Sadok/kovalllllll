@@ -41,6 +41,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
         }
 
         warehouseItem.Quantity -= command.Model.QuantityToRemove;
+        warehouseItem.Version++;
 
         validationResult = WarehouseValidation.ValidateState(warehouseItem);
         if (validationResult.IsFailed)

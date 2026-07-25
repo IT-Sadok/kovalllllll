@@ -16,9 +16,15 @@ public class CartEntityConfiguration : IEntityTypeConfiguration<Cart>
         builder.Property(c => c.CreatedAt)
             .IsRequired();
 
+        builder.Property(c => c.UpdatedAt)
+            .IsRequired();
+
         builder.HasMany(c => c.CartItems)
             .WithOne(ci => ci.Cart)
             .HasForeignKey(ci => ci.CartId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(c => c.UserId)
+            .IsUnique();
     }
 }

@@ -39,7 +39,7 @@ public class SetPrimaryImageCommandHandlerTests
         // Assert
         Assert.True(targetImage.IsPrimary);
         Assert.False(otherImage.IsPrimary);
-        await _imageRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _imageRepository.Received(2).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

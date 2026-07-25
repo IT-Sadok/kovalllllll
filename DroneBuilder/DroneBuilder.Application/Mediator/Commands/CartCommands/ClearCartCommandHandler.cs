@@ -45,7 +45,10 @@ public class ClearCartCommandHandler(
                 return validationResult;
             }
 
-            warehouseItem.Quantity += cartItem.Quantity;
+            if (cartItem.Reservation is not null)
+            {
+                warehouseItem.ReleaseReservation(cartItem.Reservation, DateTime.UtcNow);
+            }
 
             validationResult = WarehouseValidation.ValidateState(warehouseItem);
             if (validationResult.IsFailed)
