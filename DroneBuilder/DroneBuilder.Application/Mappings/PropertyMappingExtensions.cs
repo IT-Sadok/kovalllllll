@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Common;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Domain.Entities;
 
@@ -29,6 +30,7 @@ public static class PropertyMappingExtensions
 
         return new Property
         {
+            Code = EntityCode.FromName(model.Name),
             Name = model.Name,
             Values = model.Values?.Select(v => v.ToEntity()).ToList() ?? new List<Value>()
         };

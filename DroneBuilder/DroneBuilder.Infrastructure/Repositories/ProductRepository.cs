@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Common;
 using DroneBuilder.Application.Models;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
@@ -13,21 +14,55 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         await dbContext.Products.AddAsync(product, cancellationToken);
     }
 
+    public Task<ProductCategory?> GetCategoryByNameAsync(
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        string normalizedName = name.Trim().ToLower();
+        string code = EntityCode.FromName(name);
+        return dbContext.ProductCategories
+            .FirstOrDefaultAsync(
+                c => c.Name.ToLower() == normalizedName || c.Code == code,
+                cancellationToken);
+    }
+
+    public async Task AddCategoryAsync(ProductCategory category, CancellationToken cancellationToken = default)
+    {
+        await dbContext.ProductCategories.AddAsync(category, cancellationToken);
+    }
+
     public async Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
+            .AsSplitQuery()
+            .Include(p => p.ProductCategory)
+            .Include(p => p.ComponentType)
+                .ThenInclude(type => type!.Properties)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.WarehouseItems)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.Specifications)
             .Include(p => p.Images)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Property)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Value)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == id && p.IsActive, cancellationToken);
     }
 
     public async Task<ICollection<Product>> GetProductsAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
             .AsNoTracking()
+            .AsSplitQuery()
+            .Where(p => p.IsActive)
+            .Include(p => p.ProductCategory)
+            .Include(p => p.ComponentType)
+                .ThenInclude(type => type!.Properties)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.WarehouseItems)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.Specifications)
             .Include(p => p.Images)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Property)
@@ -41,11 +76,19 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         return await dbContext.Products
             .AsNoTracking()
+            .AsSplitQuery()
+            .Include(p => p.ProductCategory)
+            .Include(p => p.ComponentType)
+                .ThenInclude(type => type!.Properties)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.WarehouseItems)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.Specifications)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Property)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Value)
-            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == productId && p.IsActive, cancellationToken);
     }
 
     public async Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
@@ -54,6 +97,15 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         IQueryable<Product> query = dbContext.Products
             .AsNoTracking()
+            .AsSplitQuery()
+            .Where(p => p.IsActive)
+            .Include(p => p.ProductCategory)
+            .Include(p => p.ComponentType)
+                .ThenInclude(type => type!.Properties)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.WarehouseItems)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.Specifications)
             .Include(p => p.Images)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Property)
@@ -69,18 +121,18 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
         if (filter.MinPrice.HasValue)
         {
-            query = query.Where(p => p.Price >= filter.MinPrice.Value);
+            query = query.Where(p => p.Variants.Any(v => v.IsDefault && v.Price >= filter.MinPrice.Value));
         }
 
         if (filter.MaxPrice.HasValue)
         {
-            query = query.Where(p => p.Price <= filter.MaxPrice.Value);
+            query = query.Where(p => p.Variants.Any(v => v.IsDefault && v.Price <= filter.MaxPrice.Value));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Category))
         {
             string category = filter.Category.Trim().ToLower();
-            query = query.Where(p => p.Category.ToLower() == category);
+            query = query.Where(p => p.ProductCategory!.Name.ToLower() == category);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -104,20 +156,34 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         return await dbContext.Products
             .AsNoTracking()
-            .Where(p => productIds.Contains(p.Id))
+            .Where(p => productIds.Contains(p.Id) && p.IsActive)
+            .Include(p => p.ProductCategory)
+            .Include(p => p.ComponentType)
+                .ThenInclude(type => type!.Properties)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.WarehouseItems)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.Specifications)
             .ToListAsync(cancellationToken);
     }
 
     public void RemoveProduct(Product product)
     {
-        dbContext.Products.Remove(product);
+        product.IsActive = false;
+        product.UpdatedAt = DateTime.UtcNow;
+        foreach (ProductVariant variant in product.Variants)
+        {
+            variant.IsActive = false;
+            variant.UpdatedAt = DateTime.UtcNow;
+        }
     }
 
     public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Products
-            .Select(p => p.Category)
-            .Distinct()
+        return await dbContext.ProductCategories
+            .Where(c => c.IsActive && c.Products.Any(p => p.IsActive))
+            .OrderBy(c => c.Name)
+            .Select(c => c.Name)
             .ToListAsync(cancellationToken);
     }
 

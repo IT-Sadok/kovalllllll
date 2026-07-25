@@ -33,7 +33,7 @@ public static class WarehouseMappingExtensions
             WarehouseId = item.WarehouseId,
             ProductId = item.ProductId,
             ProductName = item.Product != null ? item.Product.Name : "Unknown",
-            Quantity = item.Quantity
+            Quantity = item.AvailableQuantity
         };
     }
 

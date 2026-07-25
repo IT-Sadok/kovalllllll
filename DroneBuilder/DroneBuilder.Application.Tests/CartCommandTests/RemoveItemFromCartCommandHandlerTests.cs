@@ -2,6 +2,7 @@ using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
+using DroneBuilder.Application.Tests.TestSupport;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using NSubstitute;
@@ -71,8 +72,10 @@ public class RemoveItemFromCartCommandHandlerTests
         var warehouseItem = new WarehouseItem
         {
             ProductId = ProductId,
-            Quantity = WarehouseQuantity
+            Quantity = WarehouseQuantity,
+            ReservedQuantity = CartItemQuantity
         };
+        ReservationTestData.Attach(cart, cartItem, warehouseItem);
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -87,7 +90,8 @@ public class RemoveItemFromCartCommandHandlerTests
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(WarehouseQuantity + CartItemQuantity, warehouseItem.Quantity);
+        Assert.Equal(WarehouseQuantity, warehouseItem.Quantity);
+        Assert.Equal(0, warehouseItem.ReservedQuantity);
 
         await _cartRepository.Received(1).RemoveCartItemAsync(CartItemId, Arg.Any<CancellationToken>());
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -296,8 +300,10 @@ public class RemoveItemFromCartCommandHandlerTests
         var warehouseItem = new WarehouseItem
         {
             ProductId = ProductId,
-            Quantity = WarehouseQuantity
+            Quantity = WarehouseQuantity,
+            ReservedQuantity = CartItemQuantity
         };
+        ReservationTestData.Attach(cart, cartItemToRemove, warehouseItem);
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -351,8 +357,10 @@ public class RemoveItemFromCartCommandHandlerTests
         var warehouseItem = new WarehouseItem
         {
             ProductId = ProductId,
-            Quantity = initialWarehouseQuantity
+            Quantity = initialWarehouseQuantity,
+            ReservedQuantity = cartQuantity
         };
+        ReservationTestData.Attach(cart, cartItem, warehouseItem);
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -367,7 +375,8 @@ public class RemoveItemFromCartCommandHandlerTests
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(initialWarehouseQuantity + cartQuantity, warehouseItem.Quantity);
+        Assert.Equal(initialWarehouseQuantity, warehouseItem.Quantity);
+        Assert.Equal(0, warehouseItem.ReservedQuantity);
     }
 
     [Fact]

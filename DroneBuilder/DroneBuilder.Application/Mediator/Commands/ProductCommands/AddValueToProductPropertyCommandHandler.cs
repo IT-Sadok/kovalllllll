@@ -38,12 +38,32 @@ public class AddValueToProductPropertyCommandHandler(
             return Result.Fail(new ValidationError($"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId} on Product ID {command.ProductId}."));
         }
 
-        product.ProductPropertyValues?.Add(new ProductPropertyValue
+        if (property.DataType != SpecificationDataType.Option)
         {
-            ProductId = product.Id,
-            PropertyId = property.Id,
-            ValueId = value.Id
-        });
+            return Result.Fail(new ValidationError(
+                $"Property with ID {property.Id} does not accept predefined option values."));
+        }
+
+        if (!property.Values.Any(item => item.Id == value.Id))
+        {
+            return Result.Fail(new ValidationError(
+                $"Value with ID {value.Id} is not allowed for Property ID {property.Id}."));
+        }
+
+        try
+        {
+            product.AddSpecification(new ProductPropertyValue
+            {
+                PropertyId = property.Id,
+                Property = property,
+                ValueId = value.Id,
+                Value = value
+            });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Result.Fail(new ValidationError(exception.Message));
+        }
 
         await productRepository.SaveChangesAsync(cancellationToken);
 

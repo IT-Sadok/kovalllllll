@@ -28,6 +28,8 @@ public class AddItemToCartCommandHandler(
             return Result.Fail(new NotFoundError($"Product with ID {command.ProductId} not found."));
         }
 
+        ProductVariant defaultVariant = existingProduct.EnsureDefaultVariant();
+
         WarehouseItem? warehouseItem =
             await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
         if (warehouseItem == null)
@@ -36,6 +38,12 @@ public class AddItemToCartCommandHandler(
         }
 
         Result validationResult = WarehouseValidation.ValidateState(warehouseItem);
+        if (validationResult.IsFailed)
+        {
+            return validationResult;
+        }
+
+        validationResult = WarehouseValidation.EnsureEnoughAvailable(warehouseItem, command.Quantity);
         if (validationResult.IsFailed)
         {
             return validationResult;
@@ -56,23 +64,65 @@ public class AddItemToCartCommandHandler(
         CartItem? existingCartItem = cart.CartItems
             .FirstOrDefault(ci => ci.ProductId == command.ProductId);
 
+        DateTime expiresAt = InventoryReservationPolicy.NewExpiration(DateTime.UtcNow);
+
         if (existingCartItem == null)
         {
             var newCartItem = new CartItem
             {
-                ProductId = command.ProductId,
                 ProductName = existingProduct.Name,
                 Quantity = command.Quantity,
                 Cart = cart
             };
+            newCartItem.AttachVariant(defaultVariant);
+            InventoryReservation reservation = warehouseItem.CreateReservation(
+                cart.Id,
+                newCartItem.Id,
+                command.Quantity,
+                expiresAt);
+            reservation.Cart = cart;
+            reservation.CartItem = newCartItem;
+            newCartItem.Reservation = reservation;
             await cartRepository.AddCartItemAsync(newCartItem, cancellationToken);
         }
         else
         {
-            existingCartItem.Quantity += command.Quantity;
-        }
+            int requestedTotal = existingCartItem.Quantity + command.Quantity;
+            InventoryReservation? reservation = existingCartItem.Reservation;
+            if (reservation is not null && reservation.ExpiresAt <= DateTime.UtcNow)
+            {
+                warehouseItem.ExpireReservation(reservation, DateTime.UtcNow);
+                reservation = null;
+            }
 
-        warehouseItem.Quantity -= command.Quantity;
+            if (reservation is null)
+            {
+                Result totalQuantityValidation =
+                    WarehouseValidation.EnsureEnoughAvailable(warehouseItem, requestedTotal);
+                if (totalQuantityValidation.IsFailed)
+                {
+                    return totalQuantityValidation;
+                }
+
+                reservation = warehouseItem.CreateReservation(
+                    cart.Id,
+                    existingCartItem.Id,
+                    requestedTotal,
+                    expiresAt);
+                reservation.Cart = cart;
+                reservation.CartItem = existingCartItem;
+                existingCartItem.Reservation = reservation;
+            }
+            else
+            {
+                warehouseItem.ChangeReservation(
+                    reservation,
+                    requestedTotal,
+                    expiresAt);
+            }
+
+            existingCartItem.Quantity = requestedTotal;
+        }
 
         validationResult = WarehouseValidation.ValidateState(warehouseItem);
         if (validationResult.IsFailed)

@@ -7,6 +7,8 @@ namespace DroneBuilder.Application.Repositories;
 public interface IProductRepository
 {
     Task AddProductAsync(Product product, CancellationToken cancellationToken = default);
+    Task<ProductCategory?> GetCategoryByNameAsync(string name, CancellationToken cancellationToken = default);
+    Task AddCategoryAsync(ProductCategory category, CancellationToken cancellationToken = default);
     Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<Product?> GetPropertiesByProductIdAsync(Guid productId,

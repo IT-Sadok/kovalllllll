@@ -20,11 +20,14 @@ public class SetPrimaryImageCommandHandler(IImageRepository imageRepository)
 
         ICollection<Image> productImages = await imageRepository.GetImagesByProductIdAsync(targetImage.ProductId, cancellationToken);
 
-        foreach (Image img in productImages)
+        foreach (Image img in productImages.Where(img => img.Id != command.ImageId && img.IsPrimary))
         {
-            img.IsPrimary = img.Id == command.ImageId;
+            img.IsPrimary = false;
         }
 
+        await imageRepository.SaveChangesAsync(cancellationToken);
+
+        targetImage.IsPrimary = true;
         await imageRepository.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();

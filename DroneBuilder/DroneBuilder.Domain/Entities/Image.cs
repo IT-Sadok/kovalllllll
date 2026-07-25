@@ -1,12 +1,12 @@
 namespace DroneBuilder.Domain.Entities;
 
-public class Image
+public class Image : AuditableEntity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public string Url { get; set; }
-    public string FileName { get; set; }
-    public DateTime UploadedAt { get; set; }
+    public string Url { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
     public bool IsPrimary { get; set; }
+    public int SortOrder { get; set; }
     public Guid ProductId { get; set; }
-    public Product Product { get; set; }
+    public Product? Product { get; set; }
 }

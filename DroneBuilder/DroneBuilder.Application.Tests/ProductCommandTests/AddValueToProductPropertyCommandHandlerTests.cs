@@ -37,8 +37,9 @@ public class AddValueToProductPropertyCommandHandlerTests
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
 
         var product = new Product { Id = ProductId, ProductPropertyValues = new List<ProductPropertyValue>() };
-        var property = new Property { Id = PropertyId };
+        var property = new Property { Id = PropertyId, Code = "connector-type" };
         var value = new Value { Id = ValueId };
+        property.Values.Add(value);
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
             .Returns(product);

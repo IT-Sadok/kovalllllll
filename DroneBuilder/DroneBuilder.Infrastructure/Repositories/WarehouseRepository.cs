@@ -22,7 +22,8 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
         CancellationToken cancellationToken = default)
     {
         return await dbContext.WarehouseItems
-            .Include(wi => wi.Product)
+            .Include(wi => wi.ProductVariant)
+                .ThenInclude(v => v.Product)
             .FirstOrDefaultAsync(wi => wi.Id == warehouseItemId, cancellationToken);
     }
 
@@ -30,15 +31,19 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
         CancellationToken cancellationToken = default)
     {
         return await dbContext.WarehouseItems
-            .Include(wi => wi.Product)
-            .FirstOrDefaultAsync(wi => wi.ProductId == productId, cancellationToken);
+            .Include(wi => wi.ProductVariant)
+                .ThenInclude(v => v.Product)
+            .FirstOrDefaultAsync(
+                wi => wi.ProductVariant!.ProductId == productId && wi.ProductVariant.IsDefault,
+                cancellationToken);
     }
 
     public async Task<PagedResult<WarehouseItem>> GetWarehouseItemsAsync(PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         IOrderedQueryable<WarehouseItem> query = dbContext.WarehouseItems
-            .Include(wi => wi.Product)
+            .Include(wi => wi.ProductVariant)
+                .ThenInclude(v => v.Product)
             .OrderBy(wi => wi.Product!.Name);
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -61,8 +66,8 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
         CancellationToken cancellationToken = default)
     {
         return await dbContext.WarehouseItems
-            .AsNoTracking()
-            .Where(wi => productIds.Contains(wi.ProductId))
+            .Include(wi => wi.ProductVariant)
+            .Where(wi => productIds.Contains(wi.ProductVariant!.ProductId) && wi.ProductVariant.IsDefault)
             .ToListAsync(cancellationToken);
     }
 

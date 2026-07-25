@@ -4,6 +4,7 @@ using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
+using DroneBuilder.Application.Tests.TestSupport;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
 using FluentResults;
@@ -96,7 +97,8 @@ public class AddItemToCartCommandHandlerTests
                 ci.Quantity == ValidQuantity),
             Arg.Any<CancellationToken>());
 
-        Assert.Equal(WarehouseQuantity - ValidQuantity, warehouseItem.Quantity);
+        Assert.Equal(WarehouseQuantity, warehouseItem.Quantity);
+        Assert.Equal(ValidQuantity, warehouseItem.ReservedQuantity);
 
         await _outboxService.Received(1).StoreEventAsync(
             Arg.Is<AddedItemToCartEvent>(e =>
@@ -126,7 +128,8 @@ public class AddItemToCartCommandHandlerTests
         var warehouseItem = new WarehouseItem
         {
             ProductId = ProductId,
-            Quantity = WarehouseQuantity
+            Quantity = WarehouseQuantity,
+            ReservedQuantity = initialCartItemQuantity
         };
 
         var existingCartItem = new CartItem
@@ -142,6 +145,7 @@ public class AddItemToCartCommandHandlerTests
             UserId = UserId,
             CartItems = new List<CartItem> { existingCartItem }
         };
+        ReservationTestData.Attach(existingCart, existingCartItem, warehouseItem);
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
             .Returns(product);
@@ -165,7 +169,8 @@ public class AddItemToCartCommandHandlerTests
                 ci.Quantity == ValidQuantity),
             Arg.Any<CancellationToken>());
 
-        Assert.Equal(WarehouseQuantity - ValidQuantity, warehouseItem.Quantity);
+        Assert.Equal(WarehouseQuantity, warehouseItem.Quantity);
+        Assert.Equal(initialCartItemQuantity + ValidQuantity, warehouseItem.ReservedQuantity);
 
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }

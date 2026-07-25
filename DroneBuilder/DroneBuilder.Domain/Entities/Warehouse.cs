@@ -1,9 +1,9 @@
 namespace DroneBuilder.Domain.Entities;
 
-public class Warehouse
+public class Warehouse : AuditableEntity
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
     public ICollection<WarehouseItem> WarehouseItems { get; set; } = [];
-    public DateTime CreatedAt { get; set; }
 }

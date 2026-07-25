@@ -1,7 +1,7 @@
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events;
+using DroneBuilder.Infrastructure.Data.Entities;
 
 namespace DroneBuilder.Infrastructure.MessageBroker.Services;
 
@@ -11,7 +11,7 @@ public class OutboxEventService(ApplicationDbContext context) : IOutboxEventServ
         CancellationToken cancellationToken = default)
         where TEvent : DomainEvent
     {
-        var message = new Message
+        var message = new OutboxMessage
         {
             Type = typeof(TEvent).FullName!,
             Payload = JsonSerializer.Serialize(@event, new JsonSerializerOptions

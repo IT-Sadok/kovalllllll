@@ -62,6 +62,7 @@ public static class InfrastructureExtensions
 
         services.AddHostedService<OutboxProcessorHostedService>();
         services.AddHostedService<EventConsumerHostedService>();
+        services.AddHostedService<ExpiredInventoryReservationHostedService>();
 
         return services;
     }

@@ -18,15 +18,20 @@ public static class ProductMappingExtensions
             Name = product.Name,
             Price = product.Price,
             Category = product.Category,
+            StockQuantity = product.Variants
+                .Where(v => v.IsDefault)
+                .SelectMany(v => v.WarehouseItems)
+                .Sum(i => i.AvailableQuantity),
             Properties = product.ProductPropertyValues?
-                .GroupBy(ppv => ppv.Property.Id)
+                .Where(ppv => ppv.Property is not null)
+                .GroupBy(ppv => ppv.PropertyId)
                 .Select(g => new PropertyModel
                 {
                     Id = g.Key,
-                    Name = g.First().Property.Name,
-                    Values = g.Select(ppv => new ValueModel
+                    Name = g.First().Property!.Name,
+                    Values = g.Where(ppv => ppv.Value is not null).Select(ppv => new ValueModel
                     {
-                        Id = ppv.Value.Id,
+                        Id = ppv.Value!.Id,
                         Text = ppv.Value.Text
                     }).ToList()
                 }).ToList() ?? new List<PropertyModel>(),
@@ -46,14 +51,15 @@ public static class ProductMappingExtensions
             Id = product.Id,
             Name = product.Name,
             Properties = product.ProductPropertyValues?
-                .GroupBy(ppv => ppv.Property.Id)
+                .Where(ppv => ppv.Property is not null)
+                .GroupBy(ppv => ppv.PropertyId)
                 .Select(g => new PropertyModel
                 {
                     Id = g.Key,
-                    Name = g.First().Property.Name,
-                    Values = g.Select(ppv => new ValueModel
+                    Name = g.First().Property!.Name,
+                    Values = g.Where(ppv => ppv.Value is not null).Select(ppv => new ValueModel
                     {
-                        Id = ppv.Value.Id,
+                        Id = ppv.Value!.Id,
                         Text = ppv.Value.Text
                     }).ToList()
                 }).ToList() ?? new List<PropertyModel>(),

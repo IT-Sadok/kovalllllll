@@ -25,5 +25,9 @@ public class ImageEntityConfiguration : IEntityTypeConfiguration<Image>
             .WithMany(p => p.Images)
             .HasForeignKey(i => i.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(i => i.ProductId)
+            .HasFilter("\"IsPrimary\" = TRUE")
+            .IsUnique();
     }
 }

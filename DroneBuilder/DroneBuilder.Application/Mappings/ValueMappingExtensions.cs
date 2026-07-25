@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Common;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Domain.Entities;
 
@@ -28,6 +29,7 @@ public static class ValueMappingExtensions
 
         return new Value
         {
+            Code = EntityCode.FromName(model.Text),
             Text = model.Text
         };
     }

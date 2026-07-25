@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Common;
 using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
@@ -26,12 +27,26 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
 
         if (command.Model.Price.HasValue)
         {
+            existingProduct.EnsureDefaultVariant();
             existingProduct.Price = command.Model.Price.Value;
         }
 
         if (command.Model.Category is not null)
         {
-            existingProduct.Category = command.Model.Category;
+            ProductCategory? category = await productRepository.GetCategoryByNameAsync(
+                command.Model.Category,
+                cancellationToken);
+            if (category is null)
+            {
+                category = new ProductCategory
+                {
+                    Name = command.Model.Category.Trim(),
+                    Code = EntityCode.FromName(command.Model.Category)
+                };
+                await productRepository.AddCategoryAsync(category, cancellationToken);
+            }
+
+            existingProduct.AssignCategory(category);
         }
 
         await productRepository.SaveChangesAsync(cancellationToken);
