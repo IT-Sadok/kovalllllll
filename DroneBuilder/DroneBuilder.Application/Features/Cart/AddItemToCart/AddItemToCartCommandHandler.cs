@@ -23,7 +23,7 @@ public class AddItemToCartCommandHandler(
         CancellationToken cancellationToken)
     {
         Product? existingProduct = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
-        if (existingProduct == null)
+        if (existingProduct is null || existingProduct.PublicationStatus != ProductPublicationStatus.Published)
         {
             return Result.Fail(new NotFoundError($"Product with ID {command.ProductId} not found."));
         }

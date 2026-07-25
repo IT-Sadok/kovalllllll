@@ -8,42 +8,36 @@ public static class ValueMappingExtensions
 {
     public static ValueModel ToModel(this Value value)
     {
-        if (value == null)
-        {
-            return null!;
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         return new ValueModel
         {
             Id = value.Id,
-            Text = value.Text
+            Code = value.Code,
+            Text = value.Text,
+            NumericValue = value.NumericValue,
+            BooleanValue = value.BooleanValue,
+            Aliases = value.Aliases.OrderBy(alias => alias.Alias).Select(alias => alias.Alias).ToList()
         };
     }
 
     public static Value ToEntity(this CreateValueModel model)
     {
-        if (model == null)
-        {
-            return null!;
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        return new Value
+        var value = new Value
         {
-            Code = EntityCode.FromName(model.Text),
-            Text = model.Text
+            Code = string.IsNullOrWhiteSpace(model.Code) ? EntityCode.FromName(model.Text) : model.Code.Trim(),
+            Text = model.Text.Trim(),
+            NumericValue = model.NumericValue,
+            BooleanValue = model.BooleanValue
         };
-    }
 
-    public static void UpdateEntity(this UpdateValueModel model, Value entity)
-    {
-        if (model == null || entity == null)
+        foreach (string alias in model.Aliases.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            return;
+            value.Aliases.Add(new ValueAlias { Alias = alias.Trim() });
         }
 
-        if (model.Text != null)
-        {
-            entity.Text = model.Text;
-        }
+        return value;
     }
 }

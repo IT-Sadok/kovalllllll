@@ -79,6 +79,173 @@ namespace DroneBuilder.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DroneBuilder.Domain.Entities.CompatibilityRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("LeftComponentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LeftPropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Operator")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RightComponentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RightPropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("LeftPropertyId");
+
+                    b.HasIndex("RightComponentTypeId");
+
+                    b.HasIndex("RightPropertyId");
+
+                    b.HasIndex("LeftComponentTypeId", "RightComponentTypeId", "IsActive");
+
+                    b.ToTable("CompatibilityRules");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0007-000000000001"),
+                            Code = "motor-current-within-esc",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FailureMessage = "Motor maximum current exceeds ESC capacity.",
+                            IsActive = true,
+                            LeftComponentTypeId = new Guid("00000000-0000-0000-0002-000000000001"),
+                            LeftPropertyId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            Name = "Motor current within ESC capacity",
+                            Operator = 1,
+                            RightComponentTypeId = new Guid("00000000-0000-0000-0002-000000000004"),
+                            RightPropertyId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0007-000000000002"),
+                            Code = "motor-esc-voltage-overlap",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FailureMessage = "Motor and ESC voltage ranges do not overlap.",
+                            IsActive = true,
+                            LeftComponentTypeId = new Guid("00000000-0000-0000-0002-000000000001"),
+                            LeftPropertyId = new Guid("00000000-0000-0000-0003-000000000003"),
+                            Name = "Motor and ESC voltage ranges overlap",
+                            Operator = 5,
+                            RightComponentTypeId = new Guid("00000000-0000-0000-0002-000000000004"),
+                            RightPropertyId = new Guid("00000000-0000-0000-0003-000000000003"),
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0007-000000000003"),
+                            Code = "battery-current-supports-motor",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FailureMessage = "Battery maximum current is below motor demand.",
+                            IsActive = true,
+                            LeftComponentTypeId = new Guid("00000000-0000-0000-0002-000000000003"),
+                            LeftPropertyId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            Name = "Battery current supports motor",
+                            Operator = 2,
+                            RightComponentTypeId = new Guid("00000000-0000-0000-0002-000000000001"),
+                            RightPropertyId = new Guid("00000000-0000-0000-0003-000000000002"),
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0007-000000000004"),
+                            Code = "frame-fc-mount-width",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FailureMessage = "Frame and flight controller mount widths differ.",
+                            IsActive = true,
+                            LeftComponentTypeId = new Guid("00000000-0000-0000-0002-000000000002"),
+                            LeftPropertyId = new Guid("00000000-0000-0000-0003-000000000007"),
+                            Name = "Frame and flight controller mount width",
+                            Operator = 0,
+                            RightComponentTypeId = new Guid("00000000-0000-0000-0002-000000000005"),
+                            RightPropertyId = new Guid("00000000-0000-0000-0003-000000000007"),
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0007-000000000005"),
+                            Code = "frame-fc-mount-height",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FailureMessage = "Frame and flight controller mount heights differ.",
+                            IsActive = true,
+                            LeftComponentTypeId = new Guid("00000000-0000-0000-0002-000000000002"),
+                            LeftPropertyId = new Guid("00000000-0000-0000-0003-000000000008"),
+                            Name = "Frame and flight controller mount height",
+                            Operator = 0,
+                            RightComponentTypeId = new Guid("00000000-0000-0000-0002-000000000005"),
+                            RightPropertyId = new Guid("00000000-0000-0000-0003-000000000008"),
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0007-000000000006"),
+                            Code = "frame-esc-mount-width",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FailureMessage = "Frame and ESC mount widths differ.",
+                            IsActive = true,
+                            LeftComponentTypeId = new Guid("00000000-0000-0000-0002-000000000002"),
+                            LeftPropertyId = new Guid("00000000-0000-0000-0003-000000000007"),
+                            Name = "Frame and ESC mount width",
+                            Operator = 0,
+                            RightComponentTypeId = new Guid("00000000-0000-0000-0002-000000000004"),
+                            RightPropertyId = new Guid("00000000-0000-0000-0003-000000000007"),
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0007-000000000007"),
+                            Code = "frame-esc-mount-height",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FailureMessage = "Frame and ESC mount heights differ.",
+                            IsActive = true,
+                            LeftComponentTypeId = new Guid("00000000-0000-0000-0002-000000000002"),
+                            LeftPropertyId = new Guid("00000000-0000-0000-0003-000000000008"),
+                            Name = "Frame and ESC mount height",
+                            Operator = 0,
+                            RightComponentTypeId = new Guid("00000000-0000-0000-0002-000000000004"),
+                            RightPropertyId = new Guid("00000000-0000-0000-0003-000000000008"),
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
             modelBuilder.Entity("DroneBuilder.Domain.Entities.ComponentType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -760,6 +927,11 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.Property<Guid>("ProductCategoryId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("PublicationStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -767,7 +939,7 @@ namespace DroneBuilder.Infrastructure.Migrations
 
                     b.HasIndex("ComponentTypeId");
 
-                    b.HasIndex("ProductCategoryId", "IsActive");
+                    b.HasIndex("ProductCategoryId", "IsActive", "PublicationStatus");
 
                     b.ToTable("Products");
                 });
@@ -2500,6 +2672,41 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.Navigation("Cart");
 
                     b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("DroneBuilder.Domain.Entities.CompatibilityRule", b =>
+                {
+                    b.HasOne("DroneBuilder.Domain.Entities.ComponentType", "LeftComponentType")
+                        .WithMany()
+                        .HasForeignKey("LeftComponentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DroneBuilder.Domain.Entities.Property", "LeftProperty")
+                        .WithMany()
+                        .HasForeignKey("LeftPropertyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DroneBuilder.Domain.Entities.ComponentType", "RightComponentType")
+                        .WithMany()
+                        .HasForeignKey("RightComponentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DroneBuilder.Domain.Entities.Property", "RightProperty")
+                        .WithMany()
+                        .HasForeignKey("RightPropertyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LeftComponentType");
+
+                    b.Navigation("LeftProperty");
+
+                    b.Navigation("RightComponentType");
+
+                    b.Navigation("RightProperty");
                 });
 
             modelBuilder.Entity("DroneBuilder.Domain.Entities.ComponentTypeProperty", b =>

@@ -19,9 +19,13 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             exception.Message,
             statusCode);
 
-        string detail = statusCode == StatusCodes.Status500InternalServerError
-            ? "An unexpected error occurred."
-            : exception.Message;
+        string detail = exception switch
+        {
+            DbUpdateConcurrencyException => "The resource was changed by another operation. Retry the request.",
+            DbUpdateException => "The requested change conflicts with the current data state.",
+            _ when statusCode == StatusCodes.Status500InternalServerError => "An unexpected error occurred.",
+            _ => exception.Message
+        };
 
         var problemDetails = new ProblemDetails
         {

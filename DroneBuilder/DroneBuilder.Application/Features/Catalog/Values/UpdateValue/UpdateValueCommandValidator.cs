@@ -6,19 +6,27 @@ public class UpdateValueCommandValidator : AbstractValidator<UpdateValueCommand>
 {
     public UpdateValueCommandValidator()
     {
-        RuleFor(x => x.ValueId)
-            .NotEmpty().WithMessage("Value ID is required.");
-
-        RuleFor(x => x.Model)
-            .NotNull().WithMessage("Update payload is required.")
-            .Must(model => model?.Text is not null)
-            .WithMessage("Value text must be provided.");
-
-        When(x => x.Model != null, () =>
+        RuleFor(command => command.ValueId).NotEmpty();
+        RuleFor(command => command.Model).NotNull();
+        When(command => command.Model is not null, () =>
         {
-            RuleFor(x => x.Model.Text)
-                .MaximumLength(500).WithMessage("Value text must not exceed 500 characters.")
-                .When(x => x.Model.Text != null);
+            RuleFor(command => command.Model)
+                .Must(model => model.Code is not null || model.Text is not null || model.NumericValue.HasValue ||
+                               model.ClearNumericValue || model.BooleanValue.HasValue ||
+                               model.ClearBooleanValue || model.Aliases is not null)
+                .WithMessage("At least one value field must be provided.");
+            RuleFor(command => command.Model.Code).NotEmpty().MaximumLength(100)
+                .When(command => command.Model.Code is not null);
+            RuleFor(command => command.Model.Text).NotEmpty().MaximumLength(100)
+                .When(command => command.Model.Text is not null);
+            RuleFor(command => command.Model)
+                .Must(model => !(model.NumericValue.HasValue && model.ClearNumericValue))
+                .WithMessage("NumericValue and ClearNumericValue cannot be used together.");
+            RuleFor(command => command.Model)
+                .Must(model => !(model.BooleanValue.HasValue && model.ClearBooleanValue))
+                .WithMessage("BooleanValue and ClearBooleanValue cannot be used together.");
+            RuleForEach(command => command.Model.Aliases!).NotEmpty().MaximumLength(200)
+                .When(command => command.Model.Aliases is not null);
         });
     }
 }

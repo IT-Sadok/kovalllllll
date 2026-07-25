@@ -6,17 +6,16 @@ public class CreateValueCommandValidator : AbstractValidator<CreateValueCommand>
 {
     public CreateValueCommandValidator()
     {
-        RuleFor(x => x.Model)
-            .NotNull().WithMessage("Value data is required.");
-
-        When(x => x.Model != null, () =>
+        RuleFor(command => command.Model).NotNull();
+        When(command => command.Model is not null, () =>
         {
-            RuleFor(x => x.Model.Text)
-                .NotEmpty().WithMessage("Value text is required.")
-                .MaximumLength(500).WithMessage("Value text must not exceed 500 characters.");
-
-            RuleFor(x => x.Model.PropertyId)
-                .NotEmpty().WithMessage("Property ID is required.");
+            RuleFor(command => command.Model.Text).NotEmpty().MaximumLength(100);
+            RuleFor(command => command.Model.Code).MaximumLength(100);
+            RuleFor(command => command.Model.PropertyId).NotEmpty();
+            RuleFor(command => command.Model)
+                .Must(model => !(model.NumericValue.HasValue && model.BooleanValue.HasValue))
+                .WithMessage("NumericValue and BooleanValue cannot be used together.");
+            RuleForEach(command => command.Model.Aliases).NotEmpty().MaximumLength(200);
         });
     }
 }

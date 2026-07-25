@@ -22,7 +22,15 @@ public class RemoveValueFromProductPropertyCommandHandler(IProductRepository pro
             ProductPropertyValue? item = product.ProductPropertyValues.FirstOrDefault(p => p.PropertyId == command.PropertyId && p.ValueId == command.ValueId);
             if (item != null)
             {
-                product.ProductPropertyValues.Remove(item);
+                try
+                {
+                    product.RemoveSpecification(item);
+                }
+                catch (InvalidOperationException exception)
+                {
+                    return Result.Fail(new ConflictError(exception.Message));
+                }
+
                 await productRepository.SaveChangesAsync(cancellationToken);
             }
         }

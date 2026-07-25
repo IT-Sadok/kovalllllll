@@ -6,6 +6,9 @@ public class ProductModel
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public string Category { get; set; } = string.Empty;
+    public string Kind { get; set; } = string.Empty;
+    public string PublicationStatus { get; set; } = string.Empty;
+    public Guid? ComponentTypeId { get; set; }
     public ICollection<PropertyModel> Properties { get; set; } = [];
     public ICollection<ImageModel> Images { get; set; } = [];
     public int StockQuantity { get; set; }

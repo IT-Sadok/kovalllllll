@@ -24,6 +24,56 @@ public abstract class ApiRoutes
         public const string AssignValueToProductProperty = BaseRoute + "/{productId}/properties/{propertyId}/values/{valueId}";
         public const string RemoveValueFromProductProperty = BaseRoute + "/{productId}/properties/{propertyId}/values/{valueId}";
         public const string RemovePropertyFromProduct = BaseRoute + "/{productId}/properties/{propertyId}";
+        public const string AssignComponentType = BaseRoute + "/{productId}/component-type";
+        public const string Specifications = BaseRoute + "/{productId}/specifications";
+        public const string SpecificationById = Specifications + "/{specificationId}";
+        public const string Publish = BaseRoute + "/{productId}/publish";
+        public const string MoveToDraft = BaseRoute + "/{productId}/draft";
+    }
+
+    public static class AdminProducts
+    {
+        private const string BaseRoute = Base + "/admin/products";
+        public const string GetAll = BaseRoute;
+        public const string GetById = BaseRoute + "/{productId}";
+        public const string Variants = GetById + "/variants";
+        public const string Specifications = GetById + "/specifications";
+    }
+
+    public static class AdminComponentTypes
+    {
+        private const string BaseRoute = Base + "/admin/component-types";
+        public const string GetAll = BaseRoute;
+        public const string GetById = BaseRoute + "/{componentTypeId}";
+    }
+
+    public static class ProductVariants
+    {
+        private const string BaseRoute = Base + "/products/{productId}/variants";
+        public const string GetAll = BaseRoute;
+        public const string Create = BaseRoute;
+        public const string ById = BaseRoute + "/{variantId}";
+        public const string Specifications = ById + "/specifications";
+        public const string SpecificationById = Specifications + "/{specificationId}";
+    }
+    public static class ComponentTypes
+    {
+        private const string BaseRoute = Base + "/component-types";
+        public const string GetAll = BaseRoute;
+        public const string Create = BaseRoute;
+        public const string Update = BaseRoute + "/{componentTypeId}";
+        public const string Delete = BaseRoute + "/{componentTypeId}";
+        public const string GetProperties = BaseRoute + "/{componentTypeId}/properties";
+        public const string PropertyRule = BaseRoute + "/{componentTypeId}/properties/{propertyId}";
+    }
+
+    public static class Units
+    {
+        private const string BaseRoute = Base + "/units";
+        public const string GetAll = BaseRoute;
+        public const string Create = BaseRoute;
+        public const string Update = BaseRoute + "/{unitId}";
+        public const string Delete = BaseRoute + "/{unitId}";
     }
 
     public static class Properties
@@ -48,6 +98,29 @@ public abstract class ApiRoutes
         public const string GetById = BaseRoute + "/{valueId}";
     }
 
+    public static class Compatibility
+    {
+        private const string BaseRoute = Base + "/compatibility";
+        public const string Check = BaseRoute + "/check";
+        public const string Rules = BaseRoute + "/rules";
+        public const string RuleById = Rules + "/{ruleId}";
+    }
+    public static class Imports
+    {
+        private const string BaseRoute = Base + "/import-sources";
+        public const string Sources = BaseRoute;
+        public const string SourceById = BaseRoute + "/{sourceId}";
+        public const string Batches = SourceById + "/batches";
+        public const string Items = Batches + "/{batchId}/items";
+        public const string PropertyAliases = SourceById + "/properties/{propertyId}/aliases";
+        public const string ValueAliases = SourceById + "/values/{valueId}/aliases";
+        public const string ProductReferences = Base + "/products/{productId}/external-references";
+        public const string ProductReferenceBySource = ProductReferences + "/sources/{sourceId}";
+        public const string ProductReferenceById = ProductReferences + "/{referenceId}";
+        public const string VariantReferences = Base + "/products/{productId}/variants/{variantId}/external-references";
+        public const string VariantReferenceBySource = VariantReferences + "/sources/{sourceId}";
+        public const string VariantReferenceById = VariantReferences + "/{referenceId}";
+    }
     public static class Images
     {
         private const string BaseRoute = Base + "/images";

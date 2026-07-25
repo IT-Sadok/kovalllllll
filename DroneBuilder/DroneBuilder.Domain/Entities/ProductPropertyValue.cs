@@ -16,6 +16,34 @@ public class ProductPropertyValue : AuditableEntity
     public decimal? MaxNumericValue { get; set; }
     public bool? BooleanValue { get; set; }
 
+    public void SetValue(
+        Guid? valueId,
+        Value? value,
+        string? textValue,
+        decimal? numericValue,
+        decimal? minNumericValue,
+        decimal? maxNumericValue,
+        bool? booleanValue)
+    {
+        SpecificationValueRules.Validate(
+            Property ?? throw new InvalidOperationException("Property metadata is required."),
+            valueId,
+            textValue,
+            numericValue,
+            minNumericValue,
+            maxNumericValue,
+            booleanValue);
+
+        ValueId = valueId;
+        Value = value;
+        TextValue = textValue;
+        NumericValue = numericValue;
+        MinNumericValue = minNumericValue;
+        MaxNumericValue = maxNumericValue;
+        BooleanValue = booleanValue;
+        UpdatedAt = DateTime.UtcNow;
+        Product?.BeginDraft();
+    }
     public void Validate()
     {
         SpecificationValueRules.Validate(

@@ -11,23 +11,32 @@ public class ValueRepository(ApplicationDbContext dbContext) : IValueRepository
         await dbContext.Values.AddAsync(value, cancellationToken);
     }
 
-    public async Task<Value?> GetValueByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<Value?> GetValueByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Values.FindAsync([id], cancellationToken: cancellationToken);
+        return ValueQuery().FirstOrDefaultAsync(value => value.Id == id, cancellationToken);
     }
 
-    public async Task<Value?> GetValueWithPropertiesByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<Value?> GetValueWithPropertiesByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Values
-            .Include(v => v.Properties)
-            .FirstOrDefaultAsync(v => v.Id == id, cancellationToken);
+        return ValueQuery().FirstOrDefaultAsync(value => value.Id == id, cancellationToken);
     }
 
     public async Task<ICollection<Value>> GetValuesAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Values
+        return await ValueQuery()
             .AsNoTracking()
+            .OrderBy(value => value.Text)
             .ToListAsync(cancellationToken);
+    }
+
+    public Task<bool> IsCodeInUseAsync(
+        string code,
+        Guid? excludedId = null,
+        CancellationToken cancellationToken = default)
+    {
+        return dbContext.Values.AnyAsync(
+            value => value.Code == code && (!excludedId.HasValue || value.Id != excludedId.Value),
+            cancellationToken);
     }
 
     public void RemoveValue(Value value)
@@ -38,5 +47,15 @@ public class ValueRepository(ApplicationDbContext dbContext) : IValueRepository
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private IQueryable<Value> ValueQuery()
+    {
+        return dbContext.Values
+            .AsSplitQuery()
+            .Include(value => value.Aliases)
+            .Include(value => value.Properties)
+            .Include(value => value.ProductPropertyValues)
+            .Include(value => value.ProductVariantPropertyValues);
     }
 }

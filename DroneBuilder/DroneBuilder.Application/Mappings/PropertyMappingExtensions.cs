@@ -8,44 +8,44 @@ public static class PropertyMappingExtensions
 {
     public static PropertyModel ToModel(this Property property)
     {
-        if (property == null)
-        {
-            return null!;
-        }
+        ArgumentNullException.ThrowIfNull(property);
 
         return new PropertyModel
         {
             Id = property.Id,
+            Code = property.Code,
             Name = property.Name,
-            Values = property.Values?.Select(v => v.ToModel()).ToList() ?? new List<ValueModel>()
+            DataType = property.DataType.ToString(),
+            UnitDefinitionId = property.UnitDefinitionId,
+            IsFilterable = property.IsFilterable,
+            IsCompatibilityRelevant = property.IsCompatibilityRelevant,
+            AllowsMultipleValues = property.AllowsMultipleValues,
+            Aliases = property.Aliases.OrderBy(alias => alias.Alias).Select(alias => alias.Alias).ToList(),
+            Values = property.Values.Select(value => value.ToModel()).ToList()
         };
     }
 
     public static Property ToEntity(this CreatePropertyModel model)
     {
-        if (model == null)
-        {
-            return null!;
-        }
+        ArgumentNullException.ThrowIfNull(model);
 
-        return new Property
+        var property = new Property
         {
-            Code = EntityCode.FromName(model.Name),
-            Name = model.Name,
-            Values = model.Values?.Select(v => v.ToEntity()).ToList() ?? new List<Value>()
+            Code = string.IsNullOrWhiteSpace(model.Code) ? EntityCode.FromName(model.Name) : model.Code.Trim(),
+            Name = model.Name.Trim(),
+            DataType = Enum.Parse<SpecificationDataType>(model.DataType, ignoreCase: true),
+            UnitDefinitionId = model.UnitDefinitionId,
+            IsFilterable = model.IsFilterable,
+            IsCompatibilityRelevant = model.IsCompatibilityRelevant,
+            AllowsMultipleValues = model.AllowsMultipleValues,
+            Values = model.Values.Select(value => value.ToEntity()).ToList()
         };
-    }
 
-    public static void UpdateEntity(this UpdatePropertyModel model, Property entity)
-    {
-        if (model == null || entity == null)
+        foreach (string alias in model.Aliases.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            return;
+            property.Aliases.Add(new PropertyAlias { Alias = alias.Trim() });
         }
 
-        if (model.Name != null)
-        {
-            entity.Name = model.Name;
-        }
+        return property;
     }
 }

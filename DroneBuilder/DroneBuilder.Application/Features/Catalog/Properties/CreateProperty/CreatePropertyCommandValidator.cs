@@ -1,3 +1,4 @@
+using DroneBuilder.Domain.Entities;
 using FluentValidation;
 
 namespace DroneBuilder.Application.Features.Catalog.Properties.CreateProperty;
@@ -6,14 +7,19 @@ public class CreatePropertyCommandValidator : AbstractValidator<CreatePropertyCo
 {
     public CreatePropertyCommandValidator()
     {
-        RuleFor(x => x.Model)
-            .NotNull().WithMessage("Property data is required.");
-
-        When(x => x.Model != null, () =>
+        RuleFor(command => command.Model).NotNull();
+        When(command => command.Model is not null, () =>
         {
-            RuleFor(x => x.Model.Name)
-                .NotEmpty().WithMessage("Property name is required.")
-                .MaximumLength(200).WithMessage("Property name must not exceed 200 characters.");
+            RuleFor(command => command.Model.Name).NotEmpty().MaximumLength(100);
+            RuleFor(command => command.Model.Code).MaximumLength(100);
+            RuleFor(command => command.Model.DataType)
+                .NotEmpty()
+                .Must(value => Enum.TryParse<SpecificationDataType>(value, true, out _))
+                .WithMessage("Unsupported property data type.");
+            RuleForEach(command => command.Model.Aliases).NotEmpty().MaximumLength(200);
+            RuleFor(command => command.Model.Aliases)
+                .Must(aliases => aliases.Distinct(StringComparer.OrdinalIgnoreCase).Count() == aliases.Count)
+                .WithMessage("Property aliases must be unique.");
         });
     }
 }
