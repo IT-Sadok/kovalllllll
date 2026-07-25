@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.ValueCommands;
+using DroneBuilder.Application.Features.Catalog.Values.DeleteValue;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -47,7 +47,7 @@ public class DeleteValueCommandHandlerTests
         var command = new DeleteValueCommand(ValueId);
 
         _valueRepository.GetValueByIdAsync(Arg.Is<Guid>(id => id == ValueId), Arg.Any<CancellationToken>())
-            .Returns((Value)null);
+            .Returns((Value?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

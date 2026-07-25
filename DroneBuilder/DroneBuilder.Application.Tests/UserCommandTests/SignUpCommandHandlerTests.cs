@@ -1,5 +1,5 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.UserCommands;
+using DroneBuilder.Application.Features.Auth.Register;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
@@ -31,7 +31,10 @@ public class SignUpCommandHandlerTests
         // Arrange
         var userStore = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(
-            userStore.Object, null, null, null, null, null, null, null, null);
+            userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+
+        _mockUserManager.Setup(manager => manager.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
 
         _mockUserRepository = new Mock<IUserRepository>();
         _mockOutboxService = new Mock<IOutboxEventService>();
@@ -142,7 +145,7 @@ public class SignUpCommandHandlerTests
         // Arrange
         var signUpModel = new SignUpModel
         {
-            Email = null,
+            Email = null!,
             Password = ValidPassword
         };
         var command = new SignUpUserCommand(signUpModel);

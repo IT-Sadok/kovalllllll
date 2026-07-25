@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.OrderCommands;
+using DroneBuilder.Application.Features.Orders.UpdateOrderStatus;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -25,7 +25,7 @@ public class UpdateOrderStatusCommandHandlerTests
     {
         // Arrange
         var command = new UpdateOrderStatusCommand(OrderId, Status.Sent);
-        var order = new Order { Id = OrderId, Status = Status.New };
+        var order = new Order { Id = OrderId, Status = Status.Paid };
 
         _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns(order);
 
@@ -42,7 +42,7 @@ public class UpdateOrderStatusCommandHandlerTests
     {
         // Arrange
         var command = new UpdateOrderStatusCommand(OrderId, Status.Sent);
-        _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns((Order)null);
+        _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns((Order?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -56,7 +56,7 @@ public class UpdateOrderStatusCommandHandlerTests
     {
         // Arrange
         var command = new UpdateOrderStatusCommand(OrderId, (Status)999);
-        var order = new Order { Id = OrderId, Status = Status.New };
+        var order = new Order { Id = OrderId, Status = Status.Paid };
 
         _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns(order);
 

@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
+using DroneBuilder.Application.Features.Catalog.Properties.UpdateProperty;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -78,7 +78,7 @@ public class UpdatePropertyCommandHandlerTests
         _propertyRepository.GetPropertyByIdAsync(
                 Arg.Is<Guid>(id => id == PropertyId),
                 Arg.Any<CancellationToken>())
-            .Returns((Property)null);
+            .Returns((Property?)null);
 
         // Act & Assert
         Result<PropertyModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

@@ -138,6 +138,8 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         int totalCount = await query.CountAsync(cancellationToken);
 
         List<Product> items = await query
+            .OrderBy(product => product.Name)
+            .ThenBy(product => product.Id)
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);

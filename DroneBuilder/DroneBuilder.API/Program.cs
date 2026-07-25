@@ -1,6 +1,8 @@
+using DroneBuilder.API.Contexts;
 using DroneBuilder.API.Extensions;
 using DroneBuilder.API.Middleware;
 using DroneBuilder.Application;
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Infrastructure;
 
 namespace DroneBuilder.API;
@@ -12,6 +14,7 @@ public abstract class Program
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<IUserContext, UserContext>();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddOpenApiConfig();
 

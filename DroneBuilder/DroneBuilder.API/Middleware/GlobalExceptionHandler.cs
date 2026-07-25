@@ -1,34 +1,36 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DroneBuilder.API.Middleware;
 
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
-            HttpContext httpContext,
-            Exception exception,
-            CancellationToken cancellationToken)
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
     {
-        (int statusCode, string? title, object? errors) = MapException(exception);
+        (int statusCode, string title) = MapException(exception);
 
-        logger.LogError(exception,
+        logger.LogError(
+            exception,
             "Exception occurred: {Message}. StatusCode: {StatusCode}",
             exception.Message,
             statusCode);
+
+        string detail = statusCode == StatusCodes.Status500InternalServerError
+            ? "An unexpected error occurred."
+            : exception.Message;
 
         var problemDetails = new ProblemDetails
         {
             Status = statusCode,
             Title = title,
-            Detail = exception.Message,
+            Detail = detail,
             Instance = httpContext.Request.Path
         };
-
-        if (errors != null && exception is Application.Exceptions.ValidationException)
-        {
-            problemDetails.Extensions["errors"] = errors;
-        }
+        problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
 
         httpContext.Response.StatusCode = statusCode;
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
@@ -36,32 +38,20 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         return true;
     }
 
-    private static (int StatusCode, string Title, object? Errors) MapException(Exception exception)
+    private static (int StatusCode, string Title) MapException(Exception exception)
     {
         return exception switch
         {
-            Application.Exceptions.NotFoundException =>
-                (404, "Not Found", null),
+            UnauthorizedAccessException =>
+                (StatusCodes.Status401Unauthorized, "Unauthorized"),
 
-            Application.Exceptions.ValidationException validationEx =>
-                (400, "Validation Error", validationEx.Errors),
-
-            Application.Exceptions.BadRequestException =>
-                (400, "Bad Request", null),
-
-            Application.Exceptions.InvalidEmailOrPasswordException =>
-                (401, "Invalid Credentials", null),
-
-            Application.Exceptions.UnauthorizedException =>
-                (401, "Unauthorized", null),
-
-            Application.Exceptions.ForbiddenException =>
-                (403, "Forbidden", null),
+            DbUpdateConcurrencyException or DbUpdateException =>
+                (StatusCodes.Status409Conflict, "Conflict"),
 
             ArgumentNullException or ArgumentException =>
-                (400, "Bad Request", null),
+                (StatusCodes.Status400BadRequest, "Bad Request"),
 
-            _ => (500, "Internal Server Error", null)
+            _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
         };
     }
 }

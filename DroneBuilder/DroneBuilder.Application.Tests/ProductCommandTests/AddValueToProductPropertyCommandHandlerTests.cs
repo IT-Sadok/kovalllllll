@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.ProductCommands;
+using DroneBuilder.Application.Features.Catalog.Products.AddValueToProductProperty;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -67,7 +67,7 @@ public class AddValueToProductPropertyCommandHandlerTests
     {
         // Arrange
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
-        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product)null);
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -82,7 +82,7 @@ public class AddValueToProductPropertyCommandHandlerTests
         // Arrange
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(new Product());
-        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property)null);
+        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -98,7 +98,7 @@ public class AddValueToProductPropertyCommandHandlerTests
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(new Product());
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns(new Property());
-        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value)null);
+        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

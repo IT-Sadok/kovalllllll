@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.ProductCommands;
+using DroneBuilder.Application.Features.Catalog.Products.RemoveValueFromProductProperty;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -49,7 +49,7 @@ public class RemoveValueFromProductPropertyCommandHandlerTests
     {
         // Arrange
         var command = new RemoveValueFromProductPropertyCommand(ProductId, PropertyId, ValueId);
-        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product)null);
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

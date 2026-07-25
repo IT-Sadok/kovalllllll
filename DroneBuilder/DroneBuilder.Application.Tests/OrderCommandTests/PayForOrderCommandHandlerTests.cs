@@ -1,4 +1,5 @@
-using DroneBuilder.Application.Mediator.Commands.OrderCommands;
+using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Features.Orders.PayForOrder;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -11,6 +12,7 @@ public class PayForOrderCommandHandlerTests
 {
     private readonly IOrderRepository _orderRepository;
     private readonly PayForOrderCommandHandler _handler;
+    private readonly IUserContext _userContext;
 
     private static readonly Guid OrderId = Guid.NewGuid();
 
@@ -18,8 +20,10 @@ public class PayForOrderCommandHandlerTests
     {
         // Arrange
         _orderRepository = Substitute.For<IOrderRepository>();
+        _userContext = Substitute.For<IUserContext>();
+        _userContext.UserId.Returns(Guid.Empty);
 
-        _handler = new PayForOrderCommandHandler(_orderRepository);
+        _handler = new PayForOrderCommandHandler(_orderRepository, _userContext);
     }
 
     [Fact]
@@ -61,7 +65,7 @@ public class PayForOrderCommandHandlerTests
         _orderRepository.GetOrderByIdAsync(
                 Arg.Is<Guid>(id => id == OrderId),
                 Arg.Any<CancellationToken>())
-            .Returns((Order)null);
+            .Returns((Order?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -129,6 +133,28 @@ public class PayForOrderCommandHandlerTests
 
         Assert.Equal("Order is already paid.", result.Errors[0].Message);
 
+        await _orderRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenOrderBelongsToAnotherUser_ShouldReturnForbidden()
+    {
+        Guid currentUserId = Guid.NewGuid();
+        _userContext.UserId.Returns(currentUserId);
+        var order = new Order
+        {
+            Id = OrderId,
+            UserId = Guid.NewGuid(),
+            Status = Status.New
+        };
+        _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns(order);
+
+        Result result = await _handler.ExecuteCommandAsync(
+            new PayForOrderCommand(OrderId),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<ForbiddenError>());
+        Assert.Equal(Status.New, order.Status);
         await _orderRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

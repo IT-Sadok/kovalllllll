@@ -1,0 +1,27 @@
+using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Mappings;
+using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Models.CartModels;
+using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.ResultErrors;
+using FluentResults;
+
+namespace DroneBuilder.Application.Features.Cart.Get;
+
+public class GetCartQueryHandler(ICartRepository cartRepository, IUserContext userContext)
+    : IQueryHandler<GetCartByUserIdQuery, CartModel>
+{
+    public async Task<Result<CartModel>> ExecuteAsync(GetCartByUserIdQuery query, CancellationToken cancellationToken)
+    {
+        Domain.Entities.Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
+
+        if (cart == null)
+        {
+            return Result.Fail<CartModel>(new NotFoundError($"Cart for user with ID {userContext.UserId} not found."));
+        }
+
+        return Result.Ok(cart.ToModel());
+    }
+}
+
+public record GetCartByUserIdQuery();

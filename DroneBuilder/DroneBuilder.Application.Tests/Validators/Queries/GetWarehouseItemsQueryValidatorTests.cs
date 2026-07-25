@@ -1,6 +1,5 @@
-using DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
+using DroneBuilder.Application.Features.Inventory.GetWarehouseItems;
 using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Validation.Validators;
 using FluentValidation.TestHelper;
 
 namespace DroneBuilder.Application.Tests.Validators.Queries;

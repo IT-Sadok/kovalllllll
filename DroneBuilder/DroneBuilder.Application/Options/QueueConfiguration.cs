@@ -8,5 +8,5 @@ public class QueueConfiguration
     public bool Exclusive { get; set; } = false;
     public int MaxRetryCount { get; set; } = 3;
     public int PrefetchCount { get; set; } = 10;
-    public Dictionary<string, object>? Arguments { get; set; }
+    public Dictionary<string, object?>? Arguments { get; set; }
 }

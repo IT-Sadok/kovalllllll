@@ -44,7 +44,7 @@ public static class ResultExtensions
             UnauthorizedError => Results.Problem(statusCode: 401, title: "Unauthorized", detail: error.Message),
             ForbiddenError => Results.Problem(statusCode: 403, title: "Forbidden", detail: error.Message),
             ConflictError => Results.Problem(statusCode: 409, title: "Conflict", detail: error.Message),
-            _ => Results.Problem(statusCode: 500, title: "Internal Server Error", detail: error.Message),
+            _ => Results.Problem(statusCode: 500, title: "Internal Server Error", detail: "An unexpected error occurred."),
         };
     }
 

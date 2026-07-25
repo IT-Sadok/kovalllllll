@@ -16,8 +16,8 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
         return await dbContext.Carts
             .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.ProductVariant)
-                    .ThenInclude(v => v.Product)
-                    .ThenInclude(p => p.Images)
+                    .ThenInclude(v => v!.Product)
+                    .ThenInclude(p => p!.Images)
             .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.ProductVariant)
             .Include(c => c.CartItems)

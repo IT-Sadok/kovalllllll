@@ -1,5 +1,5 @@
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Mediator.Commands.CartCommands;
+using DroneBuilder.Application.Features.Cart.UpdateCartItemQuantity;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Application.Tests.TestSupport;
