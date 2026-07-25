@@ -1,0 +1,84 @@
+using DroneBuilder.API.Authorization;
+using DroneBuilder.API.Endpoints.Routes;
+using DroneBuilder.API.Extensions;
+using DroneBuilder.Application.Features.Inventory.AddQuantityToWarehouseItem;
+using DroneBuilder.Application.Features.Inventory.GetWarehouse;
+using DroneBuilder.Application.Features.Inventory.GetWarehouseItemById;
+using DroneBuilder.Application.Features.Inventory.GetWarehouseItems;
+using DroneBuilder.Application.Features.Inventory.RemoveQuantityFromWarehouseItem;
+using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Models;
+using DroneBuilder.Application.Models.WarehouseModels;
+using FluentResults;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DroneBuilder.API.Features.Inventory;
+
+public static class WarehouseEndpointExtensions
+{
+    public static IEndpointRouteBuilder MapWarehouseEndpoints(this IEndpointRouteBuilder app)
+    {
+        app.MapGet(ApiRoutes.Warehouses.Get,
+                async (IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    Result<WarehouseModel> result = await mediator.ExecuteQueryAsync<GetWarehouseQuery, WarehouseModel>(
+                        new GetWarehouseQuery(),
+                        cancellationToken);
+                    return result.ToHttpResult();
+                })
+            .WithTags("Warehouse")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapGet(ApiRoutes.Warehouses.GetItemById,
+                async (IMediator mediator, Guid itemId, CancellationToken cancellationToken) =>
+                {
+                    Result<WarehouseItemModel> result = await mediator.ExecuteQueryAsync<GetWarehouseItemByIdQuery, WarehouseItemModel>(
+                        new GetWarehouseItemByIdQuery(itemId),
+                        cancellationToken);
+                    return result.ToHttpResult();
+                })
+            .WithTags("Warehouse")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapPost(ApiRoutes.Warehouses.AddQuantityToItem, async (IMediator mediator, Guid itemId,
+                [FromBody] AddQuantityModel model,
+                CancellationToken cancellationToken) =>
+            {
+                Result<WarehouseItemModel> result =
+                    await mediator.ExecuteCommandAsync<AddQuantityToWarehouseItemCommand, WarehouseItemModel>(
+                        new AddQuantityToWarehouseItemCommand(itemId, model),
+                        cancellationToken);
+                return result.ToHttpResult();
+            })
+            .WithTags("Warehouse")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapDelete(ApiRoutes.Warehouses.RemoveQuantityFromItem, async (IMediator mediator, Guid itemId,
+                [FromBody] RemoveQuantityModel model,
+                CancellationToken cancellationToken) =>
+            {
+                Result<WarehouseItemModel> result =
+                    await mediator.ExecuteCommandAsync<RemoveQuantityFromWarehouseItemCommand, WarehouseItemModel>(
+                        new RemoveQuantityFromWarehouseItemCommand(itemId, model),
+                        cancellationToken);
+                return result.ToHttpResult();
+            })
+            .WithTags("Warehouse")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapGet(ApiRoutes.Warehouses.GetAllItems,
+                async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    var pagination = new PaginationParams(page, pageSize);
+                    Result<PagedResult<WarehouseItemModel>> result =
+                        await mediator.ExecuteQueryAsync<GetWarehouseItemsQuery, PagedResult<WarehouseItemModel>>(
+                            new GetWarehouseItemsQuery(pagination),
+                            cancellationToken);
+                    return result.ToHttpResult();
+                })
+            .WithTags("Warehouse")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        return app;
+    }
+}

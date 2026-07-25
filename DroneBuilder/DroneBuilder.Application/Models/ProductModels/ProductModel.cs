@@ -3,9 +3,9 @@ namespace DroneBuilder.Application.Models.ProductModels;
 public class ProductModel
 {
     public Guid Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
-    public string Category { get; set; }
+    public string Category { get; set; } = string.Empty;
     public ICollection<PropertyModel> Properties { get; set; } = [];
     public ICollection<ImageModel> Images { get; set; } = [];
     public int StockQuantity { get; set; }

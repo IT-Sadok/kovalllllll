@@ -1,4 +1,11 @@
-using DroneBuilder.API.Endpoints;
+using DroneBuilder.API.Features.Auth;
+using DroneBuilder.API.Features.Cart;
+using DroneBuilder.API.Features.Catalog.Images;
+using DroneBuilder.API.Features.Catalog.Products;
+using DroneBuilder.API.Features.Catalog.Properties;
+using DroneBuilder.API.Features.Catalog.Values;
+using DroneBuilder.API.Features.Inventory;
+using DroneBuilder.API.Features.Orders;
 
 namespace DroneBuilder.API.Extensions;
 

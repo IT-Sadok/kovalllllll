@@ -1,6 +1,6 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Mediator.Commands.CartCommands;
+using DroneBuilder.Application.Features.Cart.AddItemToCart;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -200,7 +200,7 @@ public class AddItemToCartCommandHandlerTests
             .Returns(warehouseItem);
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
-            .Returns((Cart)null);
+            .Returns((Cart?)null);
 
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -228,7 +228,7 @@ public class AddItemToCartCommandHandlerTests
         var command = new AddItemToCartCommand(ProductId, ValidQuantity);
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns((Product)null);
+            .Returns((Product?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -261,7 +261,7 @@ public class AddItemToCartCommandHandlerTests
             .Returns(product);
 
         _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns((WarehouseItem)null);
+            .Returns((WarehouseItem?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

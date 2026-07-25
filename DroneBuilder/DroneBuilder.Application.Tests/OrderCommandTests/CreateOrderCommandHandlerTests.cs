@@ -1,7 +1,7 @@
 using System.Text.Json;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Mediator.Commands.OrderCommands;
+using DroneBuilder.Application.Features.Orders.CreateOrder;
 using DroneBuilder.Application.Models.OrderModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
@@ -215,7 +215,7 @@ public class CreateOrderCommandHandlerTests
         _cartRepository.GetCartByUserIdAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
-            .Returns((Cart)null);
+            .Returns((Cart?)null);
 
         // Act & Assert
         Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -268,7 +268,7 @@ public class CreateOrderCommandHandlerTests
         _warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(
                 Arg.Is<List<Guid>>(ids => ids.Contains(ProductId1)),
                 Arg.Any<CancellationToken>())
-            .Returns((List<WarehouseItem>)null);
+            .Returns((ICollection<WarehouseItem>)null!);
 
         // Act & Assert
         Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -337,7 +337,7 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        Order capturedOrder = null;
+        Order? capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
             Arg.Any<CancellationToken>());
@@ -402,7 +402,7 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        Order capturedOrder = null;
+        Order? capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
             Arg.Any<CancellationToken>());
@@ -599,7 +599,7 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        Order capturedOrder = null;
+        Order? capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
             Arg.Any<CancellationToken>());
@@ -663,7 +663,7 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        Order capturedOrder = null;
+        Order? capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
             Arg.Any<CancellationToken>());

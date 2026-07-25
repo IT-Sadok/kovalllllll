@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
+using DroneBuilder.Application.Features.Catalog.Properties.CreateProperty;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
@@ -73,7 +73,7 @@ public class CreatePropertyCommandHandlerTests
 
         var mappedProperty = new Property { Id = PropertyId, Name = PropertyName };
 
-        Property capturedProperty = null;
+        Property? capturedProperty = null;
         await _propertyRepository.AddPropertyAsync(
             Arg.Do<Property>(p => capturedProperty = p),
             Arg.Any<CancellationToken>());

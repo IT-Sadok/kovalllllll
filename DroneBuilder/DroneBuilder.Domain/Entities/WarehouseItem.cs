@@ -41,6 +41,35 @@ public class WarehouseItem : AuditableEntity
         _legacyProduct = variant.Product;
     }
 
+    public void AddStock(int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity));
+        }
+
+        checked
+        {
+            Quantity += quantity;
+        }
+
+        Version++;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void RemoveStock(int quantity)
+    {
+        if (quantity <= 0 || Quantity - quantity < ReservedQuantity)
+        {
+            throw new InvalidOperationException(
+                "Stock cannot be reduced below the reserved quantity.");
+        }
+
+        Quantity -= quantity;
+        Version++;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void Reserve(int quantity)
     {
         if (quantity <= 0)

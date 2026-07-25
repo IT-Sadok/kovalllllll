@@ -1,5 +1,5 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
+using DroneBuilder.Application.Features.Inventory.RemoveQuantityFromWarehouseItem;
 using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
@@ -102,7 +102,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
-            .Returns((Warehouse)null);
+            .Returns((Warehouse?)null);
 
         // Act & Assert
         Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -137,7 +137,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         _warehouseRepository.GetWarehouseItemByIdAsync(
                 Arg.Is<Guid>(id => id == WarehouseItemId),
                 Arg.Any<CancellationToken>())
-            .Returns((WarehouseItem)null);
+            .Returns((WarehouseItem?)null);
 
         // Act & Assert
         Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

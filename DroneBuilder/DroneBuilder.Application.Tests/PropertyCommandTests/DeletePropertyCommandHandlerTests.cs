@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
+using DroneBuilder.Application.Features.Catalog.Properties.DeleteProperty;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -59,7 +59,7 @@ public class DeletePropertyCommandHandlerTests
         _propertyRepository.GetPropertyByIdAsync(
                 Arg.Is<Guid>(id => id == PropertyId),
                 Arg.Any<CancellationToken>())
-            .Returns((Property)null);
+            .Returns((Property?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -91,7 +91,7 @@ public class DeletePropertyCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(existingProperty);
 
-        Property removedProperty = null;
+        Property? removedProperty = null;
         _propertyRepository.When(x => x.RemoveProperty(Arg.Is<Property>(p => p.Id == PropertyId)))
             .Do(callInfo => removedProperty = callInfo.Arg<Property>());
 

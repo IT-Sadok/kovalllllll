@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.ImageCommands;
+using DroneBuilder.Application.Features.Catalog.Images.SetPrimaryImage;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -39,7 +39,7 @@ public class SetPrimaryImageCommandHandlerTests
         // Assert
         Assert.True(targetImage.IsPrimary);
         Assert.False(otherImage.IsPrimary);
-        await _imageRepository.Received(2).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _imageRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class SetPrimaryImageCommandHandlerTests
     {
         // Arrange
         var command = new SetPrimaryImageCommand(ImageId);
-        _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>()).Returns((Image)null);
+        _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>()).Returns((Image?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

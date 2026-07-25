@@ -32,14 +32,23 @@ public class EventConsumerHostedService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            await InitializeRabbitMqAsync(stoppingToken);
-            await StartConsumingFromAllQueuesAsync(stoppingToken);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error starting consumer");
+            try
+            {
+                await InitializeRabbitMqAsync(stoppingToken);
+                await StartConsumingFromAllQueuesAsync(stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "RabbitMQ consumer failed; reconnecting");
+                await CloseRabbitMqAsync(CancellationToken.None);
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            }
         }
     }
 
@@ -201,27 +210,33 @@ public class EventConsumerHostedService(
         }
     }
 
-    public override async void Dispose()
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        await base.StopAsync(cancellationToken);
+        await CloseRabbitMqAsync(cancellationToken);
+    }
+
+    private async Task CloseRabbitMqAsync(CancellationToken cancellationToken)
     {
         try
         {
-            if (_channel != null)
+            if (_channel is not null)
             {
-                await _channel.CloseAsync();
+                await _channel.CloseAsync(cancellationToken);
+                await _channel.DisposeAsync();
+                _channel = null;
             }
 
-            if (_connection != null)
+            if (_connection is not null)
             {
-                await _connection.CloseAsync();
+                await _connection.CloseAsync(cancellationToken);
+                await _connection.DisposeAsync();
+                _connection = null;
             }
-
-            logger.LogInformation("Consumer disposed");
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            logger.LogError(ex, "Error disposing Consumer");
+            logger.LogWarning(exception, "Error while closing RabbitMQ consumer resources");
         }
-
-        base.Dispose();
     }
 }

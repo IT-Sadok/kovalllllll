@@ -1,9 +1,9 @@
-﻿# UI build stage
+# UI build stage
 FROM node:20-alpine AS ui-build
 WORKDIR /src/DroneBuilder.UI
 
 COPY ["DroneBuilder.UI/package.json", "DroneBuilder.UI/package-lock.json", "./"]
-RUN npm install --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 
 COPY ["DroneBuilder.UI/", "./"]
 

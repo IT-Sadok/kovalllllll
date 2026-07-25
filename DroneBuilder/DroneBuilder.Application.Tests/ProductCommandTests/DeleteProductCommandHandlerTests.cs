@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.ProductCommands;
+using DroneBuilder.Application.Features.Catalog.Products.DeleteProduct;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -59,7 +59,7 @@ public class DeleteProductCommandHandlerTests
         _productRepository.GetProductByIdAsync(
                 Arg.Is<Guid>(id => id == ProductId),
                 Arg.Any<CancellationToken>())
-            .Returns((Product)null);
+            .Returns((Product?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -92,7 +92,7 @@ public class DeleteProductCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(existingProduct);
 
-        Product removedProduct = null;
+        Product? removedProduct = null;
         _productRepository.When(x => x.RemoveProduct(Arg.Any<Product>()))
             .Do(callInfo => removedProduct = callInfo.Arg<Product>());
 

@@ -17,7 +17,7 @@ public static class AuthExtension
     public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
     {
         services
-            .AddIdentity<User, IdentityRole<Guid>>(options => options.SignIn.RequireConfirmedAccount = true)
+            .AddIdentity<User, IdentityRole<Guid>>(options => options.SignIn.RequireConfirmedAccount = false)
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddAuthorizationBuilder()

@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.ValueCommands;
+using DroneBuilder.Application.Features.Catalog.Values.UpdateValue;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -78,7 +78,7 @@ public class UpdateValueCommandHandlerTests
         _valueRepository.GetValueByIdAsync(
                 Arg.Is<Guid>(id => id == ValueId),
                 Arg.Any<CancellationToken>())
-            .Returns((Value)null);
+            .Returns((Value?)null);
 
         // Act & Assert
         Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

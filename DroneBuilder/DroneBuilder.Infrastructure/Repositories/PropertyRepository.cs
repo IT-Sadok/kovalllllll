@@ -26,11 +26,11 @@ public class PropertyRepository(ApplicationDbContext dbContext) : IPropertyRepos
             .ToListAsync(cancellationToken);
     }
 
-    public Task<Property> GetValuesByPropertyIdAsync(Guid propertyId, CancellationToken cancellationToken = default)
+    public Task<Property?> GetValuesByPropertyIdAsync(Guid propertyId, CancellationToken cancellationToken = default)
     {
         return dbContext.Properties
             .Include(p => p.Values)
-            .FirstAsync(p => p.Id == propertyId, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == propertyId, cancellationToken);
     }
 
     public void RemoveProperty(Property property)

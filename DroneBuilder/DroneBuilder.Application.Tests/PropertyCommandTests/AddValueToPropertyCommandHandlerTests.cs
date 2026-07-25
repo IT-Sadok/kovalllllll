@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
+using DroneBuilder.Application.Features.Catalog.Properties.AddValueToProperty;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
@@ -73,7 +73,7 @@ public class AddValueToPropertyCommandHandlerTests
         _propertyRepository.GetPropertyByIdAsync(
                 Arg.Is<Guid>(id => id == PropertyId),
                 Arg.Any<CancellationToken>())
-            .Returns((Property)null);
+            .Returns((Property?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -110,7 +110,7 @@ public class AddValueToPropertyCommandHandlerTests
         _valueRepository.GetValueByIdAsync(
                 Arg.Is<Guid>(id => id == ValueId),
                 Arg.Any<CancellationToken>())
-            .Returns((Value)null);
+            .Returns((Value?)null);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

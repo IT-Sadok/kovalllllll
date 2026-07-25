@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Mediator.Commands.ProductCommands;
+using DroneBuilder.Application.Features.Catalog.Products.UpdateProduct;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -93,7 +93,7 @@ public class UpdateProductCommandHandlerTests
         _productRepository.GetProductByIdAsync(
                 Arg.Is<Guid>(id => id == ProductId),
                 Arg.Any<CancellationToken>())
-            .Returns((Product)null);
+            .Returns((Product?)null);
 
         // Act & Assert
         Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

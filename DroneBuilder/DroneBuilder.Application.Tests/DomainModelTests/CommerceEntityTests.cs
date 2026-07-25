@@ -83,4 +83,45 @@ public class CommerceEntityTests
         Assert.Equal("Test User", document.RootElement.GetProperty("fullName").GetString());
         Assert.Equal("Kyiv", document.RootElement.GetProperty("city").GetString());
     }
+    [Fact]
+    public void WarehouseStock_CannotBeReducedBelowReservedQuantity()
+    {
+        var item = new WarehouseItem { Quantity = 10, ReservedQuantity = 4 };
+
+        InvalidOperationException exception =
+            Assert.Throws<InvalidOperationException>(() => item.RemoveStock(7));
+
+        Assert.Equal("Stock cannot be reduced below the reserved quantity.", exception.Message);
+        Assert.Equal(10, item.Quantity);
+        Assert.Equal(4, item.ReservedQuantity);
+    }
+
+    [Theory]
+    [InlineData(Status.New, Status.Paid)]
+    [InlineData(Status.New, Status.Cancelled)]
+    [InlineData(Status.Paid, Status.Sent)]
+    [InlineData(Status.Paid, Status.Cancelled)]
+    [InlineData(Status.Sent, Status.Completed)]
+    public void OrderStatus_AllowsOnlyDefinedForwardTransitions(Status current, Status next)
+    {
+        var order = new Order { Status = current };
+
+        order.ChangeStatus(next);
+
+        Assert.Equal(next, order.Status);
+    }
+
+    [Theory]
+    [InlineData(Status.New, Status.Sent)]
+    [InlineData(Status.Paid, Status.Completed)]
+    [InlineData(Status.Sent, Status.Paid)]
+    [InlineData(Status.Completed, Status.New)]
+    [InlineData(Status.Cancelled, Status.New)]
+    public void OrderStatus_RejectsIllegalTransitions(Status current, Status next)
+    {
+        var order = new Order { Status = current };
+
+        Assert.Throws<InvalidOperationException>(() => order.ChangeStatus(next));
+        Assert.Equal(current, order.Status);
+    }
 }

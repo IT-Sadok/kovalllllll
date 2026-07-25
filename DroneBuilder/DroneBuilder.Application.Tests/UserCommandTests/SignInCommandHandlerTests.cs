@@ -1,5 +1,5 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.UserCommands;
+using DroneBuilder.Application.Features.Auth.Login;
 using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
@@ -33,7 +33,7 @@ public class SignInCommandHandlerTests
         // Arrange
         var userStore = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(
-            userStore.Object, null, null, null, null, null, null, null, null);
+            userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         _mockJwtService = new Mock<IJwtService>();
         _mockUserRepository = new Mock<IUserRepository>();
@@ -122,7 +122,7 @@ public class SignInCommandHandlerTests
 
         _mockUserManager
             .Setup(x => x.FindByEmailAsync(NotExistingEmail))
-            .ReturnsAsync((User)null);
+            .ReturnsAsync((User?)null);
 
         // Act & Assert
         Result<AuthUserModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -219,7 +219,7 @@ public class SignInCommandHandlerTests
             .Setup(x => x.GenerateJwtTokenAsync(user.Id.ToString()))
             .ReturnsAsync(ValidToken);
 
-        UserSignedInEvent capturedEvent = null;
+        UserSignedInEvent? capturedEvent = null;
         _mockOutboxService
             .Setup(x => x.StoreEventAsync(
                 It.Is<UserSignedInEvent>(e => e.UserId == userId && e.Email == ValidEmail),

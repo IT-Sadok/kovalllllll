@@ -1,7 +1,6 @@
 using Azure.Storage.Blobs;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Infrastructure.Options;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,7 +12,7 @@ public class AzureStorageService(IOptions<AzureStorageConfig> config, ILogger<Az
     private readonly BlobServiceClient _blobServiceClient = new(config.Value.ConnectionString);
     private readonly string _containerName = config.Value.ContainerName;
 
-    public async Task<(bool success, string url)> UploadFileAsync(IFormFile file,
+    public async Task<(bool success, string url)> UploadFileAsync(FileUpload file,
         CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Uploading file {FileName} to Azure Blob Storage.", file.FileName);
@@ -22,10 +21,11 @@ public class AzureStorageService(IOptions<AzureStorageConfig> config, ILogger<Az
             BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             await containerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
-            BlobClient blobClient = containerClient.GetBlobClient(file.FileName);
+            string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            string blobName = $"{Guid.NewGuid():N}{extension}";
+            BlobClient blobClient = containerClient.GetBlobClient(blobName);
 
-            await using Stream stream = file.OpenReadStream();
-            await blobClient.UploadAsync(stream, overwrite: true, cancellationToken);
+            await blobClient.UploadAsync(file.Content, overwrite: true, cancellationToken);
             logger.LogInformation(
                 "File {FileName} uploaded successfully to container {BlobContainerName} with URL {Url}.",
                 file.FileName, blobClient.BlobContainerName, blobClient.Uri);

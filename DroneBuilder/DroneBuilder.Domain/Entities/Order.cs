@@ -39,4 +39,34 @@ public class Order : AuditableEntity
             }
         }
     }
+
+    public void MarkAsPaid()
+    {
+        ChangeStatus(Status.Paid);
+    }
+
+    public void ChangeStatus(Status newStatus)
+    {
+        if (!Enum.IsDefined(newStatus))
+        {
+            throw new ArgumentOutOfRangeException(nameof(newStatus));
+        }
+
+        bool transitionAllowed = Status switch
+        {
+            Status.New => newStatus is Status.Paid or Status.Cancelled,
+            Status.Paid => newStatus is Status.Sent or Status.Cancelled,
+            Status.Sent => newStatus is Status.Completed,
+            Status.Completed or Status.Cancelled => false,
+            _ => false
+        };
+
+        if (!transitionAllowed)
+        {
+            throw new InvalidOperationException($"Order status cannot change from {Status} to {newStatus}.");
+        }
+
+        Status = newStatus;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
