@@ -18,6 +18,9 @@ public static class ProductMappingExtensions
             Name = product.Name,
             Price = product.Price,
             Category = product.Category,
+            Kind = product.Kind.ToString(),
+            PublicationStatus = product.PublicationStatus.ToString(),
+            ComponentTypeId = product.ComponentTypeId,
             StockQuantity = product.Variants
                 .Where(v => v.IsDefault)
                 .SelectMany(v => v.WarehouseItems)
@@ -28,11 +31,20 @@ public static class ProductMappingExtensions
                 .Select(g => new PropertyModel
                 {
                     Id = g.Key,
+                    Code = g.First().Property!.Code,
                     Name = g.First().Property!.Name,
+                    DataType = g.First().Property!.DataType.ToString(),
+                    UnitDefinitionId = g.First().Property!.UnitDefinitionId,
+                    IsFilterable = g.First().Property!.IsFilterable,
+                    IsCompatibilityRelevant = g.First().Property!.IsCompatibilityRelevant,
+                    AllowsMultipleValues = g.First().Property!.AllowsMultipleValues,
                     Values = g.Where(ppv => ppv.Value is not null).Select(ppv => new ValueModel
                     {
                         Id = ppv.Value!.Id,
-                        Text = ppv.Value.Text
+                        Code = ppv.Value.Code,
+                        Text = ppv.Value.Text,
+                        NumericValue = ppv.Value.NumericValue,
+                        BooleanValue = ppv.Value.BooleanValue
                     }).ToList()
                 }).ToList() ?? new List<PropertyModel>(),
             Images = product.Images != null ? product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ToModel()).ToList() : new List<ImageModel>()
@@ -56,11 +68,20 @@ public static class ProductMappingExtensions
                 .Select(g => new PropertyModel
                 {
                     Id = g.Key,
+                    Code = g.First().Property!.Code,
                     Name = g.First().Property!.Name,
+                    DataType = g.First().Property!.DataType.ToString(),
+                    UnitDefinitionId = g.First().Property!.UnitDefinitionId,
+                    IsFilterable = g.First().Property!.IsFilterable,
+                    IsCompatibilityRelevant = g.First().Property!.IsCompatibilityRelevant,
+                    AllowsMultipleValues = g.First().Property!.AllowsMultipleValues,
                     Values = g.Where(ppv => ppv.Value is not null).Select(ppv => new ValueModel
                     {
                         Id = ppv.Value!.Id,
-                        Text = ppv.Value.Text
+                        Code = ppv.Value.Code,
+                        Text = ppv.Value.Text,
+                        NumericValue = ppv.Value.NumericValue,
+                        BooleanValue = ppv.Value.BooleanValue
                     }).ToList()
                 }).ToList() ?? new List<PropertyModel>(),
             Images = product.Images?.Select(i => i.ToModel()).ToList() ?? new List<ImageModel>()

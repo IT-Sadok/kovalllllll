@@ -4,10 +4,14 @@ using DroneBuilder.API.Extensions;
 using DroneBuilder.Application.Features.Catalog.Products.AddValueToProductProperty;
 using DroneBuilder.Application.Features.Catalog.Products.CreateProduct;
 using DroneBuilder.Application.Features.Catalog.Products.DeleteProduct;
+using DroneBuilder.Application.Features.Catalog.Products.GetAdminProductById;
+using DroneBuilder.Application.Features.Catalog.Products.GetAdminProducts;
 using DroneBuilder.Application.Features.Catalog.Products.GetCategories;
 using DroneBuilder.Application.Features.Catalog.Products.GetProductById;
 using DroneBuilder.Application.Features.Catalog.Products.GetProducts;
 using DroneBuilder.Application.Features.Catalog.Products.GetPropertiesByProductId;
+using DroneBuilder.Application.Features.Catalog.Products.MoveProductToDraft;
+using DroneBuilder.Application.Features.Catalog.Products.PublishProduct;
 using DroneBuilder.Application.Features.Catalog.Products.RemovePropertyFromProduct;
 using DroneBuilder.Application.Features.Catalog.Products.RemoveValueFromProductProperty;
 using DroneBuilder.Application.Features.Catalog.Products.UpdateProduct;
@@ -22,6 +26,30 @@ public static class ProductEndpointsExtensions
 {
     public static IEndpointRouteBuilder MapProductEndpoints(this IEndpointRouteBuilder app)
     {
+        app.MapGet(ApiRoutes.AdminProducts.GetAll,
+                async (int page, int pageSize, IMediator mediator,
+                    [AsParameters] AdminProductFilterModel filter,
+                    CancellationToken cancellationToken) =>
+                {
+                    Result<PagedResult<ProductModel>> result =
+                        await mediator.ExecuteQueryAsync<GetAdminProductsQuery, PagedResult<ProductModel>>(
+                            new GetAdminProductsQuery(new PaginationParams(page, pageSize), filter),
+                            cancellationToken);
+                    return result.ToHttpResult();
+                })
+            .WithTags("Admin Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapGet(ApiRoutes.AdminProducts.GetById,
+                async (Guid productId, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    Result<ProductModel> result =
+                        await mediator.ExecuteQueryAsync<GetAdminProductByIdQuery, ProductModel>(
+                            new GetAdminProductByIdQuery(productId), cancellationToken);
+                    return result.ToHttpResult();
+                })
+            .WithTags("Admin Products")
+            .RequireAuthorization(PolicyNames.Admin);
         app.MapPost(ApiRoutes.Products.Create,
                 async (IMediator mediator, CreateProductModel model, CancellationToken cancellationToken) =>
                 {
@@ -118,6 +146,27 @@ public static class ProductEndpointsExtensions
             }).WithTags("Products")
             .RequireAuthorization(PolicyNames.Admin);
 
+        app.MapPost(ApiRoutes.Products.Publish,
+                async (Guid productId, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    Result<ProductModel> result =
+                        await mediator.ExecuteCommandAsync<PublishProductCommand, ProductModel>(
+                            new PublishProductCommand(productId), cancellationToken);
+                    return result.ToHttpResult();
+                })
+            .WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapPost(ApiRoutes.Products.MoveToDraft,
+                async (Guid productId, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    Result<ProductModel> result =
+                        await mediator.ExecuteCommandAsync<MoveProductToDraftCommand, ProductModel>(
+                            new MoveProductToDraftCommand(productId), cancellationToken);
+                    return result.ToHttpResult();
+                })
+            .WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
         return app;
     }
 }

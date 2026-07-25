@@ -10,10 +10,15 @@ public interface IProductRepository
     Task<ProductCategory?> GetCategoryByNameAsync(string name, CancellationToken cancellationToken = default);
     Task AddCategoryAsync(ProductCategory category, CancellationToken cancellationToken = default);
     Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Product?> GetProductForAdministrationAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<Product?> GetPropertiesByProductIdAsync(Guid productId,
         CancellationToken cancellationToken = default);
 
+    Task<PagedResult<Product>> GetAdminProductsAsync(
+        PaginationParams pagination,
+        AdminProductFilterModel filter,
+        CancellationToken cancellationToken = default);
     Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
         ProductFilterModel filter,
         CancellationToken cancellationToken = default);

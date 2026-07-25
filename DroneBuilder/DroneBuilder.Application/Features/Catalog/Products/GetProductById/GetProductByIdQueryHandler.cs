@@ -17,7 +17,7 @@ public class GetProductByIdQueryHandler(
     {
         Product? product = await productRepository.GetProductByIdAsync(query.ProductId, cancellationToken);
 
-        if (product is null)
+        if (product is null || product.PublicationStatus != ProductPublicationStatus.Published)
         {
             return Result.Fail<ProductModel>(new NotFoundError($"Product with id {query.ProductId} not found."));
         }

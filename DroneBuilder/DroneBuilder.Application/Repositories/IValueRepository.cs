@@ -8,6 +8,7 @@ public interface IValueRepository
     Task<Value?> GetValueByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Value?> GetValueWithPropertiesByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ICollection<Value>> GetValuesAsync(CancellationToken cancellationToken = default);
+    Task<bool> IsCodeInUseAsync(string code, Guid? excludedId = null, CancellationToken cancellationToken = default);
     void RemoveValue(Value value);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

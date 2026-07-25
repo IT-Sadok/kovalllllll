@@ -43,6 +43,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
         SeedUnitAliases(builder);
         SeedComponentMetadata(builder);
+        SeedCompatibilityRules(builder);
     }
 
     public DbSet<OutboxMessage> Messages => Set<OutboxMessage>();
@@ -51,6 +52,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<ComponentType> ComponentTypes => Set<ComponentType>();
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
     public DbSet<ComponentTypeProperty> ComponentTypeProperties => Set<ComponentTypeProperty>();
+    public DbSet<CompatibilityRule> CompatibilityRules => Set<CompatibilityRule>();
     public DbSet<Image> Images => Set<Image>();
     public DbSet<Property> Properties => Set<Property>();
     public DbSet<Value> Values => Set<Value>();
@@ -98,6 +100,13 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             entry.Entity.ValidateDefinition();
         }
 
+        foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<CompatibilityRule> entry
+                 in ChangeTracker.Entries<CompatibilityRule>()
+                     .Where(entry => entry.State is EntityState.Added or EntityState.Modified))
+        {
+            entry.Entity.ValidateDefinition();
+        }
+
         foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ProductPropertyValue> entry
                  in ChangeTracker.Entries<ProductPropertyValue>()
                      .Where(entry => entry.State is EntityState.Added or EntityState.Modified))
@@ -134,15 +143,29 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         }
 
         IEnumerable<Product> directlyChangedProducts = ChangeTracker.Entries<Product>()
-            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Where(entry =>
+                entry.Entity.IsActive &&
+                entry.Entity.PublicationStatus == ProductPublicationStatus.Published &&
+                (entry.State == EntityState.Added ||
+                 entry.State == EntityState.Modified &&
+                 (entry.Property(product => product.IsActive).IsModified ||
+                  entry.Property(product => product.PublicationStatus).IsModified)))
             .Select(entry => entry.Entity);
 
         IEnumerable<Product> productsWithChangedVariants = ChangeTracker.Entries<ProductVariant>()
-            .Where(entry => entry.State is
-                EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Where(entry =>
+                entry.State is EntityState.Added or EntityState.Deleted ||
+                entry.State == EntityState.Modified &&
+                (entry.Property(variant => variant.IsActive).IsModified ||
+                 entry.Property(variant => variant.IsDefault).IsModified))
             .Select(entry => entry.Entity.Product
                 ?? throw new InvalidOperationException(
-                    "Changed product variants must include their Product navigation."));
+                    "Changed product variants must include their Product navigation."))
+            .Where(product => product is
+            {
+                IsActive: true,
+                PublicationStatus: ProductPublicationStatus.Published
+            });
 
         foreach (Product product in directlyChangedProducts
                      .Concat(productsWithChangedVariants)
@@ -314,6 +337,73 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             }));
     }
 
+    private static void SeedCompatibilityRules(ModelBuilder builder)
+    {
+        DateTime timestamp = SeedTimestamp();
+        (string Id, string Code, string Name, string LeftTypeId, string LeftPropertyId,
+            string RightTypeId, string RightPropertyId, CompatibilityOperator Operator,
+            string FailureMessage)[] rules =
+        [
+            ("00000000-0000-0000-0007-000000000001", "motor-current-within-esc",
+                "Motor current within ESC capacity",
+                "00000000-0000-0000-0002-000000000001", "00000000-0000-0000-0003-000000000002",
+                "00000000-0000-0000-0002-000000000004", "00000000-0000-0000-0003-000000000002",
+                CompatibilityOperator.LeftLessThanOrEqualRight,
+                "Motor maximum current exceeds ESC capacity."),
+            ("00000000-0000-0000-0007-000000000002", "motor-esc-voltage-overlap",
+                "Motor and ESC voltage ranges overlap",
+                "00000000-0000-0000-0002-000000000001", "00000000-0000-0000-0003-000000000003",
+                "00000000-0000-0000-0002-000000000004", "00000000-0000-0000-0003-000000000003",
+                CompatibilityOperator.RangesOverlap,
+                "Motor and ESC voltage ranges do not overlap."),
+            ("00000000-0000-0000-0007-000000000003", "battery-current-supports-motor",
+                "Battery current supports motor",
+                "00000000-0000-0000-0002-000000000003", "00000000-0000-0000-0003-000000000002",
+                "00000000-0000-0000-0002-000000000001", "00000000-0000-0000-0003-000000000002",
+                CompatibilityOperator.LeftGreaterThanOrEqualRight,
+                "Battery maximum current is below motor demand."),
+            ("00000000-0000-0000-0007-000000000004", "frame-fc-mount-width",
+                "Frame and flight controller mount width",
+                "00000000-0000-0000-0002-000000000002", "00000000-0000-0000-0003-000000000007",
+                "00000000-0000-0000-0002-000000000005", "00000000-0000-0000-0003-000000000007",
+                CompatibilityOperator.Equals,
+                "Frame and flight controller mount widths differ."),
+            ("00000000-0000-0000-0007-000000000005", "frame-fc-mount-height",
+                "Frame and flight controller mount height",
+                "00000000-0000-0000-0002-000000000002", "00000000-0000-0000-0003-000000000008",
+                "00000000-0000-0000-0002-000000000005", "00000000-0000-0000-0003-000000000008",
+                CompatibilityOperator.Equals,
+                "Frame and flight controller mount heights differ."),
+            ("00000000-0000-0000-0007-000000000006", "frame-esc-mount-width",
+                "Frame and ESC mount width",
+                "00000000-0000-0000-0002-000000000002", "00000000-0000-0000-0003-000000000007",
+                "00000000-0000-0000-0002-000000000004", "00000000-0000-0000-0003-000000000007",
+                CompatibilityOperator.Equals,
+                "Frame and ESC mount widths differ."),
+            ("00000000-0000-0000-0007-000000000007", "frame-esc-mount-height",
+                "Frame and ESC mount height",
+                "00000000-0000-0000-0002-000000000002", "00000000-0000-0000-0003-000000000008",
+                "00000000-0000-0000-0002-000000000004", "00000000-0000-0000-0003-000000000008",
+                CompatibilityOperator.Equals,
+                "Frame and ESC mount heights differ.")
+        ];
+
+        builder.Entity<CompatibilityRule>().HasData(rules.Select(rule => new CompatibilityRule
+        {
+            Id = Guid.Parse(rule.Id),
+            Code = rule.Code,
+            Name = rule.Name,
+            LeftComponentTypeId = Guid.Parse(rule.LeftTypeId),
+            LeftPropertyId = Guid.Parse(rule.LeftPropertyId),
+            RightComponentTypeId = Guid.Parse(rule.RightTypeId),
+            RightPropertyId = Guid.Parse(rule.RightPropertyId),
+            Operator = rule.Operator,
+            FailureMessage = rule.FailureMessage,
+            IsActive = true,
+            CreatedAt = timestamp,
+            UpdatedAt = timestamp
+        }));
+    }
     private static ComponentType CreateComponentType(string id, string code, string name)
     {
         DateTime timestamp = SeedTimestamp();

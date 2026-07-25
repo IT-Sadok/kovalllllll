@@ -15,6 +15,7 @@ public class Product : AuditableEntity
     public Guid? ComponentTypeId { get; set; }
     public ComponentType? ComponentType { get; set; }
     public bool IsActive { get; set; } = true;
+    public ProductPublicationStatus PublicationStatus { get; private set; } = ProductPublicationStatus.Published;
     public ICollection<Image> Images { get; set; } = [];
     public ICollection<ProductVariant> Variants { get; set; } = [];
     public ICollection<ProductPropertyValue> ProductPropertyValues { get; set; } = [];
@@ -71,6 +72,124 @@ public class Product : AuditableEntity
         _pendingCategoryName = null;
         UpdatedAt = DateTime.UtcNow;
     }
+    public void BeginDraft()
+    {
+        if (!IsActive)
+        {
+            throw new InvalidOperationException("An archived product cannot be moved to draft.");
+        }
+
+        PublicationStatus = ProductPublicationStatus.Draft;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Publish()
+    {
+        if (!IsActive)
+        {
+            throw new InvalidOperationException("An archived product cannot be published.");
+        }
+
+        ValidateForPublication();
+        PublicationStatus = ProductPublicationStatus.Published;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Archive()
+    {
+        PublicationStatus = ProductPublicationStatus.Archived;
+        IsActive = false;
+        foreach (ProductVariant variant in Variants)
+        {
+            variant.IsActive = false;
+            variant.UpdatedAt = DateTime.UtcNow;
+        }
+
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void AddVariant(ProductVariant variant)
+    {
+        ArgumentNullException.ThrowIfNull(variant);
+        if (variant.IsDefault && Variants.Any(item => item.IsDefault && item.IsActive))
+        {
+            throw new InvalidOperationException("A product can have only one active default variant.");
+        }
+
+        variant.Product = this;
+        variant.ProductId = Id;
+        Variants.Add(variant);
+        BeginDraft();
+    }
+
+    public void SetDefaultVariant(ProductVariant variant)
+    {
+        ArgumentNullException.ThrowIfNull(variant);
+        if (!variant.IsActive || variant.ProductId != Id || !Variants.Contains(variant))
+        {
+            throw new InvalidOperationException("The default variant must be active and belong to this product.");
+        }
+
+        foreach (ProductVariant item in Variants)
+        {
+            item.IsDefault = item.Id == variant.Id;
+            item.UpdatedAt = DateTime.UtcNow;
+        }
+
+        BeginDraft();
+    }
+
+    public void ActivateVariant(ProductVariant variant)
+    {
+        ArgumentNullException.ThrowIfNull(variant);
+        if (variant.ProductId != Id || !Variants.Contains(variant))
+        {
+            throw new InvalidOperationException("Variant does not belong to this product.");
+        }
+
+        variant.IsActive = true;
+        variant.UpdatedAt = DateTime.UtcNow;
+        BeginDraft();
+    }
+    public void DeactivateVariant(ProductVariant variant)
+    {
+        ArgumentNullException.ThrowIfNull(variant);
+        if (variant.ProductId != Id || !Variants.Contains(variant))
+        {
+            throw new InvalidOperationException("Variant does not belong to this product.");
+        }
+
+        if (variant.IsDefault)
+        {
+            throw new InvalidOperationException("The default variant cannot be deactivated.");
+        }
+
+        variant.IsActive = false;
+        variant.UpdatedAt = DateTime.UtcNow;
+        BeginDraft();
+    }
+    public void AssignComponentType(ComponentType componentType)
+    {
+        ArgumentNullException.ThrowIfNull(componentType);
+
+        foreach (ProductPropertyValue specification in ProductPropertyValues)
+        {
+            componentType.RequirePropertyRule(specification.PropertyId, variantSpecific: false);
+        }
+
+        foreach (ProductVariant variant in Variants)
+        {
+            foreach (ProductVariantPropertyValue specification in variant.Specifications)
+            {
+                componentType.RequirePropertyRule(specification.PropertyId, variantSpecific: true);
+            }
+        }
+
+        ComponentType = componentType;
+        ComponentTypeId = componentType.Id;
+        Kind = ProductKind.Component;
+        BeginDraft();
+    }
 
     public void AddSpecification(ProductPropertyValue specification)
     {
@@ -88,6 +207,26 @@ public class Product : AuditableEntity
         }
 
         ProductPropertyValues.Add(specification);
+        BeginDraft();
+    }
+
+    public void RemoveSpecification(ProductPropertyValue specification)
+    {
+        ArgumentNullException.ThrowIfNull(specification);
+
+        ComponentTypeProperty? rule = ComponentType?.Properties.FirstOrDefault(
+            item => item.PropertyId == specification.PropertyId);
+        bool hasAnotherValue = ProductPropertyValues.Any(
+            item => item.Id != specification.Id && item.PropertyId == specification.PropertyId);
+
+        if (rule is { IsRequired: true } && !hasAnotherValue)
+        {
+            throw new InvalidOperationException(
+                $"Required property '{specification.PropertyId}' cannot be removed from component type '{ComponentType!.Code}'.");
+        }
+
+        ProductPropertyValues.Remove(specification);
+        BeginDraft();
     }
 
     public void ValidateForPublication()

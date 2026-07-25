@@ -50,12 +50,74 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .FirstOrDefaultAsync(p => p.Id == id && p.IsActive, cancellationToken);
     }
 
+    public Task<Product?> GetProductForAdministrationAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return ProductDetailsQuery().FirstOrDefaultAsync(product => product.Id == id, cancellationToken);
+    }
+
+    public async Task<PagedResult<Product>> GetAdminProductsAsync(
+        PaginationParams pagination,
+        AdminProductFilterModel filter,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<Product> query = ProductDetailsQuery().AsNoTracking();
+        if (!filter.IncludeArchived)
+        {
+            query = query.Where(product => product.IsActive);
+        }
+
+        if (Enum.TryParse(filter.PublicationStatus, true, out ProductPublicationStatus publicationStatus))
+        {
+            query = query.Where(product => product.PublicationStatus == publicationStatus);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Name))
+        {
+            string name = filter.Name.Trim().ToLower();
+            query = query.Where(product => product.Name.ToLower().Contains(name));
+        }
+
+        if (filter.MinPrice.HasValue)
+        {
+            query = query.Where(product => product.Variants.Any(
+                variant => variant.IsDefault && variant.Price >= filter.MinPrice.Value));
+        }
+
+        if (filter.MaxPrice.HasValue)
+        {
+            query = query.Where(product => product.Variants.Any(
+                variant => variant.IsDefault && variant.Price <= filter.MaxPrice.Value));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Category))
+        {
+            string category = filter.Category.Trim().ToLower();
+            query = query.Where(product => product.ProductCategory!.Name.ToLower() == category);
+        }
+
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<Product> items = await query
+            .OrderBy(product => product.Name)
+            .ThenBy(product => product.Id)
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .ToListAsync(cancellationToken);
+        return new PagedResult<Product>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = pagination.Page,
+            PageSize = pagination.PageSize
+        };
+    }
     public async Task<ICollection<Product>> GetProductsAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(p => p.IsActive)
+            .Where(p => p.IsActive && p.PublicationStatus == ProductPublicationStatus.Published)
             .Include(p => p.ProductCategory)
             .Include(p => p.ComponentType)
                 .ThenInclude(type => type!.Properties)
@@ -88,7 +150,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
                 .ThenInclude(ppv => ppv.Property)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Value)
-            .FirstOrDefaultAsync(p => p.Id == productId && p.IsActive, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == productId && p.IsActive && p.PublicationStatus == ProductPublicationStatus.Published, cancellationToken);
     }
 
     public async Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
@@ -98,7 +160,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         IQueryable<Product> query = dbContext.Products
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(p => p.IsActive)
+            .Where(p => p.IsActive && p.PublicationStatus == ProductPublicationStatus.Published)
             .Include(p => p.ProductCategory)
             .Include(p => p.ComponentType)
                 .ThenInclude(type => type!.Properties)
@@ -158,7 +220,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         return await dbContext.Products
             .AsNoTracking()
-            .Where(p => productIds.Contains(p.Id) && p.IsActive)
+            .Where(p => productIds.Contains(p.Id) && p.IsActive && p.PublicationStatus == ProductPublicationStatus.Published)
             .Include(p => p.ProductCategory)
             .Include(p => p.ComponentType)
                 .ThenInclude(type => type!.Properties)
@@ -171,19 +233,13 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
     public void RemoveProduct(Product product)
     {
-        product.IsActive = false;
-        product.UpdatedAt = DateTime.UtcNow;
-        foreach (ProductVariant variant in product.Variants)
-        {
-            variant.IsActive = false;
-            variant.UpdatedAt = DateTime.UtcNow;
-        }
+        product.Archive();
     }
 
     public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.ProductCategories
-            .Where(c => c.IsActive && c.Products.Any(p => p.IsActive))
+            .Where(c => c.IsActive && c.Products.Any(p => p.IsActive && p.PublicationStatus == ProductPublicationStatus.Published))
             .OrderBy(c => c.Name)
             .Select(c => c.Name)
             .ToListAsync(cancellationToken);
@@ -192,5 +248,22 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+    private IQueryable<Product> ProductDetailsQuery()
+    {
+        return dbContext.Products
+            .AsSplitQuery()
+            .Include(product => product.ProductCategory)
+            .Include(product => product.ComponentType)
+                .ThenInclude(type => type!.Properties)
+            .Include(product => product.Variants)
+                .ThenInclude(variant => variant.WarehouseItems)
+            .Include(product => product.Variants)
+                .ThenInclude(variant => variant.Specifications)
+            .Include(product => product.Images)
+            .Include(product => product.ProductPropertyValues)
+                .ThenInclude(value => value.Property)
+            .Include(product => product.ProductPropertyValues)
+                .ThenInclude(value => value.Value);
     }
 }

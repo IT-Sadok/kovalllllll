@@ -16,11 +16,15 @@ public class DeleteValueCommandHandler(IValueRepository valueRepository) : IComm
             return Result.Fail(new NotFoundError($"Value with id {command.ValueId} not found."));
         }
 
+        if (value.ProductPropertyValues.Count > 0 || value.ProductVariantPropertyValues.Count > 0)
+        {
+            return Result.Fail(new ConflictError($"Value '{value.Code}' is in use and cannot be deleted."));
+        }
+
         valueRepository.RemoveValue(value);
         await valueRepository.SaveChangesAsync(cancellationToken);
-
         return Result.Ok();
     }
 }
 
-public record DeleteValueCommand(Guid ValueId);
+public sealed record DeleteValueCommand(Guid ValueId);

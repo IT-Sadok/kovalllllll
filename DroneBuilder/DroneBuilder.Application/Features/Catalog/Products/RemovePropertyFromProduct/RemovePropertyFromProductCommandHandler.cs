@@ -22,9 +22,16 @@ public class RemovePropertyFromProductCommandHandler(IProductRepository productR
             var itemsToRemove = product.ProductPropertyValues.Where(p => p.PropertyId == command.PropertyId).ToList();
             if (itemsToRemove.Any())
             {
-                foreach (ProductPropertyValue? item in itemsToRemove)
+                try
                 {
-                    product.ProductPropertyValues.Remove(item);
+                    foreach (ProductPropertyValue item in itemsToRemove)
+                    {
+                        product.RemoveSpecification(item);
+                    }
+                }
+                catch (InvalidOperationException exception)
+                {
+                    return Result.Fail(new ConflictError(exception.Message));
                 }
 
                 await productRepository.SaveChangesAsync(cancellationToken);

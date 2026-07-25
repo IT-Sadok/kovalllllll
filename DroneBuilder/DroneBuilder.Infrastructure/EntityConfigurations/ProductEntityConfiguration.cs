@@ -24,6 +24,11 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.IsActive)
             .IsRequired();
 
+        builder.Property(p => p.PublicationStatus)
+            .IsRequired()
+            .HasConversion<int>()
+            .HasDefaultValue(ProductPublicationStatus.Published);
+
         builder.Ignore(p => p.Price);
         builder.Ignore(p => p.Category);
 
@@ -47,7 +52,7 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
             .HasForeignKey(i => i.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(p => new { p.ProductCategoryId, p.IsActive });
+        builder.HasIndex(p => new { p.ProductCategoryId, p.IsActive, p.PublicationStatus });
         builder.HasIndex(p => p.ComponentTypeId);
     }
 }
