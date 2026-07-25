@@ -108,8 +108,11 @@ Back up anything important before resetting a database. To remove the compose
 database volume explicitly:
 
 ```powershell
-docker compose -f DroneBuilder/docker-compose.yml down --volumes
-docker compose -f DroneBuilder/docker-compose.yml up -d db
+Copy-Item DroneBuilder/.env.example DroneBuilder/.env
+# Fill every required value in DroneBuilder/.env before continuing.
+
+docker compose --env-file DroneBuilder/.env -f DroneBuilder/docker-compose.yml down --volumes
+docker compose --env-file DroneBuilder/.env -f DroneBuilder/docker-compose.yml up -d db
 dotnet tool restore
 dotnet ef database update `
   --project DroneBuilder/DroneBuilder.Infrastructure `
@@ -119,3 +122,19 @@ dotnet ef database update `
 Do not use the volume-removal command against an environment containing data that
 must be retained. Future schema changes must use forward-only migrations from
 `InitialDomainBaseline`.
+
+When running commands from the `DroneBuilder` directory, Compose loads
+`DroneBuilder/.env` automatically:
+
+```powershell
+Copy-Item .env.example .env
+# Fill every required value in .env.
+
+docker compose config
+docker compose up -d
+```
+
+The example maps the containerized PostgreSQL instance to host port `5433` to
+avoid colliding with a PostgreSQL service already listening on the conventional
+host port `5432`. Containers continue to communicate with the database over
+`db:5432`.
