@@ -143,7 +143,7 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        Image capturedImage = null;
+        Image? capturedImage = null;
         await _imageRepository.AddImageAsync(
             Arg.Do<Image>(img => capturedImage = img),
             Arg.Any<CancellationToken>());
@@ -207,7 +207,7 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        string capturedQueueName = null;
+        string? capturedQueueName = null;
         await _outboxService.StoreEventAsync(
             Arg.Any<ImageUploadedEvent>(),
             Arg.Do<string>(q => capturedQueueName = q),
@@ -293,7 +293,7 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        Image capturedImage = null;
+        Image? capturedImage = null;
         await _imageRepository.AddImageAsync(
             Arg.Do<Image>(img => capturedImage = img),
             Arg.Any<CancellationToken>());

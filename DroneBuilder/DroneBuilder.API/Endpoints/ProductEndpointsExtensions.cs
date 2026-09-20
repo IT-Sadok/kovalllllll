@@ -22,7 +22,7 @@ public static class ProductEndpointsExtensions
                         cancellationToken);
                     return result.ToHttpResult();
                 }).WithTags("Products")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapPatch(ApiRoutes.Products.Update,
                 async (Guid productId, UpdateProductRequestModel requestModel,
@@ -33,6 +33,30 @@ public static class ProductEndpointsExtensions
                         cancellationToken);
                     return result.ToHttpResult();
                 }).WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        // Every other product read hides delisted rows, so without this an admin has no way to find
+        // what there is to restore.
+        app.MapGet(ApiRoutes.Products.GetDelisted,
+                async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    var pagination = new PaginationParams(page, pageSize);
+
+                    Result<PagedResult<ProductModel>> result =
+                        await mediator.ExecuteQueryAsync<GetDelistedProductsQuery, PagedResult<ProductModel>>(
+                            new GetDelistedProductsQuery(pagination),
+                            cancellationToken);
+                    return result.ToHttpResult();
+                }).WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapPost(ApiRoutes.Products.Restore, async (IMediator mediator, Guid productId,
+                CancellationToken cancellationToken) =>
+            {
+                Result result = await mediator.ExecuteCommandAsync(
+                    new RestoreProductCommand(productId), cancellationToken);
+                return result.ToHttpResult();
+            }).WithTags("Products")
             .RequireAuthorization(PolicyNames.Admin);
 
         app.MapDelete(ApiRoutes.Products.Delete, async (IMediator mediator, Guid productId,

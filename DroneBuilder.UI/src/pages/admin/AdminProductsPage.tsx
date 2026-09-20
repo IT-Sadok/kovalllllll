@@ -6,7 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { getProducts, getCategories } from '../../api/products';
-import { adminCreateProduct, adminUpdateProduct, adminDeleteProduct } from '../../api/admin';
+import {
+  adminCreateProduct,
+  adminUpdateProduct,
+  adminDeleteProduct,
+  adminGetDelistedProducts,
+  adminRestoreProduct,
+} from '../../api/admin';
 import type { Product, CreateProductRequest, UpdateProductRequest } from '../../types';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -42,6 +48,7 @@ const AdminProductsPage: React.FC = () => {
   const [modalType, setModalType] = useState<'create' | 'edit' | null>(null);
   const [editTarget, setEditTarget] = useState<Product | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [showDelisted, setShowDelisted] = useState(false);
   const [search, setSearch] = useState('');
   
   // Custom category toggle
@@ -105,10 +112,27 @@ const AdminProductsPage: React.FC = () => {
     mutationFn: adminDeleteProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      toast.success('Product deleted');
+      toast.success('Product delisted');
       setDeleteTarget(null);
     },
-    onError: () => toast.error('Failed to delete product'),
+    onError: () => toast.error('Failed to delist product'),
+  });
+
+  // Only fetched while the panel is open: delisting is rare and this is the only place it is shown.
+  const { data: delisted, isLoading: delistedLoading } = useQuery({
+    queryKey: ['admin-delisted-products'],
+    queryFn: () => adminGetDelistedProducts(1, 100),
+    enabled: showDelisted,
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: adminRestoreProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-delisted-products'] });
+      toast.success('Product restored with zero stock');
+    },
+    onError: () => toast.error('Failed to restore product'),
   });
 
   const openCreate = () => {
@@ -150,13 +174,27 @@ const AdminProductsPage: React.FC = () => {
           </h1>
           <p className="text-slate-400 text-sm mt-1">{data?.totalCount ?? 0} total products</p>
         </div>
-        <Button onClick={openCreate} id="admin-create-product-btn" icon={
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        }>
-          Add Product
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={() => setShowDelisted(true)}
+            id="admin-show-delisted-btn"
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              </svg>
+            }
+          >
+            Delisted
+          </Button>
+          <Button onClick={openCreate} id="admin-create-product-btn" icon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          }>
+            Add Product
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -399,11 +437,14 @@ const AdminProductsPage: React.FC = () => {
       </Modal>
 
       {/* Delete confirmation */}
-      <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Product" size="sm">
+      <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delist Product" size="sm">
         <p className="text-slate-300 mb-2">
-          Are you sure you want to delete <strong className="text-white">{deleteTarget?.name}</strong>?
+          Are you sure you want to delist <strong className="text-white">{deleteTarget?.name}</strong>?
         </p>
-        <p className="text-sm text-slate-500 mb-6">This action cannot be undone.</p>
+        <p className="text-sm text-slate-500 mb-6">
+          It disappears from the catalogue and from every cart, and its stock record is dropped.
+          Past orders keep it. You can restore it later from Delisted, but stock starts back at zero.
+        </p>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={() => setDeleteTarget(null)} id="delete-cancel">Cancel</Button>
           <Button
@@ -413,9 +454,42 @@ const AdminProductsPage: React.FC = () => {
             onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             id="delete-confirm"
           >
-            Delete
+            Delist
           </Button>
         </div>
+      </Modal>
+
+      {/* Delisted products */}
+      <Modal isOpen={showDelisted} onClose={() => setShowDelisted(false)} title="Delisted Products" size="lg">
+        {delistedLoading ? (
+          <p className="text-slate-400 text-sm">Loading…</p>
+        ) : !delisted?.items.length ? (
+          <p className="text-slate-400 text-sm">Nothing has been delisted.</p>
+        ) : (
+          <>
+            <p className="text-sm text-slate-500 mb-4">
+              Restoring puts a product back in the catalogue with a fresh stock record at zero.
+            </p>
+            <ul className="divide-y divide-slate-800">
+              {delisted.items.map((product) => (
+                <li key={product.id} className="flex items-center justify-between gap-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-white truncate">{product.name}</p>
+                    <p className="text-xs text-slate-500">{product.category}</p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    loading={restoreMutation.isPending && restoreMutation.variables === product.id}
+                    onClick={() => restoreMutation.mutate(product.id)}
+                    id={`restore-product-${product.id}`}
+                  >
+                    Restore
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </Modal>
     </div>
   );

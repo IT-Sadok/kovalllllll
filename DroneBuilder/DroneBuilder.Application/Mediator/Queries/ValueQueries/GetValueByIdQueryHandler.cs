@@ -12,15 +12,15 @@ public class GetValueByIdQueryHandler(IValueRepository valueRepository)
 {
     public async Task<Result<ValueModel>> ExecuteAsync(GetValueByIdQuery query, CancellationToken cancellationToken)
     {
-        Value? value = await valueRepository.GetValueByIdAsync(query.PropertyId, cancellationToken);
+        Value? value = await valueRepository.GetValueByIdAsync(query.ValueId, cancellationToken);
 
         if (value == null)
         {
-            return Result.Fail<ValueModel>(new NotFoundError($"Value with id {query.PropertyId} not found."));
+            return Result.Fail<ValueModel>(new NotFoundError($"Value with id {query.ValueId} not found."));
         }
 
         return Result.Ok(value.ToModel());
     }
 }
 
-public record GetValueByIdQuery(Guid PropertyId);
+public record GetValueByIdQuery(Guid ValueId);

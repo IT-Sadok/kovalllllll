@@ -18,6 +18,11 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
         await dbContext.WarehouseItems.AddAsync(warehouseItem, cancellationToken);
     }
 
+    public void RemoveWarehouseItem(WarehouseItem warehouseItem)
+    {
+        dbContext.WarehouseItems.Remove(warehouseItem);
+    }
+
     public async Task<WarehouseItem?> GetWarehouseItemByIdAsync(Guid warehouseItemId,
         CancellationToken cancellationToken = default)
     {

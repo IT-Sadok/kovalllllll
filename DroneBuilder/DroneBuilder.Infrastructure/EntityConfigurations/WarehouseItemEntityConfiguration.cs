@@ -13,6 +13,14 @@ public class WarehouseItemEntityConfiguration : IEntityTypeConfiguration<Warehou
         builder.Property(wi => wi.Quantity)
             .IsRequired();
 
+        // Several requests decrement the same stock at once. Postgres' xmin system column gives
+        // optimistic concurrency without an extra column, so a lost update fails loudly
+        // instead of silently overselling.
+        builder.Property<uint>("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
         builder.HasOne(wi => wi.Warehouse)
             .WithMany(w => w.WarehouseItems)
             .HasForeignKey(wi => wi.WarehouseId)

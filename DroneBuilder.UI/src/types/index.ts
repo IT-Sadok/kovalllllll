@@ -1,15 +1,9 @@
 // ─── Auth ────────────────────────────────────────────────────────────────────
-export interface AuthResponse {
-  accessToken: string;
-}
-
-export interface DecodedToken {
-  sub?: string;
-  email?: string;
-  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string;
-  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
-  exp?: number;
-  iat?: number;
+// What GET /users/me returns. The token itself is never exposed to the browser.
+export interface CurrentUser {
+  id: string;
+  email: string;
+  roles: string[];
 }
 
 export type UserRole = 'Admin' | 'User';

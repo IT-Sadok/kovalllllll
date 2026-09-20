@@ -18,7 +18,8 @@ public static class AuthExtension
     {
         services
             .AddIdentity<User, IdentityRole<Guid>>(options => options.SignIn.RequireConfirmedAccount = true)
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
         services.AddAuthorizationBuilder()
             .AddPolicy(PolicyNames.Admin, policy => policy.RequireRole(RoleNames.Admin))
@@ -60,6 +61,23 @@ public static class AuthExtension
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 RoleClaimType = ClaimTypes.Role
+            };
+
+            o.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    // Browsers hold the token in an HttpOnly cookie and send no Authorization header.
+                    // When there is no cookie the default header handling still applies, which keeps
+                    // non-browser clients and the API explorer working.
+                    if (context.Request.Cookies.TryGetValue(AuthCookie.Name, out string? token)
+                        && !string.IsNullOrEmpty(token))
+                    {
+                        context.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                }
             };
         });
 

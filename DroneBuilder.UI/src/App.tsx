@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, MutationCache } from '@tanstack/react-query';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/PrivateRoute';
+import { useAuthStore } from './store/authStore';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -35,6 +37,13 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const hydrate = useAuthStore((state) => state.hydrate);
+
+  // Asks the server whether the cookie belongs to a live session, since the browser cannot inspect it.
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

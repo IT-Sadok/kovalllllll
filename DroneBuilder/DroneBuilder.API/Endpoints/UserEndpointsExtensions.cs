@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.API.Extensions;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
@@ -19,14 +21,59 @@ public static class UserEndpointsExtensions
             }).WithTags("Users");
 
         app.MapPost(ApiRoutes.Users.SignIn,
-            async (IMediator mediator, SignInModel model, CancellationToken cancellationToken) =>
+            async (IMediator mediator, HttpContext httpContext, SignInModel model,
+                CancellationToken cancellationToken) =>
             {
                 Result<AuthUserModel> result = await mediator.ExecuteCommandAsync<SignInCommand, AuthUserModel>(
                     new SignInCommand(model.Email, model.Password),
                     cancellationToken);
-                return result.ToHttpResult();
+
+                if (result.IsFailed)
+                {
+                    return result.ToHttpResult();
+                }
+
+                // The token goes into the cookie and nowhere else: nothing hands it to scripts, so
+                // nothing can put it back into localStorage where an XSS could read it.
+                httpContext.Response.Cookies.Append(
+                    AuthCookie.Name, result.Value.AccessToken, AuthCookie.Options());
+
+                return Results.NoContent();
             }).WithTags("Users")
             .RequireRateLimiting("LoginPolicy");
+
+        app.MapPost(ApiRoutes.Users.SignOut,
+            (HttpContext httpContext) =>
+            {
+                // Anonymous on purpose: an expired or already invalid session must still be able to
+                // clear its cookie, and clearing your own cookie harms nobody.
+                httpContext.Response.Cookies.Delete(AuthCookie.Name, AuthCookie.Options());
+                return Results.NoContent();
+            }).WithTags("Users");
+
+        app.MapGet(ApiRoutes.Users.Me,
+            (ClaimsPrincipal principal) =>
+            {
+                // Replaces decoding the JWT in the browser, which an HttpOnly cookie makes impossible.
+                var currentUser = new CurrentUserModel
+                {
+                    Id = principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+                    Email = principal.FindFirstValue(ClaimTypes.Email) ?? string.Empty,
+                    Roles = principal.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToArray()
+                };
+
+                return Results.Ok(currentUser);
+            }).WithTags("Users")
+            .RequireAuthorization();
+
+        app.MapGet(ApiRoutes.Users.ConfirmEmail,
+            async (IMediator mediator, Guid userId, string token, CancellationToken cancellationToken) =>
+            {
+                Result result = await mediator.ExecuteCommandAsync(
+                    new ConfirmEmailCommand(userId, token),
+                    cancellationToken);
+                return result.ToHttpResult();
+            }).WithTags("Users");
 
         return app;
     }

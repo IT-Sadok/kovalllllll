@@ -8,10 +8,24 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requireAdmin = false }) => {
-  const { token, user } = useAuthStore();
+  const { user, status } = useAuthStore();
   const location = useLocation();
 
-  if (!token || !user) {
+  // Whether there is a session is only known once /users/me answers. Redirecting before that would
+  // bounce every signed-in user to the login page on a page refresh.
+  if (status === 'loading') {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div
+          className="w-8 h-8 rounded-full border-2 border-slate-700 border-t-cyan-400 animate-spin"
+          role="status"
+          aria-label="Loading"
+        />
+      </div>
+    );
+  }
+
+  if (status !== 'authenticated' || !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

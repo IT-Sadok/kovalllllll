@@ -47,7 +47,7 @@ public class SetPrimaryImageCommandHandlerTests
     {
         // Arrange
         var command = new SetPrimaryImageCommand(ImageId);
-        _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>()).Returns((Image)null);
+        _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>()).Returns((Image)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

@@ -20,6 +20,8 @@ public class CreateOrderCommandHandlerTests
     private readonly IProductRepository _productRepository;
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IOutboxEventService _outboxService;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ITransaction _transaction;
     private readonly CreateOrderCommandHandler _handler;
 
     private const string OrderQueueName = "order-queue";
@@ -40,6 +42,10 @@ public class CreateOrderCommandHandlerTests
         _productRepository = Substitute.For<IProductRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
+
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _transaction = Substitute.For<ITransaction>();
+        _unitOfWork.BeginTransactionAsync(Arg.Any<CancellationToken>()).Returns(_transaction);
         IUserContext userContext = Substitute.For<IUserContext>();
 
         var queuesConfig = new MessageQueuesConfiguration
@@ -55,6 +61,7 @@ public class CreateOrderCommandHandlerTests
             _productRepository,
             _warehouseRepository,
             _outboxService,
+            _unitOfWork,
             queuesConfig,
             userContext);
     }
@@ -108,7 +115,7 @@ public class CreateOrderCommandHandlerTests
         const decimal expectedTotalPrice = (Product1Price * Product1Quantity) + (Product2Price * Product2Quantity);
         var expectedOrderModel = new OrderModel { TotalPrice = expectedTotalPrice };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -148,6 +155,67 @@ public class CreateOrderCommandHandlerTests
             Arg.Any<CancellationToken>());
 
         await _orderRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+
+        // The order and the emptied cart must land together or not at all.
+        await _transaction.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_ShouldReadTheCartUnderALock()
+    {
+        // Arrange
+        var command = new CreateOrderCommand(new ShippingDetailsModel
+        {
+            FullName = "Test User",
+            AddressLine1 = "Test Address",
+            City = "Test City",
+            Country = "Test Country"
+        });
+
+        _cartRepository.GetCartByUserIdForUpdateAsync(
+                Arg.Is<Guid>(id => id == UserId),
+                Arg.Any<CancellationToken>())
+            .Returns(new Cart { Id = CartId, UserId = UserId, CartItems = new List<CartItem>() });
+
+        // Act
+        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert -- the unlocked read would let the reservation sweep restock these items mid-checkout.
+        await _cartRepository.DidNotReceive().GetCartByUserIdAsync(
+            Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+
+        await _unitOfWork.Received(1).BeginTransactionAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenSweepReleasedTheCartFirst_ShouldNotCreateAnOrder()
+    {
+        // Arrange -- the locked read blocks until the sweep commits, then sees an emptied cart.
+        var command = new CreateOrderCommand(new ShippingDetailsModel
+        {
+            FullName = "Test User",
+            AddressLine1 = "Test Address",
+            City = "Test City",
+            Country = "Test Country"
+        });
+
+        _cartRepository.GetCartByUserIdForUpdateAsync(
+                Arg.Is<Guid>(id => id == UserId),
+                Arg.Any<CancellationToken>())
+            .Returns(new Cart { Id = CartId, UserId = UserId, CartItems = new List<CartItem>() });
+
+        // Act
+        Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        await _orderRepository.DidNotReceive().CreateOrderAsync(
+            Arg.Any<Order>(), Arg.Any<CancellationToken>());
+
+        // Nothing committed, so the transaction rolls back on dispose.
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -170,7 +238,7 @@ public class CreateOrderCommandHandlerTests
             CartItems = new List<CartItem>()
         };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -210,10 +278,10 @@ public class CreateOrderCommandHandlerTests
         };
         var command = new CreateOrderCommand(shippingDetails);
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
-            .Returns((Cart)null);
+            .Returns((Cart)null!);
 
         // Act & Assert
         Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -258,15 +326,17 @@ public class CreateOrderCommandHandlerTests
             CartItems = new List<CartItem> { cartItem }
         };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
 
+        // The repository returns the items it stocks -- a product it does not stock is simply absent,
+        // it never yields null.
         _warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(
                 Arg.Is<List<Guid>>(ids => ids.Contains(ProductId1)),
                 Arg.Any<CancellationToken>())
-            .Returns((List<WarehouseItem>)null);
+            .Returns(new List<WarehouseItem>());
 
         // Act & Assert
         Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -275,6 +345,109 @@ public class CreateOrderCommandHandlerTests
         Assert.True(result.HasError<NotFoundError>());
 
         Assert.Contains($"Product {ProductId1} not found in warehouse.", result.Errors[0].Message);
+
+        await _orderRepository.DidNotReceive().CreateOrderAsync(
+            Arg.Any<Order>(),
+            Arg.Any<CancellationToken>());
+
+        await _cartRepository.DidNotReceive().ClearCartAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenSuccessful_ShouldCaptureProductNameAtPurchaseTime()
+    {
+        // Arrange
+        const string productName = "Carbon Frame X1";
+
+        var shippingDetails = new ShippingDetailsModel
+        {
+            FullName = "Test User",
+            AddressLine1 = "Test Address",
+            City = "Test City",
+            Country = "Test Country"
+        };
+        var command = new CreateOrderCommand(shippingDetails);
+
+        var cart = new Cart
+        {
+            Id = CartId,
+            UserId = UserId,
+            CartItems = new List<CartItem> { new() { ProductId = ProductId1, Quantity = Product1Quantity } }
+        };
+
+        _cartRepository.GetCartByUserIdForUpdateAsync(
+                Arg.Is<Guid>(id => id == UserId),
+                Arg.Any<CancellationToken>())
+            .Returns(cart);
+
+        _warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(
+                Arg.Any<ICollection<Guid>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new List<WarehouseItem> { new() { ProductId = ProductId1, Quantity = 10 } });
+
+        _productRepository.GetProductsByIdsAsync(
+                Arg.Any<ICollection<Guid>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new List<Product> { new() { Id = ProductId1, Name = productName, Price = Product1Price } });
+
+        // Act
+        Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        await _orderRepository.Received(1).CreateOrderAsync(
+            Arg.Is<Order>(o => o.OrderItems.All(i => i.ProductName == productName)),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenOnlyOneProductIsMissingFromWarehouse_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var shippingDetails = new ShippingDetailsModel
+        {
+            FullName = "Test User",
+            AddressLine1 = "Test Address",
+            City = "Test City",
+            Country = "Test Country"
+        };
+        var command = new CreateOrderCommand(shippingDetails);
+
+        var cart = new Cart
+        {
+            Id = CartId,
+            UserId = UserId,
+            CartItems = new List<CartItem>
+            {
+                new() { ProductId = ProductId1, Quantity = 1 },
+                new() { ProductId = ProductId2, Quantity = 1 }
+            }
+        };
+
+        _cartRepository.GetCartByUserIdForUpdateAsync(
+                Arg.Is<Guid>(id => id == UserId),
+                Arg.Any<CancellationToken>())
+            .Returns(cart);
+
+        // Only the first product is stocked; the second one must still be rejected.
+        _warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(
+                Arg.Any<ICollection<Guid>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new List<WarehouseItem>
+            {
+                new() { ProductId = ProductId1, Quantity = 10 }
+            });
+
+        // Act & Assert
+        Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Contains($"Product {ProductId2} not found in warehouse.", result.Errors[0].Message);
 
         await _orderRepository.DidNotReceive().CreateOrderAsync(
             Arg.Any<Order>(),
@@ -319,7 +492,7 @@ public class CreateOrderCommandHandlerTests
             new() { ProductId = ProductId1, Quantity = 100 }
         };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -334,7 +507,7 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        Order capturedOrder = null;
+        Order? capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
             Arg.Any<CancellationToken>());
@@ -383,7 +556,7 @@ public class CreateOrderCommandHandlerTests
             new() { ProductId = ProductId1, Quantity = 100 }
         };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -398,7 +571,7 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        Order capturedOrder = null;
+        Order? capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
             Arg.Any<CancellationToken>());
@@ -453,7 +626,7 @@ public class CreateOrderCommandHandlerTests
             new() { ProductId = ProductId1, Quantity = 100 }
         };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -517,7 +690,7 @@ public class CreateOrderCommandHandlerTests
             new() { ProductId = ProductId1, Quantity = 100 }
         };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -577,7 +750,7 @@ public class CreateOrderCommandHandlerTests
             new() { ProductId = ProductId1, Quantity = 100 }
         };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -592,7 +765,7 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        Order capturedOrder = null;
+        Order? capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
             Arg.Any<CancellationToken>());
@@ -640,7 +813,7 @@ public class CreateOrderCommandHandlerTests
             new() { ProductId = ProductId2, Quantity = 100 }
         };
 
-        _cartRepository.GetCartByUserIdAsync(
+        _cartRepository.GetCartByUserIdForUpdateAsync(
                 Arg.Is<Guid>(id => id == UserId),
                 Arg.Any<CancellationToken>())
             .Returns(cart);
@@ -655,7 +828,7 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(products);
 
-        Order capturedOrder = null;
+        Order? capturedOrder = null;
         await _orderRepository.CreateOrderAsync(
             Arg.Do<Order>(o => capturedOrder = o),
             Arg.Any<CancellationToken>());

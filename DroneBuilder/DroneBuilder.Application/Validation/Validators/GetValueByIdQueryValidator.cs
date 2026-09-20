@@ -7,7 +7,7 @@ public class GetValueByIdQueryValidator : AbstractValidator<GetValueByIdQuery>
 {
     public GetValueByIdQueryValidator()
     {
-        RuleFor(x => x.PropertyId).NotEmpty().WithMessage("PropertyId is required.");
+        RuleFor(x => x.ValueId).NotEmpty().WithMessage("ValueId is required.");
     }
 }
 

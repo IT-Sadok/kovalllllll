@@ -55,7 +55,11 @@ public static class OrderMappingExtensions
             ProductId = item.ProductId,
             Quantity = item.Quantity,
             Price = item.PriceAtPurchase,
-            ProductName = item.Product?.Name ?? item.ProductName,
+            // The snapshot taken at purchase time wins; the live product is only a fallback
+            // for rows created before the name was captured.
+            ProductName = string.IsNullOrEmpty(item.ProductName)
+                ? item.Product?.Name ?? string.Empty
+                : item.ProductName,
             ProductImageUrl = (item.Product?.Images != null && item.Product.Images.Any())
                 ? (item.Product.Images.FirstOrDefault(x => x.IsPrimary) ?? item.Product.Images.First()).Url
                 : string.Empty

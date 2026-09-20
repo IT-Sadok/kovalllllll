@@ -122,7 +122,7 @@ public class ClearCartCommandHandlerTests
         var command = new ClearCartCommand();
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
-            .Returns((Cart)null);
+            .Returns((Cart)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -172,7 +172,7 @@ public class ClearCartCommandHandlerTests
             .Returns(cart);
 
         _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId1, Arg.Any<CancellationToken>())
-            .Returns((WarehouseItem)null);
+            .Returns((WarehouseItem)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -290,7 +290,7 @@ public class ClearCartCommandHandlerTests
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
             .Returns(cart);
 
-        ClearedCartEvent capturedEvent = null;
+        ClearedCartEvent? capturedEvent = null;
         await _outboxService.StoreEventAsync(
             Arg.Do<ClearedCartEvent>(e => capturedEvent = e),
             Arg.Is<string>(q => q == CartQueueName),

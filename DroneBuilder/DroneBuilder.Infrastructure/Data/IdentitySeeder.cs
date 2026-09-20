@@ -8,12 +8,13 @@ namespace DroneBuilder.Infrastructure.Data;
 
 public static class IdentitySeeder
 {
-    public static async Task SeedRolesAndUsersAsync(
-        IServiceProvider serviceProvider,
-        IConfiguration configuration)
+    /// <summary>
+    /// Sign-up assigns RoleNames.User, and UserManager throws when the role is missing, so the roles
+    /// are part of the application contract rather than something only demo seeding provides.
+    /// </summary>
+    public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
     {
         RoleManager<IdentityRole<Guid>> roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-        UserManager<User> userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
         string[] roles = [RoleNames.Admin, RoleNames.User];
         foreach (string role in roles)
@@ -23,6 +24,13 @@ public static class IdentitySeeder
                 await roleManager.CreateAsync(new IdentityRole<Guid> { Name = role });
             }
         }
+    }
+
+    public static async Task SeedUsersAsync(
+        IServiceProvider serviceProvider,
+        IConfiguration configuration)
+    {
+        UserManager<User> userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
         await SeedUserAsync(userManager, configuration, "IdentitySeed:Admin", RoleNames.Admin);
         await SeedUserAsync(userManager, configuration, "IdentitySeed:User", RoleNames.User);

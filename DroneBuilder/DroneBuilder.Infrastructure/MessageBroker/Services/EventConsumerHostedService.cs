@@ -18,7 +18,10 @@ public class EventConsumerHostedService(
     ILogger<EventConsumerHostedService> logger) : BackgroundService
 {
     private IConnection? _connection;
-    private IChannel? _channel;
+
+    // A channel is not thread safe, so each queue gets its own instead of six consumers sharing one.
+    // It also makes the per queue prefetch real: BasicQos applies to a whole channel.
+    private readonly List<IChannel> _channels = [];
 
     private List<QueueConfiguration> GetQueuesToListen()
     => [
@@ -34,119 +37,86 @@ public class EventConsumerHostedService(
     {
         try
         {
-            await InitializeRabbitMqAsync(stoppingToken);
-            await StartConsumingFromAllQueuesAsync(stoppingToken);
+            _connection = await RabbitMqConnector.ConnectWithRetryAsync(
+                settings, logger, "event consumer", stoppingToken);
+
+            foreach (QueueConfiguration queueConfig in GetQueuesToListen())
+            {
+                await StartConsumingAsync(queueConfig, stoppingToken);
+            }
+
+            await Task.Delay(Timeout.Infinite, stoppingToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown.
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error starting consumer");
+            logger.LogError(ex, "Event consumer stopped unexpectedly");
         }
     }
 
-    private async Task InitializeRabbitMqAsync(CancellationToken cancellationToken)
+    private async Task StartConsumingAsync(QueueConfiguration queueConfig, CancellationToken cancellationToken)
     {
-        ConnectionFactory factory;
+        IChannel channel = await _connection!.CreateChannelAsync(cancellationToken: cancellationToken);
+        _channels.Add(channel);
 
-        if (!string.IsNullOrEmpty(settings.ConnectionString))
-        {
-            factory = new ConnectionFactory
-            {
-                Uri = new Uri(settings.ConnectionString),
-                AutomaticRecoveryEnabled = true,
-                Ssl = new SslOption
-                {
-                    Enabled = true,
-                    ServerName = new Uri(settings.ConnectionString).Host
-                }
-            };
-        }
-        else
-        {
-            factory = new ConnectionFactory
-            {
-                HostName = settings.HostName,
-                Port = settings.Port,
-                UserName = settings.UserName,
-                Password = settings.Password,
-                VirtualHost = settings.VirtualHost,
-                AutomaticRecoveryEnabled = true
-            };
-        }
+        await channel.QueueDeclareAsync(
+            queue: queueConfig.Name,
+            durable: queueConfig.Durable,
+            exclusive: queueConfig.Exclusive,
+            autoDelete: queueConfig.AutoDelete,
+            arguments: queueConfig.Arguments?.ToDictionary(x => x.Key, x => (object?)x.Value),
+            cancellationToken: cancellationToken);
 
-        _connection = await factory.CreateConnectionAsync(cancellationToken);
-        _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+        // Failures land here instead of being dropped by a nack with requeue disabled.
+        await channel.QueueDeclareAsync(
+            queue: MessageRetryHeader.DeadLetterQueueName(queueConfig.Name),
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null,
+            cancellationToken: cancellationToken);
 
-        List<QueueConfiguration> queuesToListen = GetQueuesToListen();
+        await channel.BasicQosAsync(
+            prefetchSize: 0,
+            prefetchCount: (ushort)queueConfig.PrefetchCount,
+            global: false,
+            cancellationToken: cancellationToken);
 
-        foreach (QueueConfiguration queueConfig in queuesToListen)
-        {
-            await _channel.QueueDeclareAsync(
-                queue: queueConfig.Name,
-                durable: queueConfig.Durable,
-                exclusive: queueConfig.Exclusive,
-                autoDelete: queueConfig.AutoDelete,
-                arguments: queueConfig.Arguments,
-                cancellationToken: cancellationToken
-            );
+        var consumer = new AsyncEventingBasicConsumer(channel);
 
-            await _channel.BasicQosAsync(
-                prefetchSize: 0,
-                prefetchCount: (ushort)queueConfig.PrefetchCount,
-                global: false,
-                cancellationToken: cancellationToken
-            );
-        }
+        consumer.ReceivedAsync += (_, eventArgs) =>
+            HandleEventAsync(channel, queueConfig, eventArgs, cancellationToken);
 
-        logger.LogInformation("Consumer initialized for {Count} queues", queuesToListen.Count);
+        await channel.BasicConsumeAsync(
+            queue: queueConfig.Name,
+            autoAck: false,
+            consumer: consumer,
+            cancellationToken: cancellationToken);
+
+        logger.LogInformation("Consumer listening on queue: {Queue} (Prefetch: {PrefetchCount})",
+            queueConfig.Name, queueConfig.PrefetchCount);
     }
 
-    private async Task StartConsumingFromAllQueuesAsync(CancellationToken cancellationToken)
-    {
-        if (_channel == null)
-        {
-            throw new InvalidOperationException("RabbitMQ channel is not initialized");
-        }
-
-        List<QueueConfiguration> queuesToListen = GetQueuesToListen();
-
-        foreach (QueueConfiguration queueConfig in queuesToListen)
-        {
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-
-            consumer.ReceivedAsync += async (sender, eventArgs) => await HandleEventAsync(queueConfig, eventArgs, cancellationToken);
-
-            await _channel.BasicConsumeAsync(
-                queue: queueConfig.Name,
-                autoAck: false,
-                consumer: consumer,
-                cancellationToken: cancellationToken
-            );
-
-            logger.LogInformation("Consumer listening on queue: {Queue} (Prefetch: {PrefetchCount})",
-                queueConfig.Name, queueConfig.PrefetchCount);
-        }
-
-        await Task.Delay(Timeout.Infinite, cancellationToken);
-    }
-
-    private async Task HandleEventAsync(QueueConfiguration queueConfig, BasicDeliverEventArgs eventArgs,
+    private async Task HandleEventAsync(
+        IChannel channel,
+        QueueConfiguration queueConfig,
+        BasicDeliverEventArgs eventArgs,
         CancellationToken cancellationToken)
     {
+        string json = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
+
         try
         {
-            byte[] body = eventArgs.Body.ToArray();
-            string json = Encoding.UTF8.GetString(body);
-
-            logger.LogInformation("Event received from queue '{Queue}'", queueConfig.Name);
-
             string? eventType = ExtractEventType(json);
             if (eventType == null)
             {
-                await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
+                // Nothing can ever make this payload readable, so retrying it is pointless.
+                await DeadLetterAsync(channel, queueConfig, eventArgs, "payload has no event type", cancellationToken);
                 return;
             }
-
-            logger.LogInformation("Event type: {EventType}", eventType);
 
             using IServiceScope scope = serviceProvider.CreateScope();
 
@@ -156,7 +126,7 @@ public class EventConsumerHostedService(
             if (handler == null)
             {
                 logger.LogWarning("No handler found for event type: {EventType}", eventType);
-                await _channel!.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
+                await channel.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
                 return;
             }
 
@@ -164,20 +134,91 @@ public class EventConsumerHostedService(
 
             logger.LogInformation("Event processed: {EventType}", eventType);
 
-            await _channel!.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
+            await channel.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing event from queue '{Queue}'", queueConfig.Name);
-            await _channel!.BasicNackAsync(eventArgs.DeliveryTag, false, false, cancellationToken);
+            logger.LogError(ex, "Error processing event from queue {Queue}", queueConfig.Name);
+            await RetryOrDeadLetterAsync(channel, queueConfig, eventArgs, ex.Message, cancellationToken);
         }
+    }
+
+    private async Task RetryOrDeadLetterAsync(
+        IChannel channel,
+        QueueConfiguration queueConfig,
+        BasicDeliverEventArgs eventArgs,
+        string reason,
+        CancellationToken cancellationToken)
+    {
+        int retryCount = MessageRetryHeader.Read(eventArgs.BasicProperties.Headers);
+
+        if (retryCount >= queueConfig.MaxRetryCount)
+        {
+            await DeadLetterAsync(channel, queueConfig, eventArgs,
+                $"{reason} (after {retryCount} retries)", cancellationToken);
+            return;
+        }
+
+        await PublishAsync(channel, queueConfig.Name, eventArgs, retryCount + 1, cancellationToken);
+        await channel.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
+
+        logger.LogWarning("Event from {Queue} requeued, attempt {Attempt} of {Max}",
+            queueConfig.Name, retryCount + 1, queueConfig.MaxRetryCount);
+    }
+
+    private async Task DeadLetterAsync(
+        IChannel channel,
+        QueueConfiguration queueConfig,
+        BasicDeliverEventArgs eventArgs,
+        string reason,
+        CancellationToken cancellationToken)
+    {
+        string deadLetterQueue = MessageRetryHeader.DeadLetterQueueName(queueConfig.Name);
+
+        await PublishAsync(channel, deadLetterQueue, eventArgs,
+            MessageRetryHeader.Read(eventArgs.BasicProperties.Headers), cancellationToken);
+
+        // Acked only once the copy is safely on the dead letter queue.
+        await channel.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
+
+        logger.LogError("Event from {Queue} moved to {DeadLetterQueue}: {Reason}",
+            queueConfig.Name, deadLetterQueue, reason);
+    }
+
+    /// <summary>
+    /// Republishes on the very channel the message arrived on. That is safe precisely because each
+    /// queue owns its channel: deliveries on one channel are dispatched one at a time, so this
+    /// publish cannot race with another delivery on the same channel.
+    /// </summary>
+    private static async Task PublishAsync(
+        IChannel channel,
+        string queueName,
+        BasicDeliverEventArgs eventArgs,
+        int retryCount,
+        CancellationToken cancellationToken)
+    {
+        var properties = new BasicProperties
+        {
+            Persistent = true,
+            MessageId = eventArgs.BasicProperties.MessageId,
+            ContentType = eventArgs.BasicProperties.ContentType,
+            Headers = new Dictionary<string, object?> { [MessageRetryHeader.Name] = retryCount }
+        };
+
+        await channel.BasicPublishAsync(
+            exchange: string.Empty,
+            routingKey: queueName,
+            mandatory: true,
+            basicProperties: properties,
+            body: eventArgs.Body.ToArray(),
+            cancellationToken: cancellationToken);
     }
 
     private string? ExtractEventType(string json)
     {
         try
         {
-            var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(json);
             if (!doc.RootElement.TryGetProperty("type", out JsonElement typeProperty))
             {
                 logger.LogWarning("Event payload missing 'type' property");
@@ -201,27 +242,38 @@ public class EventConsumerHostedService(
         }
     }
 
-    public override async void Dispose()
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            if (_channel != null)
-            {
-                await _channel.CloseAsync();
-            }
+        await base.StopAsync(cancellationToken);
 
-            if (_connection != null)
-            {
-                await _connection.CloseAsync();
-            }
-
-            logger.LogInformation("Consumer disposed");
-        }
-        catch (Exception ex)
+        foreach (IChannel channel in _channels)
         {
-            logger.LogError(ex, "Error disposing Consumer");
+            try
+            {
+                await channel.CloseAsync(cancellationToken);
+                await channel.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error closing a consumer channel");
+            }
         }
 
-        base.Dispose();
+        _channels.Clear();
+
+        if (_connection != null)
+        {
+            try
+            {
+                await _connection.CloseAsync(cancellationToken);
+                await _connection.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error closing the consumer connection");
+            }
+        }
+
+        logger.LogInformation("Event consumer stopped");
     }
 }

@@ -25,9 +25,13 @@ public static class DatabaseExtension
             await dbContext.Database.MigrateAsync();
         }
 
+        // Roles are ensured whenever the database is initialised, not only alongside the seeded
+        // accounts: sign-up assigns the User role and fails outright when it does not exist.
+        await IdentitySeeder.SeedRolesAsync(services);
+
         if (seedIdentity)
         {
-            await IdentitySeeder.SeedRolesAndUsersAsync(services, app.Configuration);
+            await IdentitySeeder.SeedUsersAsync(services, app.Configuration);
         }
     }
 }

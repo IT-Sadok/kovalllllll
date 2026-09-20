@@ -16,10 +16,15 @@ public interface IProductRepository
         ProductFilterModel filter,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Delisted products are hidden from every other read, so restoring one needs its own lookup.</summary>
+    Task<Product?> GetDelistedProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<PagedResult<Product>> GetDelistedProductsAsync(PaginationParams pagination,
+        CancellationToken cancellationToken = default);
+
     Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
         CancellationToken cancellationToken = default);
 
-    void RemoveProduct(Product product);
 
     Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default);
 

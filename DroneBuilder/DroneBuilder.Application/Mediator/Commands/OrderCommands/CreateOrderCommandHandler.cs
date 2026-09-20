@@ -18,12 +18,20 @@ public class CreateOrderCommandHandler(
     IProductRepository productRepository,
     IWarehouseRepository warehouseRepository,
     IOutboxEventService outboxService,
+    IUnitOfWork unitOfWork,
     MessageQueuesConfiguration queuesConfig,
     IUserContext userContext) : ICommandHandler<CreateOrderCommand, OrderModel>
 {
     public async Task<Result<OrderModel>> ExecuteCommandAsync(CreateOrderCommand command, CancellationToken cancellationToken)
     {
-        Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
+        // Creating the order and emptying the cart have to be one atomic step. Otherwise the
+        // reservation sweep can expire these very items in between, restocking the warehouse for an
+        // order that was created anyway, and the stock ends up counted twice.
+        await using ITransaction transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        Cart? cart = await cartRepository.GetCartByUserIdForUpdateAsync(userContext.UserId, cancellationToken);
+
+        // Also the outcome when the sweep won the race and already released the reservation.
         if (cart is null || cart.CartItems.Count == 0)
         {
             return Result.Fail<OrderModel>(new BadRequestError("Cart is empty."));
@@ -31,12 +39,17 @@ public class CreateOrderCommandHandler(
 
         var productIds = cart.CartItems.Select(ci => ci.ProductId).ToList();
 
-        ICollection<WarehouseItem>? warehouseItem = await warehouseRepository
+        ICollection<WarehouseItem> warehouseItems = await warehouseRepository
             .GetAllWarehouseItemsByProductIdsAsync(productIds, cancellationToken);
+
+        // The repository returns only the products it actually stocks, so each cart item has to be
+        // looked up individually. Quantities are not re-checked here: stock was already taken out of
+        // the warehouse when the item went into the cart.
+        var stockedProductIds = warehouseItems.Select(wi => wi.ProductId).ToHashSet();
 
         foreach (CartItem item in cart.CartItems)
         {
-            if (warehouseItem is null)
+            if (!stockedProductIds.Contains(item.ProductId))
             {
                 return Result.Fail<OrderModel>(new NotFoundError($"Product {item.ProductId} not found in warehouse."));
             }
@@ -51,6 +64,8 @@ public class CreateOrderCommandHandler(
             return new OrderItem
             {
                 ProductId = ci.ProductId,
+                // Captured alongside the price so a later rename does not rewrite order history.
+                ProductName = product.Name,
                 Quantity = ci.Quantity,
                 PriceAtPurchase = product.Price
             };
@@ -74,6 +89,7 @@ public class CreateOrderCommandHandler(
         await outboxService.StoreEventAsync(@event, queuesConfig.OrderQueue.Name, cancellationToken);
 
         await orderRepository.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Result.Ok(order.ToModel());
     }

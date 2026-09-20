@@ -35,10 +35,12 @@ public class AddItemToCartCommandHandler(
             return Result.Fail(new NotFoundError($"Warehouse item for product ID {command.ProductId} not found."));
         }
 
-        Result validationResult = WarehouseValidation.ValidateState(warehouseItem);
-        if (validationResult.IsFailed)
+        // Checked before anything is mutated, so the caller gets the real numbers back
+        // instead of a complaint about the stock having gone negative.
+        Result availabilityResult = WarehouseValidation.EnsureEnoughAvailable(warehouseItem, command.Quantity);
+        if (availabilityResult.IsFailed)
         {
-            return validationResult;
+            return availabilityResult;
         }
 
         Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
@@ -63,6 +65,7 @@ public class AddItemToCartCommandHandler(
                 ProductId = command.ProductId,
                 ProductName = existingProduct.Name,
                 Quantity = command.Quantity,
+                ReservedAt = DateTime.UtcNow,
                 Cart = cart
             };
             await cartRepository.AddCartItemAsync(newCartItem, cancellationToken);
@@ -70,15 +73,12 @@ public class AddItemToCartCommandHandler(
         else
         {
             existingCartItem.Quantity += command.Quantity;
+
+            // More stock was just taken out, so the whole item's reservation starts over.
+            existingCartItem.ReservedAt = DateTime.UtcNow;
         }
 
         warehouseItem.Quantity -= command.Quantity;
-
-        validationResult = WarehouseValidation.ValidateState(warehouseItem);
-        if (validationResult.IsFailed)
-        {
-            return validationResult;
-        }
 
         var @event = new AddedItemToCartEvent(userContext.UserId, command.ProductId, existingProduct.Name,
             command.Quantity);

@@ -7,6 +7,7 @@ public interface IWarehouseRepository
 {
     Task<Warehouse?> GetWarehouseAsync(CancellationToken cancellationToken = default);
     Task AddWarehouseItemAsync(WarehouseItem warehouseItem, CancellationToken cancellationToken = default);
+    void RemoveWarehouseItem(WarehouseItem warehouseItem);
     Task<WarehouseItem?> GetWarehouseItemByIdAsync(Guid warehouseItemId, CancellationToken cancellationToken = default);
 
     Task<WarehouseItem?>

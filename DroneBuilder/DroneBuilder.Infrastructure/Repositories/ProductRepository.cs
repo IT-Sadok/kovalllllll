@@ -21,13 +21,14 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
                 .ThenInclude(ppv => ppv.Property)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Value)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
     }
 
     public async Task<ICollection<Product>> GetProductsAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
             .AsNoTracking()
+            .Where(p => !p.IsDeleted)
             .Include(p => p.Images)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Property)
@@ -45,7 +46,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
                 .ThenInclude(ppv => ppv.Property)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Value)
-            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == productId && !p.IsDeleted, cancellationToken);
     }
 
     public async Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
@@ -54,6 +55,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         IQueryable<Product> query = dbContext.Products
             .AsNoTracking()
+            .Where(p => !p.IsDeleted)
             .Include(p => p.Images)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Property)
@@ -99,23 +101,51 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         };
     }
 
+    public async Task<Product?> GetDelistedProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted, cancellationToken);
+    }
+
+    public async Task<PagedResult<Product>> GetDelistedProductsAsync(PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+    {
+        IOrderedQueryable<Product> query = dbContext.Products
+            .AsNoTracking()
+            .Where(p => p.IsDeleted)
+            .Include(p => p.Images)
+            .OrderBy(p => p.Name);
+
+        int totalCount = await query.CountAsync(cancellationToken);
+
+        List<Product> items = await query
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Product>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = pagination.Page,
+            PageSize = pagination.PageSize
+        };
+    }
+
     public async Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
         CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
             .AsNoTracking()
-            .Where(p => productIds.Contains(p.Id))
+            .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
             .ToListAsync(cancellationToken);
     }
 
-    public void RemoveProduct(Product product)
-    {
-        dbContext.Products.Remove(product);
-    }
 
     public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Products
+            .Where(p => !p.IsDeleted)
             .Select(p => p.Category)
             .Distinct()
             .ToListAsync(cancellationToken);

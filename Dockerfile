@@ -46,4 +46,8 @@ EXPOSE 8080
 EXPOSE 8081
 
 COPY --from=build /app/publish .
+
+# The image ships a non-root account; both exposed ports are above 1024, so nothing needs root.
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "DroneBuilder.API.dll"]

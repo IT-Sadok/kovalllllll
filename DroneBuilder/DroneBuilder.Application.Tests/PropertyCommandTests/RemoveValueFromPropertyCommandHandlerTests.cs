@@ -70,7 +70,7 @@ public class RemoveValueFromPropertyCommandHandlerTests
     {
         // Arrange
         var command = new RemoveValueFromPropertyCommand(PropertyId, ValueId);
-        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property)null);
+        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -85,7 +85,7 @@ public class RemoveValueFromPropertyCommandHandlerTests
         // Arrange
         var command = new RemoveValueFromPropertyCommand(PropertyId, ValueId);
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns(new Property());
-        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value)null);
+        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

@@ -93,7 +93,9 @@ public class AddItemToCartCommandHandlerTests
             Arg.Is<CartItem>(ci =>
                 ci.ProductId == ProductId &&
                 ci.ProductName == ProductName &&
-                ci.Quantity == ValidQuantity),
+                ci.Quantity == ValidQuantity &&
+                // Stamped so the sweep can expire the reservation later.
+                ci.ReservedAt > DateTime.UtcNow.AddMinutes(-1)),
             Arg.Any<CancellationToken>());
 
         Assert.Equal(WarehouseQuantity - ValidQuantity, warehouseItem.Quantity);
@@ -133,7 +135,8 @@ public class AddItemToCartCommandHandlerTests
         {
             ProductId = ProductId,
             ProductName = ProductName,
-            Quantity = initialCartItemQuantity
+            Quantity = initialCartItemQuantity,
+            ReservedAt = DateTime.UtcNow.AddHours(-3)
         };
 
         var existingCart = new Cart
@@ -157,6 +160,9 @@ public class AddItemToCartCommandHandlerTests
 
         // Assert
         Assert.Equal(initialCartItemQuantity + ValidQuantity, existingCartItem.Quantity);
+
+        // Fresh stock was just taken out, so the reservation clock restarts for the whole item.
+        Assert.True(existingCartItem.ReservedAt > DateTime.UtcNow.AddMinutes(-1));
 
         await _cartRepository.DidNotReceive().AddCartItemAsync(
             Arg.Is<CartItem>(ci =>
@@ -195,7 +201,7 @@ public class AddItemToCartCommandHandlerTests
             .Returns(warehouseItem);
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
-            .Returns((Cart)null);
+            .Returns((Cart)null!);
 
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -223,7 +229,7 @@ public class AddItemToCartCommandHandlerTests
         var command = new AddItemToCartCommand(ProductId, ValidQuantity);
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns((Product)null);
+            .Returns((Product)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -256,7 +262,7 @@ public class AddItemToCartCommandHandlerTests
             .Returns(product);
 
         _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns((WarehouseItem)null);
+            .Returns((WarehouseItem)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -266,6 +272,48 @@ public class AddItemToCartCommandHandlerTests
 
         Assert.Equal($"Warehouse item for product ID {ProductId} not found.", result.Errors[0].Message);
 
+        await _cartRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenStockIsInsufficient_ShouldFailWithoutTouchingWarehouse()
+    {
+        // Arrange
+        const int availableQuantity = 2;
+        var command = new AddItemToCartCommand(ProductId, ValidQuantity);
+
+        var product = new Product
+        {
+            Id = ProductId,
+            Name = ProductName
+        };
+
+        var warehouseItem = new WarehouseItem
+        {
+            ProductId = ProductId,
+            Quantity = availableQuantity
+        };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(product);
+
+        _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(warehouseItem);
+
+        // Act & Assert
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Equal(
+            $"Not enough stock. Available: {availableQuantity}, requested: {ValidQuantity}.",
+            result.Errors[0].Message);
+
+        // The stock must be left untouched rather than pushed negative and rolled back by hand.
+        Assert.Equal(availableQuantity, warehouseItem.Quantity);
+
+        await _cartRepository.DidNotReceive().AddCartItemAsync(Arg.Any<CartItem>(), Arg.Any<CancellationToken>());
         await _cartRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

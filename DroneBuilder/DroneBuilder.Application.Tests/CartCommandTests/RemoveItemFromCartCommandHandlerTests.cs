@@ -100,7 +100,7 @@ public class RemoveItemFromCartCommandHandlerTests
         var command = new RemoveItemFromCartCommand(ProductId);
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
-            .Returns((Cart)null);
+            .Returns((Cart)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -138,7 +138,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns(cart);
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns((Product)null);
+            .Returns((Product)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -241,7 +241,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns(product);
 
         _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns((WarehouseItem)null);
+            .Returns((WarehouseItem)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

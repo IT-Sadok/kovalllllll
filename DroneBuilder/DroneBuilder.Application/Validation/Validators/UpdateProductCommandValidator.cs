@@ -10,6 +10,9 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
         RuleFor(x => x.ProductId)
             .NotEmpty().WithMessage("Product ID is required.");
 
+        RuleFor(x => x.Model)
+            .NotNull().WithMessage("Product data is required.");
+
         When(x => x.Model != null, () =>
         {
             RuleFor(x => x.Model.Name)

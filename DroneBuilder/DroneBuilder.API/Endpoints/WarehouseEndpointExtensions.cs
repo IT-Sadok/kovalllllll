@@ -74,7 +74,7 @@ public static class WarehouseEndpointExtensions
                     return result.ToHttpResult();
                 })
             .WithTags("Warehouse")
-            .RequireAuthorization();
+            .RequireAuthorization(PolicyNames.Admin);
 
         return app;
     }

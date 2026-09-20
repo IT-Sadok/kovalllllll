@@ -23,6 +23,13 @@ export const adminUpdateProduct = (id: string, data: UpdateProductRequest) =>
 export const adminDeleteProduct = (id: string) =>
   api.delete(`/products/${id}`);
 
+// Delisted products are hidden from every other product read, so they get their own listing.
+export const adminGetDelistedProducts = (page = 1, pageSize = 15) =>
+  api.get<PagedResult<Product>>(`/products/delisted?page=${page}&pageSize=${pageSize}`).then((r) => r.data);
+
+export const adminRestoreProduct = (id: string) =>
+  api.post(`/products/${id}/restore`);
+
 export const assignValueToProductProperty = (productId: string, propertyId: string, valueId: string) =>
   api.post(`/products/${productId}/properties/${propertyId}/values/${valueId}`);
 

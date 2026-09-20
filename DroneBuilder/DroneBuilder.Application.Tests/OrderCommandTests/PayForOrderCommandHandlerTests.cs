@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.OrderCommands;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -13,13 +14,17 @@ public class PayForOrderCommandHandlerTests
     private readonly PayForOrderCommandHandler _handler;
 
     private static readonly Guid OrderId = Guid.NewGuid();
+    private static readonly Guid UserId = Guid.NewGuid();
 
     public PayForOrderCommandHandlerTests()
     {
         // Arrange
         _orderRepository = Substitute.For<IOrderRepository>();
 
-        _handler = new PayForOrderCommandHandler(_orderRepository);
+        IUserContext userContext = Substitute.For<IUserContext>();
+        userContext.UserId.Returns(UserId);
+
+        _handler = new PayForOrderCommandHandler(_orderRepository, userContext);
     }
 
     [Fact]
@@ -31,6 +36,7 @@ public class PayForOrderCommandHandlerTests
         var order = new Order
         {
             Id = OrderId,
+            UserId = UserId,
             Status = Status.New
         };
 
@@ -61,7 +67,7 @@ public class PayForOrderCommandHandlerTests
         _orderRepository.GetOrderByIdAsync(
                 Arg.Is<Guid>(id => id == OrderId),
                 Arg.Any<CancellationToken>())
-            .Returns((Order)null);
+            .Returns((Order)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -83,6 +89,7 @@ public class PayForOrderCommandHandlerTests
         var order = new Order
         {
             Id = OrderId,
+            UserId = UserId,
             Status = Status.Sent
         };
 
@@ -113,6 +120,7 @@ public class PayForOrderCommandHandlerTests
         var order = new Order
         {
             Id = OrderId,
+            UserId = UserId,
             Status = Status.Paid
         };
 
@@ -128,6 +136,37 @@ public class PayForOrderCommandHandlerTests
         Assert.True(result.HasError<BadRequestError>());
 
         Assert.Equal("Order is already paid.", result.Errors[0].Message);
+
+        await _orderRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenOrderBelongsToAnotherUser_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        var command = new PayForOrderCommand(OrderId);
+
+        var order = new Order
+        {
+            Id = OrderId,
+            UserId = Guid.NewGuid(),
+            Status = Status.New
+        };
+
+        _orderRepository.GetOrderByIdAsync(
+                Arg.Is<Guid>(id => id == OrderId),
+                Arg.Any<CancellationToken>())
+            .Returns(order);
+
+        // Act & Assert
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        Assert.Equal($"Order with id {OrderId} not found.", result.Errors[0].Message);
+
+        Assert.Equal(Status.New, order.Status);
 
         await _orderRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }

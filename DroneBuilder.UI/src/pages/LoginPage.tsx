@@ -19,7 +19,7 @@ type FormData = z.infer<typeof schema>;
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuthStore();
+  const hydrate = useAuthStore((state) => state.hydrate);
   const [showPass, setShowPass] = useState(false);
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
 
@@ -29,8 +29,10 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const res = await signIn(data.email, data.password);
-      login(res.accessToken);
+      await signIn(data.email, data.password);
+
+      // The cookie is set by now; the identity itself comes from the server.
+      await hydrate();
       toast.success('Welcome back!');
       navigate(from, { replace: true });
     } catch (error: unknown) {

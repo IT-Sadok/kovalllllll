@@ -13,6 +13,7 @@ namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
 
 public class SignInCommandHandler(
     UserManager<User> userManager,
+    SignInManager<User> signInManager,
     IJwtService jwtService,
     IUserRepository userRepository,
     IOutboxEventService outboxService,
@@ -22,7 +23,29 @@ public class SignInCommandHandler(
     public async Task<Result<AuthUserModel>> ExecuteCommandAsync(SignInCommand command, CancellationToken cancellationToken)
     {
         User? user = await userManager.FindByEmailAsync(command.Email);
-        if (user == null || !await userManager.CheckPasswordAsync(user, command.Password))
+        if (user == null)
+        {
+            return Result.Fail<AuthUserModel>(new UnauthorizedError("Invalid email or password."));
+        }
+
+        // SignInManager is what applies the configured lockout: it counts failures and blocks
+        // unconfirmed accounts. UserManager.CheckPasswordAsync does neither.
+        SignInResult signInResult =
+            await signInManager.CheckPasswordSignInAsync(user, command.Password, lockoutOnFailure: true);
+
+        if (signInResult.IsLockedOut)
+        {
+            return Result.Fail<AuthUserModel>(
+                new ForbiddenError("Account is temporarily locked after too many failed attempts."));
+        }
+
+        if (signInResult.IsNotAllowed)
+        {
+            return Result.Fail<AuthUserModel>(
+                new ForbiddenError("Please confirm your email address before signing in."));
+        }
+
+        if (!signInResult.Succeeded)
         {
             return Result.Fail<AuthUserModel>(new UnauthorizedError("Invalid email or password."));
         }
@@ -36,7 +59,7 @@ public class SignInCommandHandler(
         AuthUserModel authUserModel = new()
         { AccessToken = tokenResult.Value };
 
-        var @event = new UserSignedInEvent(user.Id, user.Email);
+        var @event = new UserSignedInEvent(user.Id, user.Email ?? string.Empty);
         await outboxService.StoreEventAsync(@event, queuesConfig.UserQueue.Name, cancellationToken);
 
         await userRepository.SaveChangesAsync(cancellationToken);

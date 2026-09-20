@@ -73,7 +73,7 @@ public class CreatePropertyCommandHandlerTests
 
         var mappedProperty = new Property { Id = PropertyId, Name = PropertyName };
 
-        Property capturedProperty = null;
+        Property? capturedProperty = null;
         await _propertyRepository.AddPropertyAsync(
             Arg.Do<Property>(p => capturedProperty = p),
             Arg.Any<CancellationToken>());

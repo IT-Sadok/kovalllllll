@@ -1,3 +1,5 @@
+using Azure.Storage.Blobs;
+using System.Net.Http.Headers;
 using System.Reflection;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Options;
@@ -32,11 +34,22 @@ public static class InfrastructureExtensions
             .ValidateFluentValidation()
             .ValidateOnStart();
 
+        services.AddOptions<ResendOptions>()
+            .Bind(configuration.GetSection("Resend"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
+
         services.AddOptions<RabbitMqConfiguration>()
             .Bind(configuration.GetSection("RabbitMQ"))
             .ValidateFluentValidation()
             .ValidateOnStart();
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value);
+
+        services.AddOptions<CartReservationOptions>()
+            .Bind(configuration.GetSection("CartReservation"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<CartReservationOptions>>().Value);
 
         services.AddOptions<MessageQueuesConfiguration>()
             .Bind(configuration.GetSection("MessageQueues"))
@@ -52,9 +65,24 @@ public static class InfrastructureExtensions
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IJwtService, JwtService>();
+
+        // The client owns a connection pool, so one instance is shared rather than rebuilt per request.
+        services.AddSingleton(sp =>
+            new BlobServiceClient(sp.GetRequiredService<IOptions<AzureStorageConfig>>().Value.ConnectionString));
+
         services.AddScoped<IAzureStorageService, AzureStorageService>();
+
+        services.AddHttpClient<IEmailSender, ResendEmailService>((sp, client) =>
+        {
+            ResendOptions resendOptions = sp.GetRequiredService<IOptions<ResendOptions>>().Value;
+
+            client.BaseAddress = new Uri("https://api.resend.com/");
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", resendOptions.ApiKey);
+        });
 
         services.AddScoped<IOutboxEventService, OutboxEventService>();
 
@@ -62,6 +90,7 @@ public static class InfrastructureExtensions
 
         services.AddHostedService<OutboxProcessorHostedService>();
         services.AddHostedService<EventConsumerHostedService>();
+        services.AddHostedService<ExpiredCartReservationsHostedService>();
 
         return services;
     }

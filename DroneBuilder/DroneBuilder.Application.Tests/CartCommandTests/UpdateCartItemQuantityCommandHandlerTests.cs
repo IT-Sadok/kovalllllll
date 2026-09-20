@@ -13,7 +13,6 @@ namespace DroneBuilder.Application.Tests.CartCommandTests;
 public class UpdateCartItemQuantityCommandHandlerTests
 {
     private readonly ICartRepository _cartRepository;
-    private readonly IProductRepository _productRepository;
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IOutboxEventService _outboxService;
     private readonly IUserContext _userContext;
@@ -26,7 +25,6 @@ public class UpdateCartItemQuantityCommandHandlerTests
     public UpdateCartItemQuantityCommandHandlerTests()
     {
         _cartRepository = Substitute.For<ICartRepository>();
-        _productRepository = Substitute.For<IProductRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
         _userContext = Substitute.For<IUserContext>();
@@ -36,7 +34,6 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         _handler = new UpdateCartItemQuantityCommandHandler(
             _cartRepository,
-            _productRepository,
             _warehouseRepository,
             _outboxService,
             queuesConfig,
@@ -123,6 +120,63 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         Assert.True(result.IsFailed);
         Assert.True(result.HasError<BadRequestError>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenIncreasingQuantity_ShouldRestartTheReservation()
+    {
+        // Arrange
+        DateTime originalReservedAt = DateTime.UtcNow.AddHours(-3);
+
+        var command = new UpdateCartItemQuantityCommand(ProductId, 5);
+        var cartItem = new CartItem
+        {
+            Id = CartItemId,
+            ProductId = ProductId,
+            Quantity = 2,
+            ReservedAt = originalReservedAt
+        };
+        var cart = new Cart { UserId = UserId, CartItems = new List<CartItem> { cartItem } };
+        var warehouseItem = new WarehouseItem { ProductId = ProductId, Quantity = 10 };
+
+        _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>()).Returns(cart);
+        _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(warehouseItem);
+
+        // Act
+        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert -- more stock was taken out, so the clock restarts.
+        Assert.True(cartItem.ReservedAt > originalReservedAt);
+        Assert.True(cartItem.ReservedAt > DateTime.UtcNow.AddMinutes(-1));
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenDecreasingQuantity_ShouldNotRestartTheReservation()
+    {
+        // Arrange
+        DateTime originalReservedAt = DateTime.UtcNow.AddHours(-3);
+
+        var command = new UpdateCartItemQuantityCommand(ProductId, 1);
+        var cartItem = new CartItem
+        {
+            Id = CartItemId,
+            ProductId = ProductId,
+            Quantity = 4,
+            ReservedAt = originalReservedAt
+        };
+        var cart = new Cart { UserId = UserId, CartItems = new List<CartItem> { cartItem } };
+        var warehouseItem = new WarehouseItem { ProductId = ProductId, Quantity = 10 };
+
+        _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>()).Returns(cart);
+        _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(warehouseItem);
+
+        // Act
+        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert -- giving stock back must not buy the remaining units more time.
+        Assert.Equal(originalReservedAt, cartItem.ReservedAt);
     }
 }
 
