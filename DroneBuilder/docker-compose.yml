@@ -50,6 +50,9 @@ services:
       JwtOptions__Key: ${JWT_KEY:?JWT_KEY is required}
       AzureStorage__ConnectionString: ${AZURE_STORAGE_CONNECTION_STRING:?AZURE_STORAGE_CONNECTION_STRING is required}
       AzureStorage__ContainerName: ${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required}
+      Resend__ApiKey: ${RESEND_API_KEY:?RESEND_API_KEY is required}
+      Resend__FromEmail: ${RESEND_FROM_EMAIL:?RESEND_FROM_EMAIL is required}
+      Resend__ConfirmationUrl: ${RESEND_CONFIRMATION_URL:?RESEND_CONFIRMATION_URL is required}
       DatabaseInitialization__ApplyMigrations: "true"
       DatabaseInitialization__SeedIdentity: "true"
       IdentitySeed__Admin__Email: ${IDENTITY_ADMIN_EMAIL:?IDENTITY_ADMIN_EMAIL is required}
