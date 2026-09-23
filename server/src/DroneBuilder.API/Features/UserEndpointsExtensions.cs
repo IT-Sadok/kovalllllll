@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using DroneBuilder.API.Common.Authorization;
 using DroneBuilder.API.Common.Extensions;
+using DroneBuilder.API.Common.Responses;
 using DroneBuilder.API.Common.Routes;
 using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Features.Users;
@@ -54,7 +55,7 @@ public static class UserEndpointsExtensions
                     result.Value.AccessToken,
                     AuthCookie.Options(DateTimeOffset.UtcNow.AddMinutes(jwtOptions.Value.ExpiryMinutes)));
 
-                return Results.NoContent();
+                return ApiResults.Ok();
             }).WithTags("Users")
             .RequireRateLimiting(RateLimitingExtension.LoginPolicy);
 
@@ -62,7 +63,7 @@ public static class UserEndpointsExtensions
             (HttpContext httpContext) =>
             {
                 httpContext.Response.Cookies.Delete(AuthCookie.Name, AuthCookie.Options());
-                return Results.NoContent();
+                return ApiResults.Ok();
             }).WithTags("Users");
 
         app.MapGet(ApiRoutes.Users.Me,
@@ -75,7 +76,7 @@ public static class UserEndpointsExtensions
                     Roles = principal.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToArray()
                 };
 
-                return Results.Ok(currentUser);
+                return ApiResults.Ok(currentUser);
             }).WithTags("Users")
             .RequireAuthorization();
 

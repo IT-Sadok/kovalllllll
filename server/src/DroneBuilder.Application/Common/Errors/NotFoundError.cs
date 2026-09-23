@@ -1,8 +1,6 @@
-using FluentResults;
-
 namespace DroneBuilder.Application.Common.Errors;
 
-public class NotFoundError : Error
+public class NotFoundError : AppError
 {
-    public NotFoundError(string message) : base(message) { }
+    public NotFoundError(string message) : base(message, Codes.NotFound) { }
 }

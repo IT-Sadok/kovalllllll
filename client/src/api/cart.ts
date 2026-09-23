@@ -1,13 +1,14 @@
 import { api } from './axiosInstance';
-import type { CartItem } from '../types';
+import { unwrap } from './response';
+import type { ApiResponse, CartItem } from '../types';
 
 // GET /carts/items — returns CartItem[] for authenticated user
 export const getCartItems = () =>
-  api.get<CartItem[]>('/carts/items').then((r) => r.data);
+  api.get<ApiResponse<CartItem[]>>('/carts/items').then(unwrap);
 
 // POST /carts/items
 export const addToCart = (productId: string, quantity: number = 1) =>
-  api.post<CartItem>('/carts/items', { productId, quantity }).then((r) => r.data);
+  api.post<ApiResponse<CartItem>>('/carts/items', { productId, quantity }).then(unwrap);
 
 // DELETE /carts/items/{productId}
 export const removeCartItem = (productId: string) =>

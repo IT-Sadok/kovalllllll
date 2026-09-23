@@ -1,5 +1,6 @@
 import { api } from './axiosInstance';
-import type { CurrentUser } from '../types';
+import { unwrap } from './response';
+import type { ApiResponse, CurrentUser } from '../types';
 
 export const signUp = (email: string, password: string) =>
   api.post('/users/sign-up', { email, password });
@@ -18,4 +19,4 @@ export const resendEmailConfirmation = (email: string) =>
   api.post('/users/resend-confirmation', { email });
 
 export const getCurrentUser = () =>
-  api.get<CurrentUser>('/users/me').then((r) => r.data);
+  api.get<ApiResponse<CurrentUser>>('/users/me').then(unwrap);

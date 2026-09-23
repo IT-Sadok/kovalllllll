@@ -1,4 +1,6 @@
+using DroneBuilder.API.Common.Responses;
 using DroneBuilder.Application.Common.Errors;
+using DroneBuilder.Application.Common.Pagination;
 using FluentResults;
 
 namespace DroneBuilder.API.Common.Extensions;
@@ -9,7 +11,7 @@ public static class ResultExtensions
     {
         if (result.IsSuccess)
         {
-            return Results.NoContent();
+            return ApiResults.Ok();
         }
 
         return MapError(result);
@@ -19,7 +21,17 @@ public static class ResultExtensions
     {
         if (result.IsSuccess)
         {
-            return Results.Ok(result.Value);
+            return ApiResults.Ok(result.Value);
+        }
+
+        return MapError(result);
+    }
+
+    public static IResult ToHttpResult<T>(this Result<PagedResult<T>> result)
+    {
+        if (result.IsSuccess)
+        {
+            return ApiResults.Paged(result.Value);
         }
 
         return MapError(result);
@@ -31,27 +43,33 @@ public static class ResultExtensions
 
         return error switch
         {
-            NotFoundError => Results.Problem(statusCode: 404, title: "Not Found", detail: error.Message),
-            ValidationError validationError => CreateValidationProblem(validationError),
-            BadRequestError => Results.Problem(statusCode: 400, title: "Bad Request", detail: error.Message),
-            UnauthorizedError => Results.Problem(statusCode: 401, title: "Unauthorized", detail: error.Message),
-            ForbiddenError => Results.Problem(statusCode: 403, title: "Forbidden", detail: error.Message),
-            ConflictError => Results.Problem(statusCode: 409, title: "Conflict", detail: error.Message),
-            _ => Results.Problem(statusCode: 500, title: "Internal Server Error", detail: error.Message),
+            ValidationError { ErrorDetails.Count: > 0 } validationError => CreateValidationResult(validationError),
+            AppError appError => ApiResults.Error(StatusCodeFor(appError), appError.Code, appError.Message),
+            _ => ApiResults.Error(StatusCodes.Status500InternalServerError, AppError.Codes.Internal, error.Message),
         };
     }
 
-    private static IResult CreateValidationProblem(ValidationError validationError)
+    private static int StatusCodeFor(AppError error) => error switch
     {
-        if (validationError.ErrorDetails != null)
-        {
-            return Results.ValidationProblem(
-                validationError.ErrorDetails,
-                detail: validationError.Message,
-                title: "Validation Error",
-                statusCode: 400);
-        }
+        NotFoundError => StatusCodes.Status404NotFound,
+        ValidationError or BadRequestError => StatusCodes.Status400BadRequest,
+        UnauthorizedError => StatusCodes.Status401Unauthorized,
+        ForbiddenError => StatusCodes.Status403Forbidden,
+        ConflictError => StatusCodes.Status409Conflict,
+        _ => StatusCodes.Status500InternalServerError,
+    };
 
-        return Results.Problem(statusCode: 400, title: "Validation Error", detail: validationError.Message);
+    private static IResult CreateValidationResult(ValidationError validationError)
+    {
+        ApiError[] errors = validationError.ErrorDetails!
+            .SelectMany(field => field.Value.Select(message => new ApiError
+            {
+                Code = validationError.Code,
+                Field = field.Key,
+                Message = message
+            }))
+            .ToArray();
+
+        return ApiResults.Error(StatusCodes.Status400BadRequest, errors);
     }
 }
