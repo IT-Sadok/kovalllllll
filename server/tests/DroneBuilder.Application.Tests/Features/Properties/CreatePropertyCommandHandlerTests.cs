@@ -1,6 +1,6 @@
+using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Application.Features.Properties;
 using DroneBuilder.Application.Features.Properties.CreateProperty;
-using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using NSubstitute;

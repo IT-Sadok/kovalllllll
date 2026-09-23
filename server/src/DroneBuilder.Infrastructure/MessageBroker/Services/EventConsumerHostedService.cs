@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
-using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Options;
+using DroneBuilder.Application.Common.Abstractions;
+using DroneBuilder.Application.Common.Options;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

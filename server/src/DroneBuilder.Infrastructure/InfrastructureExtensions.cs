@@ -1,10 +1,10 @@
 using System.Net.Http.Headers;
 using System.Reflection;
 using Azure.Storage.Blobs;
-using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Options;
-using DroneBuilder.Application.Repositories;
-using DroneBuilder.Application.Validation.Options;
+using DroneBuilder.Application.Common.Abstractions;
+using DroneBuilder.Application.Common.Options;
+using DroneBuilder.Application.Common.Repositories;
+using DroneBuilder.Application.Common.Validation.Options;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using DroneBuilder.Infrastructure.MessageBroker.Services;
 using DroneBuilder.Infrastructure.Options;

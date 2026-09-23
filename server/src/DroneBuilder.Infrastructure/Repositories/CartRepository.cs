@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 

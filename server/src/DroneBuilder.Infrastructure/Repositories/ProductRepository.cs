@@ -1,6 +1,6 @@
+using DroneBuilder.Application.Common.Models;
+using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Application.Features.Products;
-using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 

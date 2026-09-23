@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Common.Abstractions;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DroneBuilder.Infrastructure.Repositories;

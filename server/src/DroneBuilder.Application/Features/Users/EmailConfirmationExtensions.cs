@@ -1,5 +1,5 @@
 using System.Text;
-using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Common.Abstractions;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;

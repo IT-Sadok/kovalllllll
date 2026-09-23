@@ -1,6 +1,8 @@
-using DroneBuilder.API.Authorization;
-using DroneBuilder.API.Endpoints.Routes;
-using DroneBuilder.API.Extensions;
+using DroneBuilder.API.Common.Authorization;
+using DroneBuilder.API.Common.Extensions;
+using DroneBuilder.API.Common.Routes;
+using DroneBuilder.Application.Common.Mediator.Interfaces;
+using DroneBuilder.Application.Common.Models;
 using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Application.Features.Products.AddValueToProductProperty;
 using DroneBuilder.Application.Features.Products.CreateProduct;
@@ -14,8 +16,6 @@ using DroneBuilder.Application.Features.Products.RemovePropertyFromProduct;
 using DroneBuilder.Application.Features.Products.RemoveValueFromProductProperty;
 using DroneBuilder.Application.Features.Products.RestoreProduct;
 using DroneBuilder.Application.Features.Products.UpdateProduct;
-using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models;
 using FluentResults;
 
 namespace DroneBuilder.API.Features.Products;

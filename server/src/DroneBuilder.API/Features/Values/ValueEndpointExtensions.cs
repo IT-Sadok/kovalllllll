@@ -1,13 +1,13 @@
-using DroneBuilder.API.Authorization;
-using DroneBuilder.API.Endpoints.Routes;
-using DroneBuilder.API.Extensions;
+using DroneBuilder.API.Common.Authorization;
+using DroneBuilder.API.Common.Extensions;
+using DroneBuilder.API.Common.Routes;
+using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Features.Values;
 using DroneBuilder.Application.Features.Values.CreateValue;
 using DroneBuilder.Application.Features.Values.DeleteValue;
 using DroneBuilder.Application.Features.Values.GetValueById;
 using DroneBuilder.Application.Features.Values.GetValues;
 using DroneBuilder.Application.Features.Values.UpdateValue;
-using DroneBuilder.Application.Mediator.Interfaces;
 using FluentResults;
 namespace DroneBuilder.API.Features.Values;
 

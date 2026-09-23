@@ -1,5 +1,5 @@
-using DroneBuilder.API.Extensions;
-using DroneBuilder.API.Middleware;
+using DroneBuilder.API.Common.Extensions;
+using DroneBuilder.API.Common.Middleware;
 using DroneBuilder.Application;
 using DroneBuilder.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;

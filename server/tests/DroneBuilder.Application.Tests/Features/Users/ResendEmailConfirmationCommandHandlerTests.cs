@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Common.Abstractions;
 using DroneBuilder.Application.Features.Users.ResendEmailConfirmation;
 using DroneBuilder.Domain.Entities;
 using FluentResults;

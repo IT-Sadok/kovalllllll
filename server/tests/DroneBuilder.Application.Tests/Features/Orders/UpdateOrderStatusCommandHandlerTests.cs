@@ -1,7 +1,7 @@
-using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Common.Abstractions;
+using DroneBuilder.Application.Common.Repositories;
+using DroneBuilder.Application.Common.ResultErrors;
 using DroneBuilder.Application.Features.Orders.UpdateOrderStatus;
-using DroneBuilder.Application.Repositories;
-using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using NSubstitute;
