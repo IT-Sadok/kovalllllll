@@ -1,14 +1,13 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
+using DroneBuilder.Application.Features.Warehouses;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
-using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
 using FluentResults;
-
 namespace DroneBuilder.Application.Features.Carts.UpdateCartItemQuantity;
 
 public class UpdateCartItemQuantityCommandHandler(
