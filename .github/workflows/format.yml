@@ -9,6 +9,10 @@ jobs:
     name: Verify .NET code formatting
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ./server
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,10 +23,10 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore ./DroneBuilder/DroneBuilder.sln
+        run: dotnet restore DroneBuilder.sln
 
       - name: Verify formatting
         run: |
-          dotnet format ./DroneBuilder/DroneBuilder.sln \
+          dotnet format DroneBuilder.sln \
             --verify-no-changes \
             --verbosity diagnostic

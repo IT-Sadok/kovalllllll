@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DroneBuilder.Application\DroneBuilder.Application.csproj" />
+      <ProjectReference Include="..\..\src\DroneBuilder.Application\DroneBuilder.Application.csproj" />
     </ItemGroup>
 
 </Project>
