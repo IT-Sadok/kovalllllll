@@ -1,7 +1,7 @@
-using DroneBuilder.API.Endpoints.Routes;
-using DroneBuilder.Application.Abstractions;
+using DroneBuilder.API.Common.Routes;
+using DroneBuilder.Application.Common.Abstractions;
+using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Features.Orders.ConfirmOrderPayment;
-using DroneBuilder.Application.Mediator.Interfaces;
 using FluentResults;
 namespace DroneBuilder.API.Features.Orders;
 

@@ -1,6 +1,6 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Common.Abstractions;
 using DroneBuilder.Infrastructure.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;

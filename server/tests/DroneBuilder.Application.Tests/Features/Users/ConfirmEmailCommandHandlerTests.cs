@@ -1,6 +1,6 @@
 using System.Text;
+using DroneBuilder.Application.Common.ResultErrors;
 using DroneBuilder.Application.Features.Users.ConfirmEmail;
-using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;

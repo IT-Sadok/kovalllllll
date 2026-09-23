@@ -1,5 +1,5 @@
 using System.Text.Json;
-using DroneBuilder.Application.Abstractions;
+using DroneBuilder.Application.Common.Abstractions;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events;
 

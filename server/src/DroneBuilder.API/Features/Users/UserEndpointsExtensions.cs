@@ -1,13 +1,13 @@
 using System.Security.Claims;
-using DroneBuilder.API.Authorization;
-using DroneBuilder.API.Endpoints.Routes;
-using DroneBuilder.API.Extensions;
+using DroneBuilder.API.Common.Authorization;
+using DroneBuilder.API.Common.Extensions;
+using DroneBuilder.API.Common.Routes;
+using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Features.Users;
 using DroneBuilder.Application.Features.Users.ConfirmEmail;
 using DroneBuilder.Application.Features.Users.ResendEmailConfirmation;
 using DroneBuilder.Application.Features.Users.SignIn;
 using DroneBuilder.Application.Features.Users.SignUp;
-using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Infrastructure.Options;
 using FluentResults;
 using Microsoft.Extensions.Options;

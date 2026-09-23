@@ -1,6 +1,6 @@
-using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Common.Mediator.Interfaces;
+using DroneBuilder.Application.Common.Models;
+using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 

@@ -1,5 +1,5 @@
-using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Repositories;
+using DroneBuilder.Application.Common.Mediator.Interfaces;
+using DroneBuilder.Application.Common.Repositories;
 using FluentResults;
 
 namespace DroneBuilder.Application.Features.Products.GetCategories;

@@ -1,5 +1,5 @@
-using DroneBuilder.Application.Options;
-using DroneBuilder.Application.Validation.Validators.Options;
+using DroneBuilder.Application.Common.Options;
+using DroneBuilder.Application.Common.Validation.Validators.Options;
 using FluentValidation.TestHelper;
 
 namespace DroneBuilder.Application.Tests.Validators.Options;
