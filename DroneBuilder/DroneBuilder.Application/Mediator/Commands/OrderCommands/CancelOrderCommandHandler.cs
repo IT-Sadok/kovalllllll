@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
@@ -10,6 +11,7 @@ namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
 public class CancelOrderCommandHandler(
     IOrderRepository orderRepository,
     IWarehouseRepository warehouseRepository,
+    IPaymentGateway paymentGateway,
     IUserContext userContext)
     : ICommandHandler<CancelOrderCommand>
 {
@@ -25,6 +27,12 @@ public class CancelOrderCommandHandler(
         if (order.Status != Status.New)
         {
             return Result.Fail(new BadRequestError("Only new orders can be cancelled. Contact support for paid orders."));
+        }
+
+        Result paymentResult = await paymentGateway.ClosePendingPaymentAsync(order, cancellationToken);
+        if (paymentResult.IsFailed)
+        {
+            return paymentResult;
         }
 
         Result restockResult = await warehouseRepository.RestockAsync(order, cancellationToken);

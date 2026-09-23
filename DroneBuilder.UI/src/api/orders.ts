@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { Order, ShippingDetails, PagedResult } from '../types';
+import type { Order, ShippingDetails, PagedResult, PaymentSession } from '../types';
 
 // GET /orders?page&pageSize → PagedResult<Order>
 export const getOrders = (page = 1, pageSize = 20) =>
@@ -9,9 +9,9 @@ export const getOrders = (page = 1, pageSize = 20) =>
 export const createOrder = (payload: ShippingDetails) =>
   api.post<Order>('/orders', payload).then((r) => r.data);
 
-// PATCH /orders/{orderId}/pay
-export const payOrder = (orderId: string) =>
-  api.patch(`/orders/${orderId}/pay`);
+// POST /orders/{orderId}/payment → Stripe Checkout URL, or isPaid when no redirect is needed
+export const startOrderPayment = (orderId: string) =>
+  api.post<PaymentSession>(`/orders/${orderId}/payment`).then((r) => r.data);
 
 export const cancelOrder = (orderId: string) =>
   api.patch(`/orders/${orderId}/cancel`);

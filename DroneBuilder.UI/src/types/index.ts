@@ -111,6 +111,11 @@ export const OrderStatusTransitions: Record<OrderStatus, OrderStatus[]> = {
   4: [],
 };
 
+export interface PaymentSession {
+  url: string | null;
+  isPaid: boolean;
+}
+
 export interface OrderItem {
   productId: string;
   orderId: string;

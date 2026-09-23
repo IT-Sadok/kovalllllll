@@ -9,5 +9,6 @@ public class Order
     public ICollection<OrderItem> OrderItems { get; set; } = [];
     public decimal TotalPrice { get; set; }
     public string ShippingDetails { get; set; } = string.Empty;
+    public string? PaymentSessionId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace DroneBuilder.Application.Validation.Validators;
 
-public class PayForOrderCommandValidator : AbstractValidator<PayForOrderCommand>
+public class StartOrderPaymentCommandValidator : AbstractValidator<StartOrderPaymentCommand>
 {
-    public PayForOrderCommandValidator()
+    public StartOrderPaymentCommandValidator()
     {
         RuleFor(x => x.OrderId).NotEmpty().WithMessage("OrderId is required.");
     }
