@@ -1,5 +1,5 @@
+using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Repositories;
