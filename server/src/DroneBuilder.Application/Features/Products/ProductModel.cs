@@ -1,5 +1,5 @@
-using DroneBuilder.Application.Models.ProductModels;
-
+using DroneBuilder.Application.Features.Images;
+using DroneBuilder.Application.Features.Properties;
 namespace DroneBuilder.Application.Features.Products;
 
 public class ProductModel

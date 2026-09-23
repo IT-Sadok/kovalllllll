@@ -1,0 +1,25 @@
+using FluentValidation;
+
+namespace DroneBuilder.Application.Features.Warehouses.AddQuantityToWarehouseItem;
+
+public class AddQuantityToWarehouseItemCommandValidator : AbstractValidator<AddQuantityToWarehouseItemCommand>
+{
+    public const int MaxQuantityPerOperation = 1_000_000;
+
+    public AddQuantityToWarehouseItemCommandValidator()
+    {
+        RuleFor(x => x.WarehouseItemId)
+            .NotEmpty().WithMessage("Warehouse item ID is required.");
+
+        RuleFor(x => x.Model)
+            .NotNull().WithMessage("Quantity data is required.");
+
+        When(x => x.Model != null, () =>
+        {
+            RuleFor(x => x.Model.QuantityToAdd)
+                .GreaterThan(0).WithMessage("Quantity to add must be greater than 0.")
+                .LessThanOrEqualTo(MaxQuantityPerOperation)
+                .WithMessage($"Quantity to add must not exceed {MaxQuantityPerOperation}.");
+        });
+    }
+}

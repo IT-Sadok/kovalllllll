@@ -1,0 +1,8 @@
+namespace DroneBuilder.Application.Features.Users;
+
+public class CurrentUserModel
+{
+    public string Id { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public IReadOnlyCollection<string> Roles { get; set; } = [];
+}
