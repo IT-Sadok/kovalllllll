@@ -217,7 +217,7 @@ public class CreateOrderCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenCartIsEmpty_ShouldThrowBadRequestException()
+    public async Task ExecuteCommandAsync_WhenCartIsEmpty_ShouldReturnFailedResultWithBadRequestError()
     {
         // Arrange
         var shippingDetails = new ShippingDetailsModel
@@ -264,7 +264,7 @@ public class CreateOrderCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenCartNotFound_ShouldThrowBadRequestException()
+    public async Task ExecuteCommandAsync_WhenCartNotFound_ShouldReturnFailedResultWithBadRequestError()
     {
         // Arrange
         var shippingDetails = new ShippingDetailsModel
@@ -299,7 +299,7 @@ public class CreateOrderCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductNotInWarehouse_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenProductNotInWarehouse_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var shippingDetails = new ShippingDetailsModel
@@ -400,7 +400,7 @@ public class CreateOrderCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenOnlyOneProductIsMissingFromWarehouse_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenOnlyOneProductIsMissingFromWarehouse_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var shippingDetails = new ShippingDetailsModel

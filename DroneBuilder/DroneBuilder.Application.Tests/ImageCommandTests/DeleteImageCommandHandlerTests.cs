@@ -57,7 +57,7 @@ public class DeleteImageCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenImageNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenImageNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new DeleteImageCommand(ImageId);

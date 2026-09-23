@@ -124,7 +124,7 @@ public class SignInCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenUserNotFound_ShouldThrowInvalidEmailOrPasswordException()
+    public async Task ExecuteCommandAsync_WhenUserNotFound_ShouldReturnFailedResultWithUnauthorizedError()
     {
         // Arrange
         var command = new SignInCommand(NotExistingEmail, ValidPassword);
@@ -156,7 +156,7 @@ public class SignInCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenPasswordIsIncorrect_ShouldThrowInvalidEmailOrPasswordException()
+    public async Task ExecuteCommandAsync_WhenPasswordIsIncorrect_ShouldReturnFailedResultWithUnauthorizedError()
     {
         // Arrange
         var command = new SignInCommand(ValidEmail, InvalidPassword);
@@ -246,7 +246,7 @@ public class SignInCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenAccountIsLockedOut_ShouldThrowForbiddenException()
+    public async Task ExecuteCommandAsync_WhenAccountIsLockedOut_ShouldReturnFailedResultWithForbiddenError()
     {
         // Arrange
         var command = new SignInCommand(ValidEmail, ValidPassword);
@@ -281,7 +281,7 @@ public class SignInCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenEmailIsNotConfirmed_ShouldThrowForbiddenException()
+    public async Task ExecuteCommandAsync_WhenEmailIsNotConfirmed_ShouldReturnFailedResultWithForbiddenError()
     {
         // Arrange
         var command = new SignInCommand(ValidEmail, ValidPassword);

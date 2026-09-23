@@ -51,7 +51,7 @@ public class DeletePropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new DeletePropertyCommand(PropertyId);

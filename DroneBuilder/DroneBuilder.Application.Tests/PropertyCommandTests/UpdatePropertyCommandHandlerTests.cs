@@ -66,7 +66,7 @@ public class UpdatePropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var updateModel = new UpdatePropertyModel

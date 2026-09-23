@@ -51,7 +51,7 @@ public class ConfirmEmailCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenUserNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenUserNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new ConfirmEmailCommand(UserId, EncodedToken);
@@ -86,7 +86,7 @@ public class ConfirmEmailCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenTokenIsMalformed_ShouldThrowBadRequestException()
+    public async Task ExecuteCommandAsync_WhenTokenIsMalformed_ShouldReturnFailedResultWithBadRequestError()
     {
         // Arrange
         var command = new ConfirmEmailCommand(UserId, "not+valid+base64url!!");
@@ -108,7 +108,7 @@ public class ConfirmEmailCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenTokenIsRejected_ShouldThrowBadRequestException()
+    public async Task ExecuteCommandAsync_WhenTokenIsRejected_ShouldReturnFailedResultWithBadRequestError()
     {
         // Arrange
         var command = new ConfirmEmailCommand(UserId, EncodedToken);

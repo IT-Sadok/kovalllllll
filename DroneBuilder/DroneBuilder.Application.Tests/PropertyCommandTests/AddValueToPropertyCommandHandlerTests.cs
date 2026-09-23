@@ -65,7 +65,7 @@ public class AddValueToPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new AddValueToPropertyCommand(PropertyId, ValueId);
@@ -91,7 +91,7 @@ public class AddValueToPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenValueNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenValueNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new AddValueToPropertyCommand(PropertyId, ValueId);

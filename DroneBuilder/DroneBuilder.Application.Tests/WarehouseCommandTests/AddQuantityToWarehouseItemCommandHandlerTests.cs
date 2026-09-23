@@ -92,7 +92,7 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var addQuantityModel = new AddQuantityModel
@@ -120,7 +120,7 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var addQuantityModel = new AddQuantityModel

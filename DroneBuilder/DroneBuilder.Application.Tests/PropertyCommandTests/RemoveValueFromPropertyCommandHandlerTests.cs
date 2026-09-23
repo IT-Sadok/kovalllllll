@@ -68,7 +68,7 @@ public class RemoveValueFromPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new RemoveValueFromPropertyCommand(PropertyId, ValueId);
@@ -82,7 +82,7 @@ public class RemoveValueFromPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenValueNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenValueNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new RemoveValueFromPropertyCommand(PropertyId, ValueId);

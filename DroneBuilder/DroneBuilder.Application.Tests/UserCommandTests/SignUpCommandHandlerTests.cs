@@ -210,7 +210,7 @@ public class SignUpCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenUserCreationFails_ShouldThrowInvalidOperationException()
+    public async Task ExecuteCommandAsync_WhenUserCreationFails_ShouldReturnFailedResultWithBadRequestError()
     {
         // Arrange
         var signUpModel = new SignUpModel
