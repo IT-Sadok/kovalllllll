@@ -1,7 +1,7 @@
 using DroneBuilder.Application.Common.Options;
 using FluentValidation;
 
-namespace DroneBuilder.Application.Common.Validation.Validators.Options;
+namespace DroneBuilder.Application.Common.Validation.Validators;
 
 public class MessageQueuesConfigurationValidator : AbstractValidator<MessageQueuesConfiguration>
 {
