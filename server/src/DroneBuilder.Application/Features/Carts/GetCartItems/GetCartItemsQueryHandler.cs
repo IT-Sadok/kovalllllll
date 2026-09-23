@@ -1,11 +1,9 @@
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models.CartModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-namespace DroneBuilder.Application.Mediator.Queries.CartQueries;
+namespace DroneBuilder.Application.Features.Carts.GetCartItems;
 
 public class GetCartItemsQueryHandler(ICartRepository cartRepository, IUserContext userContext)
     : IQueryHandler<GetCartItemsQuery, ICollection<CartItemModel>>

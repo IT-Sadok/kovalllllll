@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Models.CartModels;
 using DroneBuilder.Domain.Entities;
 
-namespace DroneBuilder.Application.Mappings;
+namespace DroneBuilder.Application.Features.Carts;
 
 public static class CartMappingExtensions
 {
