@@ -66,7 +66,7 @@ public class UpdateValueCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenValueNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenValueNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var updateModel = new UpdateValueModel

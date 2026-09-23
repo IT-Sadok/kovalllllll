@@ -135,7 +135,7 @@ public class DeleteProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new DeleteProductCommand(ProductId);
@@ -160,7 +160,7 @@ public class DeleteProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductIsAlreadyDelisted_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenProductIsAlreadyDelisted_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new DeleteProductCommand(ProductId);

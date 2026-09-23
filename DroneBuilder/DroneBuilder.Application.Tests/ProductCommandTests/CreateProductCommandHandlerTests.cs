@@ -125,7 +125,7 @@ public class CreateProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var createProductModel = new CreateProductModel

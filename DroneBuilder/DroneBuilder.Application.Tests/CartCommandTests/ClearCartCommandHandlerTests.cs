@@ -116,7 +116,7 @@ public class ClearCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenCartNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenCartNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new ClearCartCommand();
@@ -149,7 +149,7 @@ public class ClearCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new ClearCartCommand();

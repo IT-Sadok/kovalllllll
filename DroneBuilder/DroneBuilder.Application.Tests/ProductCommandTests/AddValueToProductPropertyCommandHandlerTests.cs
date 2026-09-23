@@ -62,7 +62,7 @@ public class AddValueToProductPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
@@ -76,7 +76,7 @@ public class AddValueToProductPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenPropertyNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
@@ -91,7 +91,7 @@ public class AddValueToProductPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenValueNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenValueNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);

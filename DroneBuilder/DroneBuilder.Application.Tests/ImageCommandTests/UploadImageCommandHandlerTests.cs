@@ -99,7 +99,7 @@ public class UploadImageCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenUploadFails_ShouldThrowValidationException()
+    public async Task ExecuteCommandAsync_WhenUploadFails_ShouldReturnFailedResultWithValidationError()
     {
         // Arrange
         IFormFile mockFile = Substitute.For<IFormFile>();

@@ -107,7 +107,7 @@ public class RemoveItemFromCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenCartNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenCartNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new RemoveItemFromCartCommand(ProductId);
@@ -135,7 +135,7 @@ public class RemoveItemFromCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new RemoveItemFromCartCommand(ProductId);
@@ -169,7 +169,7 @@ public class RemoveItemFromCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenItemNotInCart_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenItemNotInCart_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new RemoveItemFromCartCommand(ProductId);
@@ -221,7 +221,7 @@ public class RemoveItemFromCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new RemoveItemFromCartCommand(ProductId);
@@ -384,7 +384,7 @@ public class RemoveItemFromCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenEmptyCart_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenEmptyCart_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new RemoveItemFromCartCommand(ProductId);

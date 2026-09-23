@@ -221,7 +221,7 @@ public class AddItemToCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new AddItemToCartCommand(ProductId, ValidQuantity);
@@ -245,7 +245,7 @@ public class AddItemToCartCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new AddItemToCartCommand(ProductId, ValidQuantity);

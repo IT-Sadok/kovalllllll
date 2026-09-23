@@ -97,7 +97,7 @@ public class RestoreProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductIsNotDelisted_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenProductIsNotDelisted_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         GivenDelistedProduct(null!);
@@ -112,7 +112,7 @@ public class RestoreProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseMissing_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseMissing_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var product = new Product { Id = ProductId, Name = ProductName, IsDeleted = true };

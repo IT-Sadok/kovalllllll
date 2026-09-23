@@ -92,7 +92,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var removeQuantityModel = new RemoveQuantityModel
@@ -120,7 +120,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var removeQuantityModel = new RemoveQuantityModel

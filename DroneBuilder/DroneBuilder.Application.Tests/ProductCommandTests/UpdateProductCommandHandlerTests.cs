@@ -81,7 +81,7 @@ public class UpdateProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var updateModel = new UpdateProductRequestModel

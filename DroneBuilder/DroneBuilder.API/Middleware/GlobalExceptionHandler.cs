@@ -11,7 +11,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             Exception exception,
             CancellationToken cancellationToken)
     {
-        (int statusCode, string? title, string detail, object? errors) = MapException(exception);
+        (int statusCode, string? title, string detail) = MapException(exception);
 
         logger.LogError(exception,
             "Exception occurred: {Message}. StatusCode: {StatusCode}",
@@ -26,49 +26,26 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             Instance = httpContext.Request.Path
         };
 
-        if (errors != null && exception is Application.Exceptions.ValidationException)
-        {
-            problemDetails.Extensions["errors"] = errors;
-        }
-
         httpContext.Response.StatusCode = statusCode;
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
         return true;
     }
 
-    private static (int StatusCode, string Title, string Detail, object? Errors) MapException(Exception exception)
+    private static (int StatusCode, string Title, string Detail) MapException(Exception exception)
     {
         return exception switch
         {
-            Application.Exceptions.NotFoundException =>
-                (404, "Not Found", exception.Message, null),
-
-            Application.Exceptions.ValidationException validationEx =>
-                (400, "Validation Error", exception.Message, validationEx.Errors),
-
-            Application.Exceptions.BadRequestException =>
-                (400, "Bad Request", exception.Message, null),
-
-            Application.Exceptions.InvalidEmailOrPasswordException =>
-                (401, "Invalid Credentials", exception.Message, null),
-
-            Application.Exceptions.UnauthorizedException =>
-                (401, "Unauthorized", exception.Message, null),
-
-            Application.Exceptions.ForbiddenException =>
-                (403, "Forbidden", exception.Message, null),
-
             UnauthorizedAccessException =>
-                (401, "Unauthorized", "Authentication is required.", null),
+                (401, "Unauthorized", "Authentication is required."),
 
             DbUpdateConcurrencyException =>
-                (409, "Conflict", "The record was changed by another request. Please try again.", null),
+                (409, "Conflict", "The record was changed by another request. Please try again."),
 
             ArgumentNullException or ArgumentException =>
-                (400, "Bad Request", exception.Message, null),
+                (400, "Bad Request", exception.Message),
 
-            _ => (500, "Internal Server Error", "An unexpected error occurred.", null)
+            _ => (500, "Internal Server Error", "An unexpected error occurred.")
         };
     }
 }

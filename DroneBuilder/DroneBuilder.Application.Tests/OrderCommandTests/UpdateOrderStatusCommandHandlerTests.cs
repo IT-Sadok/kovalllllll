@@ -44,7 +44,7 @@ public class UpdateOrderStatusCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenOrderNotFound_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenOrderNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
         var command = new UpdateOrderStatusCommand(OrderId, Status.Sent);
@@ -58,7 +58,7 @@ public class UpdateOrderStatusCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenInvalidStatus_ShouldThrowBadRequestException()
+    public async Task ExecuteCommandAsync_WhenInvalidStatus_ShouldReturnFailedResultWithBadRequestError()
     {
         // Arrange
         var command = new UpdateOrderStatusCommand(OrderId, (Status)999);
@@ -79,7 +79,7 @@ public class UpdateOrderStatusCommandHandlerTests
     [InlineData(Status.Sent, Status.Cancelled)]
     [InlineData(Status.Completed, Status.New)]
     [InlineData(Status.Cancelled, Status.Paid)]
-    public async Task ExecuteCommandAsync_WhenTransitionIsNotAllowed_ShouldThrowBadRequestException(
+    public async Task ExecuteCommandAsync_WhenTransitionIsNotAllowed_ShouldReturnFailedResultWithBadRequestError(
         Status currentStatus,
         Status newStatus)
     {

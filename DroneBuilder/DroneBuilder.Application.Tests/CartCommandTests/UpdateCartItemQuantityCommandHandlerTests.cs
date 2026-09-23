@@ -104,7 +104,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenNotEnoughStock_ShouldThrowBadRequestException()
+    public async Task ExecuteCommandAsync_WhenNotEnoughStock_ShouldReturnFailedResultWithBadRequestError()
     {
         // Arrange
         var command = new UpdateCartItemQuantityCommand(ProductId, 10);
