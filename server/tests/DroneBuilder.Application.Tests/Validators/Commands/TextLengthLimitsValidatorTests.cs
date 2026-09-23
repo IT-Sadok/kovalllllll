@@ -1,9 +1,9 @@
-using DroneBuilder.Application.Mediator.Commands.PropertyCommands;
-using DroneBuilder.Application.Mediator.Commands.ValueCommands;
-using DroneBuilder.Application.Models.ProductModels;
-using DroneBuilder.Application.Validation.Validators;
+using DroneBuilder.Application.Features.Properties.CreateProperty;
+using DroneBuilder.Application.Features.Properties.UpdateProperty;
+using DroneBuilder.Application.Features.Values;
+using DroneBuilder.Application.Features.Values.CreateValue;
+using DroneBuilder.Application.Features.Values.UpdateValue;
 using FluentValidation.TestHelper;
-
 namespace DroneBuilder.Application.Tests.Validators.Commands;
 
 public class TextLengthLimitsValidatorTests
