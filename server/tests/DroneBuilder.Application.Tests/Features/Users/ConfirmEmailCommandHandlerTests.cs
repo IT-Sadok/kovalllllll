@@ -1,13 +1,12 @@
 using System.Text;
-using DroneBuilder.Application.Mediator.Commands.UserCommands;
+using DroneBuilder.Application.Features.Users.ConfirmEmail;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Moq;
-
-namespace DroneBuilder.Application.Tests.UserCommandTests;
+namespace DroneBuilder.Application.Tests.Features.Users;
 
 public class ConfirmEmailCommandHandlerTests
 {
