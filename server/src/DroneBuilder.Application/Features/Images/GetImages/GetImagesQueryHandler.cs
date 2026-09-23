@@ -1,10 +1,8 @@
-using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-namespace DroneBuilder.Application.Mediator.Queries.ImageQueries;
+namespace DroneBuilder.Application.Features.Images.GetImages;
 
 public class GetImagesQueryHandler(IImageRepository imageRepository)
     : IQueryHandler<GetImagesQuery, ICollection<ImageModel>>

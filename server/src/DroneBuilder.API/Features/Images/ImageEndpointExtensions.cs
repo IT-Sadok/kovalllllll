@@ -1,14 +1,17 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.API.Extensions;
-using DroneBuilder.Application.Mediator.Commands.ImageCommands;
+using DroneBuilder.Application.Features.Images;
+using DroneBuilder.Application.Features.Images.DeleteImage;
+using DroneBuilder.Application.Features.Images.GetImageById;
+using DroneBuilder.Application.Features.Images.GetImages;
+using DroneBuilder.Application.Features.Images.GetImagesByProductId;
+using DroneBuilder.Application.Features.Images.SetPrimaryImage;
+using DroneBuilder.Application.Features.Images.UploadImage;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Mediator.Queries.ImageQueries;
-using DroneBuilder.Application.Models.ProductModels;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-
-namespace DroneBuilder.API.Endpoints;
+namespace DroneBuilder.API.Features.Images;
 
 public static class ImageEndpointExtensions
 {

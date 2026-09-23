@@ -1,11 +1,9 @@
-using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-namespace DroneBuilder.Application.Mediator.Queries.ImageQueries;
+namespace DroneBuilder.Application.Features.Images.GetImageById;
 
 public class GetImageByIdQueryHandler(IImageRepository imageRepository)
     : IQueryHandler<GetImageByIdQuery, ImageModel>
