@@ -1,6 +1,5 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.UserCommands;
-using DroneBuilder.Application.Models.UserModels;
+using DroneBuilder.Application.Features.Users.SignUp;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -10,8 +9,7 @@ using DroneBuilder.Domain.Events.UserEvents;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 using Moq;
-
-namespace DroneBuilder.Application.Tests.UserCommandTests;
+namespace DroneBuilder.Application.Tests.Features.Users;
 
 public class SignUpCommandHandlerTests
 {

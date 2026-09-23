@@ -1,6 +1,5 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models.UserModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -10,7 +9,7 @@ using DroneBuilder.Domain.Events.UserEvents;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 
-namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
+namespace DroneBuilder.Application.Features.Users.SignUp;
 
 public class SignUpCommandHandler(
     UserManager<User> userManager,

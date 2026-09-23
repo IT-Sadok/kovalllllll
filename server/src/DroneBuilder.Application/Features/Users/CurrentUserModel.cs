@@ -1,4 +1,4 @@
-namespace DroneBuilder.Application.Models.UserModels;
+namespace DroneBuilder.Application.Features.Users;
 
 public class CurrentUserModel
 {

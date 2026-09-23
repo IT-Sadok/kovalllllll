@@ -1,6 +1,6 @@
-namespace DroneBuilder.Application.Models.UserModels;
+namespace DroneBuilder.Application.Features.Users.SignIn;
 
-public class SignUpModel
+public class SignInModel
 {
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;

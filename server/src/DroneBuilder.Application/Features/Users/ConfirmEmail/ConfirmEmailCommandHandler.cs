@@ -6,7 +6,7 @@ using FluentResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
+namespace DroneBuilder.Application.Features.Users.ConfirmEmail;
 
 public class ConfirmEmailCommandHandler(UserManager<User> userManager) : ICommandHandler<ConfirmEmailCommand>
 {

@@ -4,7 +4,7 @@ using DroneBuilder.Domain.Entities;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 
-namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
+namespace DroneBuilder.Application.Features.Users.ResendEmailConfirmation;
 
 public class ResendEmailConfirmationCommandHandler(UserManager<User> userManager, IEmailSender emailSender)
     : ICommandHandler<ResendEmailConfirmationCommand>
