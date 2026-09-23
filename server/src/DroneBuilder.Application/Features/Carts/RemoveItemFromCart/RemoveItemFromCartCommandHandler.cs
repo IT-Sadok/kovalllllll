@@ -9,7 +9,7 @@ using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
 using FluentResults;
 
-namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
+namespace DroneBuilder.Application.Features.Carts.RemoveItemFromCart;
 
 public class RemoveItemFromCartCommandHandler(
     ICartRepository cartRepository,

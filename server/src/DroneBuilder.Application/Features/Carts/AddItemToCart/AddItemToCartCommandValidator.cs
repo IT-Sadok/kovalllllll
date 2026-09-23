@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Mediator.Commands.CartCommands;
 using FluentValidation;
 
-namespace DroneBuilder.Application.Validation.Validators;
+namespace DroneBuilder.Application.Features.Carts.AddItemToCart;
 
 public class AddItemToCartCommandValidator : AbstractValidator<AddItemToCartCommand>
 {

@@ -1,13 +1,16 @@
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.API.Extensions;
-using DroneBuilder.Application.Mediator.Commands.CartCommands;
+using DroneBuilder.Application.Features.Carts;
+using DroneBuilder.Application.Features.Carts.AddItemToCart;
+using DroneBuilder.Application.Features.Carts.ClearCart;
+using DroneBuilder.Application.Features.Carts.GetCart;
+using DroneBuilder.Application.Features.Carts.GetCartItems;
+using DroneBuilder.Application.Features.Carts.RemoveItemFromCart;
+using DroneBuilder.Application.Features.Carts.UpdateCartItemQuantity;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Mediator.Queries.CartQueries;
-using DroneBuilder.Application.Models.CartModels;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-
-namespace DroneBuilder.API.Endpoints;
+namespace DroneBuilder.API.Features.Carts;
 
 public static class CartEndpointExtensions
 {
