@@ -27,8 +27,6 @@ public class RestoreProductCommandHandler(
 
         product.IsDeleted = false;
 
-        // Delisting removed the warehouse record, so the product would come back with no way to hold
-        // stock at all. It starts at zero: what was on the shelf when it was delisted is not known.
         WarehouseItem? warehouseItem =
             await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
 

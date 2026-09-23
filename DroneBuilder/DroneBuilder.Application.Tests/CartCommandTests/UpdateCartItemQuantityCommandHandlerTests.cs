@@ -57,7 +57,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         // Assert
         Assert.Equal(5, cartItem.Quantity);
-        Assert.Equal(7, warehouseItem.Quantity); // 10 - (5-2) = 7
+        Assert.Equal(7, warehouseItem.Quantity);
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -78,7 +78,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         // Assert
         Assert.Equal(1, cartItem.Quantity);
-        Assert.Equal(12, warehouseItem.Quantity); // 10 - (1-3) = 12
+        Assert.Equal(12, warehouseItem.Quantity);
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -99,7 +99,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         // Assert
         await _cartRepository.Received(1).RemoveCartItemAsync(CartItemId, Arg.Any<CancellationToken>());
-        Assert.Equal(12, warehouseItem.Quantity); // 10 - (0-2) = 12
+        Assert.Equal(12, warehouseItem.Quantity);
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -110,7 +110,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
         var command = new UpdateCartItemQuantityCommand(ProductId, 10);
         var cartItem = new CartItem { Id = CartItemId, ProductId = ProductId, Quantity = 2 };
         var cart = new Cart { UserId = UserId, CartItems = new List<CartItem> { cartItem } };
-        var warehouseItem = new WarehouseItem { ProductId = ProductId, Quantity = 5 }; // Only 5 available, need 8 more
+        var warehouseItem = new WarehouseItem { ProductId = ProductId, Quantity = 5 };
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>()).Returns(cart);
         _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(warehouseItem);
@@ -146,7 +146,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        // Assert -- more stock was taken out, so the clock restarts.
+        // Assert
         Assert.True(cartItem.ReservedAt > originalReservedAt);
         Assert.True(cartItem.ReservedAt > DateTime.UtcNow.AddMinutes(-1));
     }
@@ -175,7 +175,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        // Assert -- giving stock back must not buy the remaining units more time.
+        // Assert
         Assert.Equal(originalReservedAt, cartItem.ReservedAt);
     }
 }

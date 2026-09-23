@@ -20,12 +20,8 @@ public class DeleteProductCommandHandler(
             return Result.Fail(new NotFoundError($"Product with id {command.ProductId} not found."));
         }
 
-        // Deleting the row would fail: OrderItem references Product with DeleteBehavior.Restrict,
-        // and past orders must keep pointing at what was bought. Delisting instead.
         existingProduct.IsDeleted = true;
 
-        // A delisted product cannot be bought, so it must not sit in anyone's cart. The stock those
-        // items were holding is not returned because the warehouse record goes away with it.
         await cartRepository.RemoveCartItemsByProductIdAsync(command.ProductId, cancellationToken);
 
         WarehouseItem? warehouseItem =

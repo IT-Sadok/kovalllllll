@@ -14,7 +14,6 @@ public class PayForOrderCommandHandler(IOrderRepository orderRepository, IUserCo
     {
         Order? order = await orderRepository.GetOrderByIdAsync(payForOrderCommand.OrderId, cancellationToken);
 
-        // Orders that belong to another user are reported as missing so their ids cannot be probed.
         if (order is null || order.UserId != userContext.UserId)
         {
             return Result.Fail(new NotFoundError($"Order with id {payForOrderCommand.OrderId} not found."));

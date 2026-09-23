@@ -37,7 +37,6 @@ public class OutboxProcessorHostedService(
 
                     int published = await ProcessOutboxMessagesAsync(stoppingToken);
 
-                    // A full batch means there is probably more waiting, so drain before idling.
                     if (published < BatchSize)
                     {
                         await LogStuckMessagesAsync(stoppingToken);
@@ -52,7 +51,6 @@ public class OutboxProcessorHostedService(
                 {
                     logger.LogError(ex, "Error processing outbox messages");
 
-                    // The connection may be the reason; drop it so the next pass reconnects.
                     await DisposeChannelAndConnectionAsync();
                     await Task.Delay(IdleDelay, stoppingToken);
                 }
@@ -60,7 +58,6 @@ public class OutboxProcessorHostedService(
         }
         catch (OperationCanceledException)
         {
-            // Normal shutdown.
         }
     }
 
@@ -74,8 +71,6 @@ public class OutboxProcessorHostedService(
         _connection ??= await RabbitMqConnector.ConnectWithRetryAsync(
             settings, logger, "outbox publisher", cancellationToken);
 
-        // Publisher confirmations make BasicPublishAsync wait for the broker to take responsibility
-        // for the message. Without them a message could be marked as processed and still be lost.
         _channel = await _connection.CreateChannelAsync(
             new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true),
             cancellationToken);
@@ -88,9 +83,6 @@ public class OutboxProcessorHostedService(
 
         await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
-        // SKIP LOCKED keeps two instances of the API from publishing the same message twice.
-        // Nothing may be composed onto this query (no Where, no OrderBy): EF would wrap it in a
-        // subquery and FOR UPDATE is not valid there.
         List<Message> messages = await context.Messages
             .FromSql(
                 $"""
@@ -148,7 +140,6 @@ public class OutboxProcessorHostedService(
             ContentType = "application/json"
         };
 
-        // mandatory plus confirmations means an unroutable message throws instead of vanishing.
         await _channel!.BasicPublishAsync(
             exchange: string.Empty,
             routingKey: message.QueueName,
@@ -158,10 +149,6 @@ public class OutboxProcessorHostedService(
             cancellationToken: cancellationToken);
     }
 
-    /// <summary>
-    /// Messages that exhausted their attempts are skipped by the query forever, so they are reported
-    /// periodically rather than sitting in the table unnoticed.
-    /// </summary>
     private async Task LogStuckMessagesAsync(CancellationToken cancellationToken)
     {
         if (DateTime.UtcNow - _lastStuckMessageLogUtc < StuckMessageLogInterval)

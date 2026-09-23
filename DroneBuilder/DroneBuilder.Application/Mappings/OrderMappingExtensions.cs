@@ -55,8 +55,6 @@ public static class OrderMappingExtensions
             ProductId = item.ProductId,
             Quantity = item.Quantity,
             Price = item.PriceAtPurchase,
-            // The snapshot taken at purchase time wins; the live product is only a fallback
-            // for rows created before the name was captured.
             ProductName = string.IsNullOrEmpty(item.ProductName)
                 ? item.Product?.Name ?? string.Empty
                 : item.ProductName,

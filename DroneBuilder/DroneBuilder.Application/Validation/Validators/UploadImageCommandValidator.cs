@@ -8,7 +8,6 @@ public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
 {
     private const long MaxFileSizeInBytes = 5 * 1024 * 1024;
 
-    // SVG is deliberately absent: browsers render it and it can carry script.
     private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
 
     private static readonly string[] AllowedContentTypes =
@@ -30,15 +29,12 @@ public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
             RuleFor(x => x.File.FileName)
                 .Must(HasAllowedExtension)
                 .WithMessage($"File must be one of: {string.Join(", ", AllowedExtensions)}.")
-                // Image.FileName is a varchar(200); without this the insert would fail with a 500.
                 .MaximumLength(200).WithMessage("File name must not exceed 200 characters.");
 
             RuleFor(x => x.File.ContentType)
                 .Must(contentType => AllowedContentTypes.Contains(contentType))
                 .WithMessage($"Content type must be one of: {string.Join(", ", AllowedContentTypes)}.");
 
-            // The extension and the content type both come from the client, so the bytes
-            // themselves are the only thing worth trusting.
             RuleFor(x => x.File)
                 .Must(HasImageSignature)
                 .WithMessage("File content is not a valid image.")
@@ -76,7 +72,6 @@ public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
     private static bool IsGif(ReadOnlySpan<byte> header) =>
         header[..4].SequenceEqual("GIF8"u8);
 
-    // "RIFF" then a four byte size, then "WEBP".
     private static bool IsWebp(ReadOnlySpan<byte> header) =>
         header[..4].SequenceEqual("RIFF"u8) && header[8..12].SequenceEqual("WEBP"u8);
 }

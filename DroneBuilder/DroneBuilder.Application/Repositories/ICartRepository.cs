@@ -6,11 +6,6 @@ public interface ICartRepository
 {
     Task CreateCartAsync(Cart cart, CancellationToken cancellationToken = default);
     Task<Cart?> GetCartByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Same as GetCartByUserIdAsync, but locks the cart items for the rest of the transaction so the
-    /// reservation sweep cannot restock them halfway through a checkout.
-    /// </summary>
     Task<Cart?> GetCartByUserIdForUpdateAsync(Guid userId, CancellationToken cancellationToken = default);
     Task RemoveCartItemAsync(Guid cartItemId, CancellationToken cancellationToken = default);
     Task RemoveCartItemsByProductIdAsync(Guid productId, CancellationToken cancellationToken = default);

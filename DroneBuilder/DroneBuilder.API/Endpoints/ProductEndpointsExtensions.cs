@@ -35,8 +35,6 @@ public static class ProductEndpointsExtensions
                 }).WithTags("Products")
             .RequireAuthorization(PolicyNames.Admin);
 
-        // Every other product read hides delisted rows, so without this an admin has no way to find
-        // what there is to restore.
         app.MapGet(ApiRoutes.Products.GetDelisted,
                 async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
                 {

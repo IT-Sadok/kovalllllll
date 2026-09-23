@@ -50,7 +50,7 @@ public class RemoveValueFromPropertyCommandHandlerTests
         // Arrange
         var command = new RemoveValueFromPropertyCommand(PropertyId, ValueId);
         var property = new Property { Id = PropertyId, Values = new List<Value>() };
-        var value = new Value { Id = ValueId, Properties = new List<Property>() }; // Orphan after removal
+        var value = new Value { Id = ValueId, Properties = new List<Property>() };
         property.Values.Add(value);
 
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns(property);

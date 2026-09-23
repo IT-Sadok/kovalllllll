@@ -4,10 +4,6 @@ using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Tests.OrderCommandTests;
 
-/// <summary>
-/// OrderItem.ProductName is a snapshot taken at purchase time. Renaming a product later must not
-/// rewrite what past orders say was bought.
-/// </summary>
 public class OrderHistorySnapshotTests
 {
     [Fact]
@@ -33,7 +29,7 @@ public class OrderHistorySnapshotTests
     [Fact]
     public void ToModel_WhenSnapshotIsMissing_ShouldFallBackToTheLiveProduct()
     {
-        // Arrange -- rows written before the name was captured have an empty snapshot.
+        // Arrange
         var item = new OrderItem
         {
             ProductId = Guid.NewGuid(),

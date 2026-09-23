@@ -25,7 +25,7 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
 
     public AddQuantityToWarehouseItemCommandHandlerTests()
     {
-        // Arrange - створення substitutes
+        // Arrange
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
 

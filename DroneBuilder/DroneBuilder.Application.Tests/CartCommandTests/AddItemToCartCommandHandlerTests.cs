@@ -94,7 +94,6 @@ public class AddItemToCartCommandHandlerTests
                 ci.ProductId == ProductId &&
                 ci.ProductName == ProductName &&
                 ci.Quantity == ValidQuantity &&
-                // Stamped so the sweep can expire the reservation later.
                 ci.ReservedAt > DateTime.UtcNow.AddMinutes(-1)),
             Arg.Any<CancellationToken>());
 
@@ -161,7 +160,6 @@ public class AddItemToCartCommandHandlerTests
         // Assert
         Assert.Equal(initialCartItemQuantity + ValidQuantity, existingCartItem.Quantity);
 
-        // Fresh stock was just taken out, so the reservation clock restarts for the whole item.
         Assert.True(existingCartItem.ReservedAt > DateTime.UtcNow.AddMinutes(-1));
 
         await _cartRepository.DidNotReceive().AddCartItemAsync(
@@ -310,7 +308,6 @@ public class AddItemToCartCommandHandlerTests
             $"Not enough stock. Available: {availableQuantity}, requested: {ValidQuantity}.",
             result.Errors[0].Message);
 
-        // The stock must be left untouched rather than pushed negative and rolled back by hand.
         Assert.Equal(availableQuantity, warehouseItem.Quantity);
 
         await _cartRepository.DidNotReceive().AddCartItemAsync(Arg.Any<CartItem>(), Arg.Any<CancellationToken>());

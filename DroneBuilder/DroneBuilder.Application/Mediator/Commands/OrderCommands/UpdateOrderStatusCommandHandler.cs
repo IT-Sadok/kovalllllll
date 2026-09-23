@@ -11,8 +11,6 @@ public class UpdateOrderStatusCommandHandler(
     IWarehouseRepository warehouseRepository)
     : ICommandHandler<UpdateOrderStatusCommand>
 {
-    // Completed and Cancelled are terminal. An order can only be cancelled before it ships,
-    // because once it is Sent the goods have physically left the warehouse.
     private static readonly Dictionary<Status, Status[]> AllowedTransitions = new()
     {
         [Status.New] = [Status.Paid, Status.Cancelled],
@@ -30,7 +28,6 @@ public class UpdateOrderStatusCommandHandler(
             return Result.Fail(new NotFoundError($"Order with ID {command.OrderId} not found."));
         }
 
-        // Validate if the status is a valid enum value
         if (!Enum.IsDefined(typeof(Status), command.NewStatus))
         {
             return Result.Fail(new BadRequestError($"Invalid status value: {command.NewStatus}"));
@@ -59,7 +56,6 @@ public class UpdateOrderStatusCommandHandler(
         return Result.Ok();
     }
 
-    // Stock leaves the warehouse when an item is added to the cart, so cancelling has to give it back.
     private async Task<Result> RestockAsync(Order order, CancellationToken cancellationToken)
     {
         foreach (OrderItem item in order.OrderItems)

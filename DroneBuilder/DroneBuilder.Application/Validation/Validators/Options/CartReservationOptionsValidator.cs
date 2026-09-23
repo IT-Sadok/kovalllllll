@@ -13,7 +13,6 @@ public class CartReservationOptionsValidator : AbstractValidator<CartReservation
         RuleFor(x => x.SweepIntervalMinutes)
             .GreaterThan(0).WithMessage("Cart reservation SweepIntervalMinutes must be greater than 0.");
 
-        // Sweeping less often than the lifetime would let reservations outlive it by a whole interval.
         RuleFor(x => x.SweepIntervalMinutes)
             .LessThanOrEqualTo(x => x.TimeToLiveMinutes)
             .WithMessage("Cart reservation SweepIntervalMinutes must not exceed TimeToLiveMinutes.");

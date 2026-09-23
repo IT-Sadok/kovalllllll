@@ -53,7 +53,6 @@ public class DeleteProductCommandHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
 
-        // Removing the row would violate the restricted foreign key from OrderItem.
         Assert.True(existingProduct.IsDeleted);
 
         await _productRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -73,7 +72,7 @@ public class DeleteProductCommandHandlerTests
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        // Assert -- a delisted product must not stay purchasable from a cart.
+        // Assert
         await _cartRepository.Received(1).RemoveCartItemsByProductIdAsync(
             Arg.Is<Guid>(id => id == ProductId),
             Arg.Any<CancellationToken>());
@@ -160,7 +159,7 @@ public class DeleteProductCommandHandlerTests
     [Fact]
     public async Task ExecuteCommandAsync_WhenProductIsAlreadyDelisted_ShouldThrowNotFoundException()
     {
-        // Arrange -- the repository filters delisted products out, so a second delete finds nothing.
+        // Arrange
         var command = new DeleteProductCommand(ProductId);
 
         _productRepository.GetProductByIdAsync(

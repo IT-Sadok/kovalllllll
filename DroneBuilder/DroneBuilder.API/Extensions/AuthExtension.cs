@@ -67,9 +67,6 @@ public static class AuthExtension
             {
                 OnMessageReceived = context =>
                 {
-                    // Browsers hold the token in an HttpOnly cookie and send no Authorization header.
-                    // When there is no cookie the default header handling still applies, which keeps
-                    // non-browser clients and the API explorer working.
                     if (context.Request.Cookies.TryGetValue(AuthCookie.Name, out string? token)
                         && !string.IsNullOrEmpty(token))
                     {

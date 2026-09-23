@@ -25,18 +25,10 @@ public class RemoveValueFromPropertyCommandHandler(
             return Result.Fail(new NotFoundError($"Value with ID {command.ValueId} not found."));
         }
 
-        // Remove the link
         if (property.Values.Contains(value))
         {
             property.Values.Remove(value);
             await propertyRepository.SaveChangesAsync(cancellationToken);
-
-            // Re-load value with properties to check for orphans
-            // We need to check if this value is still linked to any other properties
-            // or if it's used in any ProductPropertyValues.
-
-            // However, our rule is "Value exists if it belongs to a property".
-            // So we check if it has any properties left.
 
             Value? updatedValue = await valueRepository.GetValueWithPropertiesByIdAsync(command.ValueId, cancellationToken);
             if (updatedValue != null && (updatedValue.Properties == null || updatedValue.Properties.Count == 0))

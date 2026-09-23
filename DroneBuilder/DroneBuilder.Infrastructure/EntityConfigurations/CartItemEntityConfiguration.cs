@@ -16,7 +16,6 @@ public class CartItemEntityConfiguration : IEntityTypeConfiguration<CartItem>
         builder.Property(ci => ci.ReservedAt)
             .IsRequired();
 
-        // The sweep looks items up by age, and it runs on every cart in the database.
         builder.HasIndex(ci => ci.ReservedAt);
 
         builder.HasOne(ci => ci.Cart)

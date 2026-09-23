@@ -46,7 +46,6 @@ public class UpdateCartItemQuantityCommandHandler(
             return Result.Ok();
         }
 
-        // Only an increase takes stock out of the warehouse; a decrease puts it back.
         if (quantityDifference > 0)
         {
             Result availabilityResult = WarehouseValidation.EnsureEnoughAvailable(warehouseItem, quantityDifference);
@@ -66,7 +65,6 @@ public class UpdateCartItemQuantityCommandHandler(
         {
             cartItem.Quantity = command.Quantity;
 
-            // Only growing the item takes new stock out, so only that restarts the reservation.
             if (quantityDifference > 0)
             {
                 cartItem.ReservedAt = DateTime.UtcNow;

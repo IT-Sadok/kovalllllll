@@ -25,9 +25,6 @@ public abstract class Program
 
         builder.Services.AddRateLimitingConfig(builder.Configuration);
 
-        // Off by default on purpose. X-Forwarded-For is client supplied, so honouring it without a
-        // reverse proxy in front lets anyone forge their address and walk past the login rate limit.
-        // Turn it on only where every request really does arrive through a trusted proxy.
         bool trustForwardedHeaders = builder.Configuration.GetValue<bool>("ForwardedHeaders:Enabled");
 
         if (trustForwardedHeaders)
@@ -36,8 +33,6 @@ public abstract class Program
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 
-                // The defaults trust loopback only, which never matches a platform proxy such as
-                // Azure Web Apps; the app is not reachable except through it.
                 options.KnownNetworks.Clear();
                 options.KnownProxies.Clear();
             });
@@ -76,9 +71,6 @@ public abstract class Program
 
         app.UseExceptionHandler();
 
-        // Must run before anything reads the scheme or the client address: HTTPS redirection would
-        // otherwise loop behind a TLS terminating proxy, and the rate limiter would partition every
-        // request under the proxy's own address.
         if (trustForwardedHeaders)
         {
             app.UseForwardedHeaders();

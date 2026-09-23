@@ -8,10 +8,6 @@ internal static class RabbitMqConnector
     private static readonly TimeSpan InitialRetryDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan MaxRetryDelay = TimeSpan.FromSeconds(60);
 
-    /// <summary>
-    /// Keeps retrying until the broker answers or the host shuts down. A broker that is down must not
-    /// take the API with it: the outbox holds events in the database, so publishing catches up later.
-    /// </summary>
     public static async Task<IConnection> ConnectWithRetryAsync(
         RabbitMqConfiguration settings,
         ILogger logger,

@@ -69,7 +69,6 @@ public static class InfrastructureExtensions
 
         services.AddScoped<IJwtService, JwtService>();
 
-        // The client owns a connection pool, so one instance is shared rather than rebuilt per request.
         services.AddSingleton(sp =>
             new BlobServiceClient(sp.GetRequiredService<IOptions<AzureStorageConfig>>().Value.ConnectionString));
 

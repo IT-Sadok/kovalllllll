@@ -6,10 +6,6 @@ using FluentValidation.TestHelper;
 
 namespace DroneBuilder.Application.Tests.Validators.Commands;
 
-/// <summary>
-/// Property.Name and Value.Text are varchar(100) in the database. A validator that allows more
-/// than the column holds turns a bad request into a 500 on SaveChanges, so the limits are pinned here.
-/// </summary>
 public class TextLengthLimitsValidatorTests
 {
     private const int ColumnLength = 100;

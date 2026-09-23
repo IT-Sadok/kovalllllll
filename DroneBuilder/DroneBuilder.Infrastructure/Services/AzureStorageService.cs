@@ -26,15 +26,11 @@ public class AzureStorageService(
             BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             await containerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
-            // The uploaded name is not unique: two products both called "photo.jpg" would
-            // overwrite each other's blob. The original name is kept on Image.FileName.
             string blobName = $"{Guid.NewGuid():N}{Path.GetExtension(file.FileName)}";
             BlobClient blobClient = containerClient.GetBlobClient(blobName);
 
             await using Stream stream = file.OpenReadStream();
 
-            // Pinning the content type keeps the blob from being served as something the browser
-            // would execute. The command validator has already restricted it to an image type.
             await blobClient.UploadAsync(
                 stream,
                 new BlobUploadOptions

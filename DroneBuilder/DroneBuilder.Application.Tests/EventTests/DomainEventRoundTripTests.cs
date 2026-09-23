@@ -9,20 +9,13 @@ using DroneBuilder.Domain.Events.WarehouseEvents;
 
 namespace DroneBuilder.Application.Tests.EventTests;
 
-/// <summary>
-/// Events go through the outbox as JSON and come back in a consumer. A property the serializer
-/// cannot write back arrives as its default value, which is silent data loss, so every event is
-/// round-tripped here with the exact options both sides use.
-/// </summary>
 public class DomainEventRoundTripTests
 {
-    // Matches OutboxEventService.
     private static readonly JsonSerializerOptions WriteOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    // Matches JsonSettings used by every event handler.
     private static readonly JsonSerializerOptions ReadOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -154,7 +147,6 @@ public class DomainEventRoundTripTests
     [Fact]
     public void RoundTrip_ShouldPreserveTheEventTypeDiscriminator()
     {
-        // The consumer routes on this property; losing it would dead-letter every message.
         var @event = new OrderCreatedEvent(Guid.NewGuid(), Guid.NewGuid());
 
         OrderCreatedEvent result = RoundTrip(@event);

@@ -2,10 +2,6 @@ using System.Text;
 
 namespace DroneBuilder.Infrastructure.MessageBroker.Configuration;
 
-/// <summary>
-/// Redelivery count carried on the message itself. AMQP header values arrive with whatever type the
-/// publisher used, and strings come back as raw bytes, so reading one back is deliberately lenient.
-/// </summary>
 internal static class MessageRetryHeader
 {
     public const string Name = "x-retry-count";
@@ -27,7 +23,6 @@ internal static class MessageRetryHeader
             _ => 0
         };
 
-        // A negative or nonsensical value must not be able to grant unlimited redeliveries.
         return value < 0 ? 0 : value;
     }
 

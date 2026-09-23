@@ -19,8 +19,6 @@ public class EventConsumerHostedService(
 {
     private IConnection? _connection;
 
-    // A channel is not thread safe, so each queue gets its own instead of six consumers sharing one.
-    // It also makes the per queue prefetch real: BasicQos applies to a whole channel.
     private readonly List<IChannel> _channels = [];
 
     private List<QueueConfiguration> GetQueuesToListen()
@@ -49,7 +47,6 @@ public class EventConsumerHostedService(
         }
         catch (OperationCanceledException)
         {
-            // Normal shutdown.
         }
         catch (Exception ex)
         {
@@ -70,7 +67,6 @@ public class EventConsumerHostedService(
             arguments: queueConfig.Arguments?.ToDictionary(x => x.Key, x => (object?)x.Value),
             cancellationToken: cancellationToken);
 
-        // Failures land here instead of being dropped by a nack with requeue disabled.
         await channel.QueueDeclareAsync(
             queue: MessageRetryHeader.DeadLetterQueueName(queueConfig.Name),
             durable: true,
@@ -113,7 +109,6 @@ public class EventConsumerHostedService(
             string? eventType = ExtractEventType(json);
             if (eventType == null)
             {
-                // Nothing can ever make this payload readable, so retrying it is pointless.
                 await DeadLetterAsync(channel, queueConfig, eventArgs, "payload has no event type", cancellationToken);
                 return;
             }
@@ -178,18 +173,12 @@ public class EventConsumerHostedService(
         await PublishAsync(channel, deadLetterQueue, eventArgs,
             MessageRetryHeader.Read(eventArgs.BasicProperties.Headers), cancellationToken);
 
-        // Acked only once the copy is safely on the dead letter queue.
         await channel.BasicAckAsync(eventArgs.DeliveryTag, false, cancellationToken);
 
         logger.LogError("Event from {Queue} moved to {DeadLetterQueue}: {Reason}",
             queueConfig.Name, deadLetterQueue, reason);
     }
 
-    /// <summary>
-    /// Republishes on the very channel the message arrived on. That is safe precisely because each
-    /// queue owns its channel: deliveries on one channel are dispatched one at a time, so this
-    /// publish cannot race with another delivery on the same channel.
-    /// </summary>
     private static async Task PublishAsync(
         IChannel channel,
         string queueName,

@@ -55,7 +55,7 @@ public class RestoreProductCommandHandlerTests
     [Fact]
     public async Task ExecuteCommandAsync_WhenRestoring_ShouldRecreateTheWarehouseRecordAtZero()
     {
-        // Arrange -- delisting removed it, so without this the product returns unable to hold stock.
+        // Arrange
         GivenDelistedProduct(new Product { Id = ProductId, Name = ProductName, IsDeleted = true });
 
         _warehouseRepository.GetWarehouseItemByProductIdAsync(
@@ -71,7 +71,6 @@ public class RestoreProductCommandHandlerTests
             Arg.Is<WarehouseItem>(wi =>
                 wi.ProductId == ProductId &&
                 wi.WarehouseId == WarehouseId &&
-                // What was on the shelf at delisting time is not recorded anywhere.
                 wi.Quantity == 0),
             Arg.Any<CancellationToken>());
     }
@@ -79,7 +78,7 @@ public class RestoreProductCommandHandlerTests
     [Fact]
     public async Task ExecuteCommandAsync_WhenWarehouseRecordSurvived_ShouldNotCreateASecondOne()
     {
-        // Arrange -- the unique index on ProductId would reject a duplicate.
+        // Arrange
         GivenDelistedProduct(new Product { Id = ProductId, Name = ProductName, IsDeleted = true });
 
         _warehouseRepository.GetWarehouseItemByProductIdAsync(
@@ -100,7 +99,7 @@ public class RestoreProductCommandHandlerTests
     [Fact]
     public async Task ExecuteCommandAsync_WhenProductIsNotDelisted_ShouldThrowNotFoundException()
     {
-        // Arrange -- the lookup only matches delisted rows, so a live product reads as absent.
+        // Arrange
         GivenDelistedProduct(null!);
 
         // Act & Assert

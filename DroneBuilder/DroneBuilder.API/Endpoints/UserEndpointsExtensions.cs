@@ -33,8 +33,6 @@ public static class UserEndpointsExtensions
                     return result.ToHttpResult();
                 }
 
-                // The token goes into the cookie and nowhere else: nothing hands it to scripts, so
-                // nothing can put it back into localStorage where an XSS could read it.
                 httpContext.Response.Cookies.Append(
                     AuthCookie.Name, result.Value.AccessToken, AuthCookie.Options());
 
@@ -45,8 +43,6 @@ public static class UserEndpointsExtensions
         app.MapPost(ApiRoutes.Users.SignOut,
             (HttpContext httpContext) =>
             {
-                // Anonymous on purpose: an expired or already invalid session must still be able to
-                // clear its cookie, and clearing your own cookie harms nobody.
                 httpContext.Response.Cookies.Delete(AuthCookie.Name, AuthCookie.Options());
                 return Results.NoContent();
             }).WithTags("Users");
@@ -54,7 +50,6 @@ public static class UserEndpointsExtensions
         app.MapGet(ApiRoutes.Users.Me,
             (ClaimsPrincipal principal) =>
             {
-                // Replaces decoding the JWT in the browser, which an HttpOnly cookie makes impossible.
                 var currentUser = new CurrentUserModel
                 {
                     Id = principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,

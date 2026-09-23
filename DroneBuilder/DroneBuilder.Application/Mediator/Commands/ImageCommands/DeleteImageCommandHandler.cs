@@ -20,7 +20,6 @@ public class DeleteImageCommandHandler(IAzureStorageService azureStorageService,
 
         await azureStorageService.DeleteFileAsync(existingImage.Url, cancellationToken);
 
-        // Deleting the primary image promotes another one so the product keeps a cover.
         if (existingImage.IsPrimary)
         {
             ICollection<Image> otherImages = await imageRepository.GetImagesByProductIdAsync(existingImage.ProductId, cancellationToken);

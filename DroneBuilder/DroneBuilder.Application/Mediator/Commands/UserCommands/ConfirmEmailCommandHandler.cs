@@ -18,7 +18,6 @@ public class ConfirmEmailCommandHandler(UserManager<User> userManager) : IComman
             return Result.Fail(new NotFoundError($"User with id {command.UserId} not found."));
         }
 
-        // Following the same link twice should not look like a failure.
         if (user.EmailConfirmed)
         {
             return Result.Ok();

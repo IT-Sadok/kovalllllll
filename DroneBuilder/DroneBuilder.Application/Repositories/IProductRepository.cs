@@ -16,7 +16,6 @@ public interface IProductRepository
         ProductFilterModel filter,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Delisted products are hidden from every other read, so restoring one needs its own lookup.</summary>
     Task<Product?> GetDelistedProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<PagedResult<Product>> GetDelistedProductsAsync(PaginationParams pagination,

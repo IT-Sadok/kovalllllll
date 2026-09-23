@@ -33,10 +33,6 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
 
     public async Task<Cart?> GetCartByUserIdForUpdateAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        // Takes a row lock on this cart's items for the rest of the transaction. The expiry sweep
-        // selects FOR UPDATE SKIP LOCKED, so it passes over them rather than restocking a cart that
-        // is being checked out. Nothing may be composed onto this query: EF would wrap it in a
-        // subquery and FOR UPDATE is not valid there.
         await dbContext.CartItems
             .FromSql(
                 $"""

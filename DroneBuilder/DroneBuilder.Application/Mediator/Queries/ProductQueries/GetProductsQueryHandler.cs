@@ -28,7 +28,6 @@ public class GetProductsQueryHandler(
 
         List<ProductModel> mappedItems = products.Items.Select(x => x.ToModel()).ToList();
 
-        // Fetch stock levels from WarehouseRepository
         var productIds = mappedItems.Select(i => i.Id).ToList();
         ICollection<WarehouseItem> warehouseItems = await warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(productIds, cancellationToken);
 

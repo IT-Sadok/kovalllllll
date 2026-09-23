@@ -9,11 +9,6 @@ using NSubstitute;
 
 namespace DroneBuilder.Application.Tests.MediatorTests;
 
-/// <summary>
-/// The mediator has to resolve handlers from the scope it was resolved from. Creating a child scope
-/// per call hands every handler its own DbContext, which silently rules out sharing a transaction
-/// between two calls in the same request.
-/// </summary>
 public class MediatorScopeTests
 {
     private static readonly Guid ValueId = Guid.NewGuid();
@@ -25,7 +20,6 @@ public class MediatorScopeTests
         var services = new ServiceCollection();
         services.AddApplication();
 
-        // Scoped, so the factory runs once per scope: a second run means a second scope was created.
         services.AddScoped<IValueRepository>(_ =>
         {
             count++;
@@ -49,7 +43,6 @@ public class MediatorScopeTests
 
         using IServiceScope scope = provider.CreateScope();
 
-        // Touching the repository here creates the scope's single instance.
         scope.ServiceProvider.GetRequiredService<IValueRepository>();
         Assert.Equal(1, scopedResolutions());
 
@@ -61,7 +54,6 @@ public class MediatorScopeTests
         // Assert
         Assert.True(result.IsSuccess);
 
-        // Still one: the handler shared the caller's scope instead of getting a fresh one.
         Assert.Equal(1, scopedResolutions());
 
         repository.Received(1).RemoveValue(Arg.Is<Value>(v => v.Id == ValueId));
@@ -78,7 +70,7 @@ public class MediatorScopeTests
         using IServiceScope scope = provider.CreateScope();
         IMediator mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-        // Act -- an empty id is rejected by DeleteValueCommandValidator.
+        // Act
         Result result = await mediator.ExecuteCommandAsync(new DeleteValueCommand(Guid.Empty), CancellationToken.None);
 
         // Assert

@@ -45,7 +45,7 @@ public class UploadImageCommandValidatorTests
     [Fact]
     public void Should_Have_Error_When_Extension_Is_Not_Allowed()
     {
-        // Arrange -- an SVG would be rendered by the browser and can carry script.
+        // Arrange
         UploadImageCommand command = CreateCommand("payload.svg", "image/png", PngBytes);
 
         // Act
@@ -71,7 +71,7 @@ public class UploadImageCommandValidatorTests
     [Fact]
     public void Should_Have_Error_When_Content_Does_Not_Match_An_Image_Signature()
     {
-        // Arrange -- html dressed up as a png, with both client supplied fields lying.
+        // Arrange
         byte[] html = "<html><script>alert(1)</script></html>"u8.ToArray();
         UploadImageCommand command = CreateCommand("photo.png", "image/png", html);
 

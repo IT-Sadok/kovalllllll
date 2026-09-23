@@ -7,11 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DroneBuilder.Application.Mediator;
 
-/// <summary>
-/// Resolves handlers from the scope it was itself resolved from, which for an HTTP request is that
-/// request's scope. Creating a child scope per call would give every handler its own DbContext, so
-/// two calls in one request could not share a transaction or see each other's tracked changes.
-/// </summary>
 public class Mediator(IServiceProvider serviceProvider) : IMediator
 {
     public async Task<Result> ExecuteCommandAsync<T>(T command, CancellationToken cancellationToken)

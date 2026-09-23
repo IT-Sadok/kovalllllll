@@ -155,7 +155,6 @@ public class SignUpCommandHandlerTests
             x => x.DeleteAsync(It.Is<User>(u => u.Email == signUpModel.Email)),
             Times.Once);
 
-        // A user with no role must not be left behind, and nothing downstream should run.
         _mockEmailSender.Verify(
             x => x.SendEmailConfirmationAsync(
                 It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),

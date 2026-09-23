@@ -23,7 +23,7 @@ public class UpdateProductCommandHandlerTests
 
     public UpdateProductCommandHandlerTests()
     {
-        // Arrange - створення substitutes
+        // Arrange
         _productRepository = Substitute.For<IProductRepository>();
 
         _handler = new UpdateProductCommandHandler(

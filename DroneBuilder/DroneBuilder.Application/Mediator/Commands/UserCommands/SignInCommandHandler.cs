@@ -28,8 +28,6 @@ public class SignInCommandHandler(
             return Result.Fail<AuthUserModel>(new UnauthorizedError("Invalid email or password."));
         }
 
-        // SignInManager is what applies the configured lockout: it counts failures and blocks
-        // unconfirmed accounts. UserManager.CheckPasswordAsync does neither.
         SignInResult signInResult =
             await signInManager.CheckPasswordSignInAsync(user, command.Password, lockoutOnFailure: true);
 

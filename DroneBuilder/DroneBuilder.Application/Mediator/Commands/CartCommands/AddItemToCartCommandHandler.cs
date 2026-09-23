@@ -35,8 +35,6 @@ public class AddItemToCartCommandHandler(
             return Result.Fail(new NotFoundError($"Warehouse item for product ID {command.ProductId} not found."));
         }
 
-        // Checked before anything is mutated, so the caller gets the real numbers back
-        // instead of a complaint about the stock having gone negative.
         Result availabilityResult = WarehouseValidation.EnsureEnoughAvailable(warehouseItem, command.Quantity);
         if (availabilityResult.IsFailed)
         {
@@ -74,7 +72,6 @@ public class AddItemToCartCommandHandler(
         {
             existingCartItem.Quantity += command.Quantity;
 
-            // More stock was just taken out, so the whole item's reservation starts over.
             existingCartItem.ReservedAt = DateTime.UtcNow;
         }
 

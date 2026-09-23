@@ -8,10 +8,6 @@ using Microsoft.Extensions.Logging;
 
 namespace DroneBuilder.Infrastructure.Services;
 
-/// <summary>
-/// Stock leaves the warehouse the moment an item goes into a cart. Without this sweep an abandoned
-/// cart would hold that stock forever, and one customer could take the whole warehouse out of sale.
-/// </summary>
 public class ExpiredCartReservationsHostedService(
     IServiceProvider serviceProvider,
     CartReservationOptions options,
@@ -63,8 +59,6 @@ public class ExpiredCartReservationsHostedService(
 
         await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
-        // SKIP LOCKED keeps a second instance from returning the same stock twice.
-        // Nothing may be composed onto this query: EF would wrap it and FOR UPDATE is invalid there.
         List<CartItem> expiredItems = await context.CartItems
             .FromSql(
                 $"""
@@ -98,8 +92,6 @@ public class ExpiredCartReservationsHostedService(
             }
             else
             {
-                // The product was delisted, which already removed its warehouse record. There is
-                // nothing to give the stock back to, so the item is only dropped from the cart.
                 logger.LogWarning(
                     "No warehouse record for product {ProductId}; dropping the expired reservation without restocking",
                     item.ProductId);

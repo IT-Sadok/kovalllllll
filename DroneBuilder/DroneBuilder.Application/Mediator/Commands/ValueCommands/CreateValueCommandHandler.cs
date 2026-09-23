@@ -25,7 +25,6 @@ public class CreateValueCommandHandler(
 
         await valueRepository.AddValueAsync(value, cancellationToken);
 
-        // Link value to property
         property.Values.Add(value);
 
         await valueRepository.SaveChangesAsync(cancellationToken);

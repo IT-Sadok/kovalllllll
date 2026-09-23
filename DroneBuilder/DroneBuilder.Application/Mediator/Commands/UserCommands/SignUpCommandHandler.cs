@@ -48,8 +48,6 @@ public class SignUpCommandHandler(
 
         if (emailResult.IsFailed)
         {
-            // Without the email the account can never be confirmed, so do not leave it behind
-            // holding the address hostage against a retry.
             await userManager.DeleteAsync(user);
             return emailResult;
         }

@@ -156,7 +156,6 @@ public class CreateOrderCommandHandlerTests
 
         await _orderRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
 
-        // The order and the emptied cart must land together or not at all.
         await _transaction.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
@@ -180,7 +179,7 @@ public class CreateOrderCommandHandlerTests
         // Act
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        // Assert -- the unlocked read would let the reservation sweep restock these items mid-checkout.
+        // Assert
         await _cartRepository.DidNotReceive().GetCartByUserIdAsync(
             Arg.Any<Guid>(), Arg.Any<CancellationToken>());
 
@@ -190,7 +189,7 @@ public class CreateOrderCommandHandlerTests
     [Fact]
     public async Task ExecuteCommandAsync_WhenSweepReleasedTheCartFirst_ShouldNotCreateAnOrder()
     {
-        // Arrange -- the locked read blocks until the sweep commits, then sees an emptied cart.
+        // Arrange
         var command = new CreateOrderCommand(new ShippingDetailsModel
         {
             FullName = "Test User",
@@ -214,7 +213,6 @@ public class CreateOrderCommandHandlerTests
         await _orderRepository.DidNotReceive().CreateOrderAsync(
             Arg.Any<Order>(), Arg.Any<CancellationToken>());
 
-        // Nothing committed, so the transaction rolls back on dispose.
         await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 
@@ -331,8 +329,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(cart);
 
-        // The repository returns the items it stocks -- a product it does not stock is simply absent,
-        // it never yields null.
         _warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(
                 Arg.Is<List<Guid>>(ids => ids.Contains(ProductId1)),
                 Arg.Any<CancellationToken>())
@@ -432,7 +428,6 @@ public class CreateOrderCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(cart);
 
-        // Only the first product is stocked; the second one must still be rejected.
         _warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(
                 Arg.Any<ICollection<Guid>>(),
                 Arg.Any<CancellationToken>())
