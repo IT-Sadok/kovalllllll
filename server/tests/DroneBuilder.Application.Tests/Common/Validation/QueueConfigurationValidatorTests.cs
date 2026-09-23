@@ -2,7 +2,7 @@ using DroneBuilder.Application.Common.Options;
 using DroneBuilder.Application.Common.Validation.Validators.Options;
 using FluentValidation.TestHelper;
 
-namespace DroneBuilder.Application.Tests.Validators.Options;
+namespace DroneBuilder.Application.Tests.Common.Validation;
 
 public class QueueConfigurationValidatorTests
 {

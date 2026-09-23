@@ -1,6 +1,6 @@
 using DroneBuilder.Application.Features.Warehouses.AddQuantityToWarehouseItem;
 using FluentValidation.TestHelper;
-namespace DroneBuilder.Application.Tests.Validators.Commands;
+namespace DroneBuilder.Application.Tests.Features.Warehouses;
 
 public class AddQuantityToWarehouseItemCommandValidatorTests
 {

@@ -7,7 +7,7 @@ using DroneBuilder.Domain.Events.ProductEvents;
 using DroneBuilder.Domain.Events.UserEvents;
 using DroneBuilder.Domain.Events.WarehouseEvents;
 
-namespace DroneBuilder.Application.Tests.EventTests;
+namespace DroneBuilder.Application.Tests.Common.Events;
 
 public class DomainEventRoundTripTests
 {

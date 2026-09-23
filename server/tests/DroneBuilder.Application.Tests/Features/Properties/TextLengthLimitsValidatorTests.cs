@@ -4,7 +4,7 @@ using DroneBuilder.Application.Features.Values;
 using DroneBuilder.Application.Features.Values.CreateValue;
 using DroneBuilder.Application.Features.Values.UpdateValue;
 using FluentValidation.TestHelper;
-namespace DroneBuilder.Application.Tests.Validators.Commands;
+namespace DroneBuilder.Application.Tests.Features.Properties;
 
 public class TextLengthLimitsValidatorTests
 {

@@ -6,7 +6,7 @@ using DroneBuilder.Domain.Entities;
 using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-namespace DroneBuilder.Application.Tests.MediatorTests;
+namespace DroneBuilder.Application.Tests.Common.Mediator;
 
 public class MediatorScopeTests
 {
