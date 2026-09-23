@@ -1,5 +1,5 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.OrderCommands;
+using DroneBuilder.Application.Features.Orders;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Infrastructure.Options;
@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
 using Stripe.Checkout;
-
 namespace DroneBuilder.Infrastructure.Services;
 
 public class StripePaymentGateway(
