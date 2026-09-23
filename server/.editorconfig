@@ -237,7 +237,7 @@ dotnet_diagnostic.CA2016.severity = warning
 dotnet_diagnostic.CA1849.severity = warning
 
 # Test projects - async suffix rule doesn't apply to test method names
-[DroneBuilder.Application.Tests/**/*.cs]
+[tests/**/*.cs]
 dotnet_naming_rule.async_methods_end_in_async.severity = none
 
 # Generated code
