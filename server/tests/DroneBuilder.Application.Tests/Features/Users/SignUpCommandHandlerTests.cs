@@ -1,7 +1,7 @@
 using DroneBuilder.Application.Common.Abstractions;
+using DroneBuilder.Application.Common.Errors;
 using DroneBuilder.Application.Common.Options;
 using DroneBuilder.Application.Common.Repositories;
-using DroneBuilder.Application.Common.ResultErrors;
 using DroneBuilder.Application.Features.Users.SignUp;
 using DroneBuilder.Domain.Constants;
 using DroneBuilder.Domain.Entities;
@@ -73,7 +73,7 @@ public class SignUpCommandHandlerTests
             Email = ValidEmail,
             Password = ValidPassword
         };
-        var command = new SignUpUserCommand(signUpModel);
+        var command = new SignUpCommand(signUpModel);
 
         _mockUserManager
             .Setup(x => x.CreateAsync(It.Is<User>(u => u.Email == signUpModel.Email),
@@ -129,7 +129,7 @@ public class SignUpCommandHandlerTests
             Email = ValidEmail,
             Password = ValidPassword
         };
-        var command = new SignUpUserCommand(signUpModel);
+        var command = new SignUpCommand(signUpModel);
 
         _mockUserManager
             .Setup(x => x.CreateAsync(It.Is<User>(u => u.Email == signUpModel.Email),
@@ -172,7 +172,7 @@ public class SignUpCommandHandlerTests
             Email = ValidEmail,
             Password = ValidPassword
         };
-        var command = new SignUpUserCommand(signUpModel);
+        var command = new SignUpCommand(signUpModel);
 
         _mockUserManager
             .Setup(x => x.CreateAsync(It.Is<User>(u => u.Email == signUpModel.Email),
@@ -216,7 +216,7 @@ public class SignUpCommandHandlerTests
             Email = ValidEmail,
             Password = InvalidPassword
         };
-        var command = new SignUpUserCommand(signUpModel);
+        var command = new SignUpCommand(signUpModel);
 
         IdentityError[] errors = new[]
         {
@@ -257,7 +257,7 @@ public class SignUpCommandHandlerTests
             Email = null!,
             Password = ValidPassword
         };
-        var command = new SignUpUserCommand(signUpModel);
+        var command = new SignUpCommand(signUpModel);
 
         _mockUserManager
             .Setup(x => x.CreateAsync(It.Is<User>(u => u.Email == null),
@@ -288,7 +288,7 @@ public class SignUpCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenEmailBelongsToUnconfirmedAccount_ShouldResendConfirmationAndSucceed()
     {
         // Arrange
-        var command = new SignUpUserCommand(new SignUpModel { Email = ValidEmail, Password = ValidPassword });
+        var command = new SignUpCommand(new SignUpModel { Email = ValidEmail, Password = ValidPassword });
         var existingUser = new User { Id = Guid.NewGuid(), Email = ValidEmail, EmailConfirmed = false };
 
         _mockUserManager
@@ -315,7 +315,7 @@ public class SignUpCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenEmailBelongsToConfirmedAccount_ShouldSucceedWithoutSendingEmail()
     {
         // Arrange
-        var command = new SignUpUserCommand(new SignUpModel { Email = ValidEmail, Password = ValidPassword });
+        var command = new SignUpCommand(new SignUpModel { Email = ValidEmail, Password = ValidPassword });
 
         _mockUserManager
             .Setup(x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
@@ -339,7 +339,7 @@ public class SignUpCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenEmailTakenAndPasswordWeak_ShouldReportOnlyPasswordErrors()
     {
         // Arrange
-        var command = new SignUpUserCommand(new SignUpModel { Email = ValidEmail, Password = InvalidPassword });
+        var command = new SignUpCommand(new SignUpModel { Email = ValidEmail, Password = InvalidPassword });
 
         _mockUserManager
             .Setup(x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))

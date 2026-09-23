@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Common.ResultErrors;
+using DroneBuilder.Application.Common.Errors;
 using FluentResults;
 
 namespace DroneBuilder.API.Common.Extensions;

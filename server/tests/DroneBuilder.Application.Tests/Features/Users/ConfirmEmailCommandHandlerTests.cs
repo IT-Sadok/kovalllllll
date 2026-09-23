@@ -1,5 +1,5 @@
 using System.Text;
-using DroneBuilder.Application.Common.ResultErrors;
+using DroneBuilder.Application.Common.Errors;
 using DroneBuilder.Application.Features.Users.ConfirmEmail;
 using DroneBuilder.Domain.Entities;
 using FluentResults;

@@ -1,4 +1,4 @@
-using DroneBuilder.Application.Common.Models;
+using DroneBuilder.Application.Common.Pagination;
 using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Domain.Entities;

@@ -6,9 +6,9 @@ using FluentResults;
 namespace DroneBuilder.Application.Features.Carts.GetCart;
 
 public class GetCartQueryHandler(ICartRepository cartRepository, IUserContext userContext)
-    : IQueryHandler<GetCartByUserIdQuery, CartModel>
+    : IQueryHandler<GetCartQuery, CartModel>
 {
-    public async Task<Result<CartModel>> ExecuteAsync(GetCartByUserIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<CartModel>> ExecuteAsync(GetCartQuery query, CancellationToken cancellationToken)
     {
         Cart cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken)
                     ?? new Cart { UserId = userContext.UserId };
@@ -17,4 +17,4 @@ public class GetCartQueryHandler(ICartRepository cartRepository, IUserContext us
     }
 }
 
-public record GetCartByUserIdQuery();
+public record GetCartQuery();
