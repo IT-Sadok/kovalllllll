@@ -4,7 +4,6 @@ using DroneBuilder.Application.Features.Products.GetPropertiesByProductId;
 using DroneBuilder.Application.Features.Products.UpdateProduct;
 using DroneBuilder.Application.Features.Properties;
 using DroneBuilder.Application.Features.Values;
-using DroneBuilder.Application.Mappings;
 using DroneBuilder.Domain.Entities;
 namespace DroneBuilder.Application.Features.Products;
 
