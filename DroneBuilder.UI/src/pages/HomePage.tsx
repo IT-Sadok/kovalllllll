@@ -4,8 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { getProducts, getCategories } from '../api/products';
-import { addToCart } from '../api/cart';
-import { useCartStore } from '../store/cartStore';
+import { useAddToCart } from '../hooks/useAddToCart';
 import { useAuthStore } from '../store/authStore';
 import type { Product, ProductFilters } from '../types';
 import { ProductCardSkeleton } from '../components/ui/Skeleton';
@@ -25,32 +24,23 @@ interface FilterForm {
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const { user } = useAuthStore();
-  const { increment } = useCartStore();
-  const [adding, setAdding] = useState(false);
+  const addToCartMutation = useAddToCart();
+  const adding = addToCartMutation.isPending;
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!user) {
       toast.error('Please sign in to add items to cart');
       return;
     }
-    setAdding(true);
-    try {
-      await addToCart(product.id, 1);
-      increment();
-      toast.success(`${product.name} added to cart!`);
-    } catch {
-      toast.error('Failed to add to cart');
-    } finally {
-      setAdding(false);
-    }
+    addToCartMutation.mutate({ productId: product.id, productName: product.name, quantity: 1 });
   };
 
   const primaryImage = product.images?.find(img => img.isPrimary) || product.images?.[0];
   const imageUrl = primaryImage?.url;
 
   return (
-    <Link to={`/products/${product.id}`} id={`product-card-${product.id}`} className={`block group ${product.stockQuantity === 0 ? 'pointer-events-none' : ''}`}>
+    <Link to={`/products/${product.id}`} id={`product-card-${product.id}`} className="block group">
       <div className={`glass-card overflow-hidden h-full flex flex-col transition-all duration-300 ${product.stockQuantity === 0 ? 'opacity-60 grayscale' : ''}`}>
         {/* Image */}
         <div className="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden">

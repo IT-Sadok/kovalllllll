@@ -6,7 +6,11 @@ using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.ProductCommands;
 
-public class DeleteProductCommandHandler(IProductRepository productRepository) : ICommandHandler<DeleteProductCommand>
+public class DeleteProductCommandHandler(
+    IProductRepository productRepository,
+    ICartRepository cartRepository,
+    IWarehouseRepository warehouseRepository)
+    : ICommandHandler<DeleteProductCommand>
 {
     public async Task<Result> ExecuteCommandAsync(DeleteProductCommand command, CancellationToken cancellationToken)
     {
@@ -16,7 +20,19 @@ public class DeleteProductCommandHandler(IProductRepository productRepository) :
             return Result.Fail(new NotFoundError($"Product with id {command.ProductId} not found."));
         }
 
-        productRepository.RemoveProduct(existingProduct);
+        existingProduct.IsDeleted = true;
+
+        int releasedQuantity =
+            await cartRepository.RemoveCartItemsByProductIdAsync(command.ProductId, cancellationToken);
+
+        WarehouseItem? warehouseItem =
+            await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
+
+        if (warehouseItem is not null)
+        {
+            warehouseItem.Quantity += releasedQuantity;
+        }
+
         await productRepository.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();

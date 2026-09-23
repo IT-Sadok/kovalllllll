@@ -21,8 +21,9 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
             .Where(o => o.UserId == userId)
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
-                    .ThenInclude(p => p.Images)
-            .OrderBy(o => o.CreatedAt);
+                    .ThenInclude(p => p!.Images)
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenBy(o => o.Id);
 
         int totalCount = await query.CountAsync(cancellationToken);
 
@@ -47,9 +48,10 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
         IOrderedQueryable<Order> query = dbContext.Orders
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
-                    .ThenInclude(p => p.Images)
+                    .ThenInclude(p => p!.Images)
             .Include(o => o.User)
-            .OrderByDescending(o => o.CreatedAt);
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenBy(o => o.Id);
 
         int totalCount = await query.CountAsync(cancellationToken);
 
@@ -72,7 +74,7 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
         return await dbContext.Orders
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
-                    .ThenInclude(p => p.Images)
+                    .ThenInclude(p => p!.Images)
             .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
     }
 

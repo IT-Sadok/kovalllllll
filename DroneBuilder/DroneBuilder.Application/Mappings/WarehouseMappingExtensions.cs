@@ -5,21 +5,6 @@ namespace DroneBuilder.Application.Mappings;
 
 public static class WarehouseMappingExtensions
 {
-    public static WarehouseItem ToEntity(this CreateWarehouseItemModel model)
-    {
-        if (model == null)
-        {
-            return null!;
-        }
-
-        return new WarehouseItem
-        {
-            WarehouseId = model.WarehouseId,
-            ProductId = model.ProductId,
-            Quantity = model.Quantity
-        };
-    }
-
     public static WarehouseItemModel ToModel(this WarehouseItem item)
     {
         if (item == null)

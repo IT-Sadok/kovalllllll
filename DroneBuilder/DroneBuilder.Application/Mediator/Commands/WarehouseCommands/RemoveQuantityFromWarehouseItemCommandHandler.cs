@@ -34,19 +34,15 @@ public class RemoveQuantityFromWarehouseItemCommandHandler(
             return Result.Fail<WarehouseItemModel>(new NotFoundError($"Warehouse item with id {command.WarehouseItemId} not found."));
         }
 
-        Result validationResult = WarehouseValidation.ValidateState(warehouseItem);
-        if (validationResult.IsFailed)
+        Result availabilityResult =
+            WarehouseValidation.EnsureEnoughAvailable(warehouseItem, command.Model.QuantityToRemove);
+
+        if (availabilityResult.IsFailed)
         {
-            return validationResult.ToResult<WarehouseItemModel>();
+            return availabilityResult.ToResult<WarehouseItemModel>();
         }
 
         warehouseItem.Quantity -= command.Model.QuantityToRemove;
-
-        validationResult = WarehouseValidation.ValidateState(warehouseItem);
-        if (validationResult.IsFailed)
-        {
-            return validationResult.ToResult<WarehouseItemModel>();
-        }
 
         var @event = new RemovedQuantityFromWarehouseItemEvent(warehouseItem.Id, command.Model.QuantityToRemove);
         await outboxService.StoreEventAsync(@event, queuesConfig.WarehouseQueue.Name, cancellationToken);

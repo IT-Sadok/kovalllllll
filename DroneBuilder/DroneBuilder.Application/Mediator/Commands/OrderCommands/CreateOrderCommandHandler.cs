@@ -18,12 +18,16 @@ public class CreateOrderCommandHandler(
     IProductRepository productRepository,
     IWarehouseRepository warehouseRepository,
     IOutboxEventService outboxService,
+    IUnitOfWork unitOfWork,
     MessageQueuesConfiguration queuesConfig,
     IUserContext userContext) : ICommandHandler<CreateOrderCommand, OrderModel>
 {
     public async Task<Result<OrderModel>> ExecuteCommandAsync(CreateOrderCommand command, CancellationToken cancellationToken)
     {
-        Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
+        await using ITransaction transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        Cart? cart = await cartRepository.GetCartByUserIdForUpdateAsync(userContext.UserId, cancellationToken);
+
         if (cart is null || cart.CartItems.Count == 0)
         {
             return Result.Fail<OrderModel>(new BadRequestError("Cart is empty."));
@@ -31,26 +35,37 @@ public class CreateOrderCommandHandler(
 
         var productIds = cart.CartItems.Select(ci => ci.ProductId).ToList();
 
-        ICollection<WarehouseItem>? warehouseItem = await warehouseRepository
+        ICollection<WarehouseItem> warehouseItems = await warehouseRepository
             .GetAllWarehouseItemsByProductIdsAsync(productIds, cancellationToken);
+
+        var stockedProductIds = warehouseItems.Select(wi => wi.ProductId).ToHashSet();
 
         foreach (CartItem item in cart.CartItems)
         {
-            if (warehouseItem is null)
+            if (!stockedProductIds.Contains(item.ProductId))
             {
                 return Result.Fail<OrderModel>(new NotFoundError($"Product {item.ProductId} not found in warehouse."));
             }
         }
 
-        ICollection<Product> products = await productRepository.GetProductsByIdsAsync(productIds, cancellationToken);
+        Dictionary<Guid, Product> products = (await productRepository.GetProductsByIdsAsync(productIds, cancellationToken))
+            .ToDictionary(p => p.Id);
+
+        CartItem? unavailableItem = cart.CartItems.FirstOrDefault(ci => !products.ContainsKey(ci.ProductId));
+        if (unavailableItem is not null)
+        {
+            return Result.Fail<OrderModel>(new BadRequestError(
+                $"Product {unavailableItem.ProductName} is no longer available. Remove it from the cart to continue."));
+        }
 
         var orderItems = cart.CartItems.Select(ci =>
         {
-            Product product = products.First(p => p.Id == ci.ProductId);
+            Product product = products[ci.ProductId];
 
             return new OrderItem
             {
                 ProductId = ci.ProductId,
+                ProductName = product.Name,
                 Quantity = ci.Quantity,
                 PriceAtPurchase = product.Price
             };
@@ -74,6 +89,7 @@ public class CreateOrderCommandHandler(
         await outboxService.StoreEventAsync(@event, queuesConfig.OrderQueue.Name, cancellationToken);
 
         await orderRepository.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Result.Ok(order.ToModel());
     }

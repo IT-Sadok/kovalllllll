@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import { getCartItems } from '../../api/cart';
+import { signOut } from '../../api/auth';
 
 const DroneIcon = () => (
   <svg className="w-7 h-7" viewBox="0 0 32 32" fill="none">
@@ -37,7 +38,7 @@ const CartIcon = ({ count }: { count: number }) => (
 );
 
 const Navbar: React.FC = () => {
-  const { user, logout } = useAuthStore();
+  const { user, clear } = useAuthStore();
   const { itemCount, setItemCount } = useCartStore();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -58,8 +59,13 @@ const Navbar: React.FC = () => {
     }
   }, [user, setItemCount]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    // Only the server can drop an HttpOnly cookie.
+    try {
+      await signOut();
+    } finally {
+      clear();
+    }
     navigate('/');
     setMenuOpen(false);
   };

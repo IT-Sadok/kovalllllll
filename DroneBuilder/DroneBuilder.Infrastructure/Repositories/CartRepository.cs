@@ -16,7 +16,7 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
         return await dbContext.Carts
             .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.Product)
-                    .ThenInclude(p => p.Images)
+                    .ThenInclude(p => p!.Images)
             .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
     }
 
@@ -29,6 +29,32 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
         {
             dbContext.CartItems.Remove(cartItem);
         }
+    }
+
+    public async Task<Cart?> GetCartByUserIdForUpdateAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        await dbContext.CartItems
+            .FromSql(
+                $"""
+                 SELECT ci.* FROM "CartItems" ci
+                 INNER JOIN "Carts" c ON c."Id" = ci."CartId"
+                 WHERE c."UserId" = {userId}
+                 FOR UPDATE OF ci
+                 """)
+            .ToListAsync(cancellationToken);
+
+        return await GetCartByUserIdAsync(userId, cancellationToken);
+    }
+
+    public async Task<int> RemoveCartItemsByProductIdAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        List<CartItem> cartItems = await dbContext.CartItems
+            .Where(ci => ci.ProductId == productId)
+            .ToListAsync(cancellationToken);
+
+        dbContext.CartItems.RemoveRange(cartItems);
+
+        return cartItems.Sum(ci => ci.Quantity);
     }
 
     public async Task ClearCartAsync(Guid cartId, CancellationToken cancellationToken = default)

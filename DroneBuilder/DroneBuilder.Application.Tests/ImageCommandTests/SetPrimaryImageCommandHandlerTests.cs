@@ -43,16 +43,16 @@ public class SetPrimaryImageCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenImageNotFound_ShouldThrowValidationException()
+    public async Task ExecuteCommandAsync_WhenImageNotFound_ShouldReturnNotFound()
     {
         // Arrange
         var command = new SetPrimaryImageCommand(ImageId);
-        _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>()).Returns((Image)null);
+        _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>()).Returns((Image)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         Assert.True(result.IsFailed);
-        Assert.True(result.HasError<ValidationError>());
+        Assert.True(result.HasError<NotFoundError>());
     }
 }

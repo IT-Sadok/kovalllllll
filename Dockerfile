@@ -3,7 +3,7 @@ FROM node:20-alpine AS ui-build
 WORKDIR /src/DroneBuilder.UI
 
 COPY ["DroneBuilder.UI/package.json", "DroneBuilder.UI/package-lock.json", "./"]
-RUN npm install --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 
 COPY ["DroneBuilder.UI/", "./"]
 
@@ -46,4 +46,8 @@ EXPOSE 8080
 EXPOSE 8081
 
 COPY --from=build /app/publish .
+
+# The image ships a non-root account; both exposed ports are above 1024, so nothing needs root.
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "DroneBuilder.API.dll"]

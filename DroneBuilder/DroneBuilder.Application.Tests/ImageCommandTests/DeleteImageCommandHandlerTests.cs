@@ -63,7 +63,7 @@ public class DeleteImageCommandHandlerTests
         var command = new DeleteImageCommand(ImageId);
 
         _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>())
-            .Returns((Image)null);
+            .Returns((Image)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -110,10 +110,7 @@ public class DeleteImageCommandHandlerTests
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(3, callOrder.Count);
-        Assert.Equal("DeleteFileAsync", callOrder[0]);
-        Assert.Equal("RemoveImage", callOrder[1]);
-        Assert.Equal("SaveChangesAsync", callOrder[2]);
+        Assert.Equal(["RemoveImage", "SaveChangesAsync", "DeleteFileAsync"], callOrder);
     }
 
     [Fact]
@@ -132,7 +129,7 @@ public class DeleteImageCommandHandlerTests
         _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>())
             .Returns(existingImage);
 
-        string capturedUrl = null;
+        string? capturedUrl = null;
         await _azureStorageService.DeleteFileAsync(Arg.Do<string>(url => capturedUrl = url));
 
         // Act
@@ -159,7 +156,7 @@ public class DeleteImageCommandHandlerTests
         _imageRepository.GetImageByIdAsync(ImageId, Arg.Any<CancellationToken>())
             .Returns(existingImage);
 
-        Image capturedImage = null;
+        Image? capturedImage = null;
         _imageRepository.When(x => x.RemoveImage(Arg.Is<Image>(img => img.Id == ImageId && img.Url == ImageUrl)))
             .Do(callInfo => capturedImage = callInfo.Arg<Image>());
 

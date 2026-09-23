@@ -14,6 +14,7 @@ namespace DroneBuilder.Application.Mediator.Commands.ImageCommands;
 
 public class UploadImageCommandHandler(
     IImageRepository imageRepository,
+    IProductRepository productRepository,
     IAzureStorageService azureStorageService,
     IOutboxEventService outboxService,
     MessageQueuesConfiguration queuesConfig)
@@ -22,6 +23,12 @@ public class UploadImageCommandHandler(
     public async Task<Result<ImageModel>> ExecuteCommandAsync(UploadImageCommand command,
         CancellationToken cancellationToken)
     {
+        Product? product = await productRepository.GetProductByIdAsync(command.ProductId, cancellationToken);
+        if (product is null)
+        {
+            return Result.Fail<ImageModel>(new NotFoundError($"Product with id {command.ProductId} not found."));
+        }
+
         (bool success, string? url) = await azureStorageService.UploadFileAsync(command.File, cancellationToken);
 
         if (!success)
@@ -45,7 +52,15 @@ public class UploadImageCommandHandler(
         var @event = new ImageUploadedEvent(image.Id, command.ProductId);
         await outboxService.StoreEventAsync(@event, queuesConfig.ImageQueue.Name, cancellationToken);
 
-        await imageRepository.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await imageRepository.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            await azureStorageService.DeleteFileAsync(url, CancellationToken.None);
+            throw;
+        }
 
         return Result.Ok(image.ToModel());
     }

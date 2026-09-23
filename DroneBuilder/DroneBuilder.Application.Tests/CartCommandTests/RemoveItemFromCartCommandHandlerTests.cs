@@ -1,8 +1,11 @@
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Commands.CartCommands;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Events.CartEvents;
 using FluentResults;
 using NSubstitute;
 
@@ -13,6 +16,7 @@ public class RemoveItemFromCartCommandHandlerTests
     private readonly ICartRepository _cartRepository;
     private readonly IProductRepository _productRepository;
     private readonly IWarehouseRepository _warehouseRepository;
+    private readonly IOutboxEventService _outboxService;
     private readonly RemoveItemFromCartCommandHandler _handler;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -23,6 +27,7 @@ public class RemoveItemFromCartCommandHandlerTests
     private const string OtherProductName = "Other Product";
     private const int CartItemQuantity = 5;
     private const int WarehouseQuantity = 100;
+    private const string CartQueueName = "cart-queue";
 
     public RemoveItemFromCartCommandHandlerTests()
     {
@@ -30,6 +35,7 @@ public class RemoveItemFromCartCommandHandlerTests
         _cartRepository = Substitute.For<ICartRepository>();
         _productRepository = Substitute.For<IProductRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
+        _outboxService = Substitute.For<IOutboxEventService>();
         IUserContext userContext = Substitute.For<IUserContext>();
 
         userContext.UserId.Returns(UserId);
@@ -38,6 +44,8 @@ public class RemoveItemFromCartCommandHandlerTests
             _cartRepository,
             _productRepository,
             _warehouseRepository,
+            _outboxService,
+            new MessageQueuesConfiguration { CartQueue = new QueueConfiguration { Name = CartQueueName } },
             userContext);
     }
 
@@ -91,6 +99,11 @@ public class RemoveItemFromCartCommandHandlerTests
 
         await _cartRepository.Received(1).RemoveCartItemAsync(CartItemId, Arg.Any<CancellationToken>());
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+
+        await _outboxService.Received(1).StoreEventAsync(
+            Arg.Is<UpdatedCartItemQuantityEvent>(e => e.UserId == UserId && e.ProductId == ProductId && e.Quantity == 0),
+            CartQueueName,
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -100,7 +113,7 @@ public class RemoveItemFromCartCommandHandlerTests
         var command = new RemoveItemFromCartCommand(ProductId);
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>())
-            .Returns((Cart)null);
+            .Returns((Cart)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -138,7 +151,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns(cart);
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns((Product)null);
+            .Returns((Product)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -241,7 +254,7 @@ public class RemoveItemFromCartCommandHandlerTests
             .Returns(product);
 
         _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
-            .Returns((WarehouseItem)null);
+            .Returns((WarehouseItem)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

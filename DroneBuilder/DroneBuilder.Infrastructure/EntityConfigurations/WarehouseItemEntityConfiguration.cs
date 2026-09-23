@@ -13,6 +13,11 @@ public class WarehouseItemEntityConfiguration : IEntityTypeConfiguration<Warehou
         builder.Property(wi => wi.Quantity)
             .IsRequired();
 
+        builder.Property<uint>("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
         builder.HasOne(wi => wi.Warehouse)
             .WithMany(w => w.WarehouseItems)
             .HasForeignKey(wi => wi.WarehouseId)

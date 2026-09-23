@@ -19,7 +19,7 @@ type FormData = z.infer<typeof schema>;
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuthStore();
+  const hydrate = useAuthStore((state) => state.hydrate);
   const [showPass, setShowPass] = useState(false);
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
 
@@ -29,8 +29,10 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const res = await signIn(data.email, data.password);
-      login(res.accessToken);
+      await signIn(data.email, data.password);
+
+      // The cookie is set by now; the identity itself comes from the server.
+      await hydrate();
       toast.success('Welcome back!');
       navigate(from, { replace: true });
     } catch (error: unknown) {
@@ -119,6 +121,11 @@ const LoginPage: React.FC = () => {
             Don't have an account?{' '}
             <Link to="/register" id="login-register-link" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
               Create one
+            </Link>
+          </p>
+          <p className="text-center text-sm text-slate-500 mt-2">
+            <Link to="/confirm-email" id="login-resend-confirmation-link" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              Didn't get the confirmation email?
             </Link>
           </p>
         </div>

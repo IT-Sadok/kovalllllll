@@ -102,7 +102,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
-            .Returns((Warehouse)null);
+            .Returns((Warehouse)null!);
 
         // Act & Assert
         Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -137,7 +137,7 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
         _warehouseRepository.GetWarehouseItemByIdAsync(
                 Arg.Is<Guid>(id => id == WarehouseItemId),
                 Arg.Any<CancellationToken>())
-            .Returns((WarehouseItem)null);
+            .Returns((WarehouseItem)null!);
 
         // Act & Assert
         Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -151,6 +151,49 @@ public class RemoveQuantityFromWarehouseItemCommandHandlerTests
             Arg.Is<RemovedQuantityFromWarehouseItemEvent>(e => e.WarehouseItemId == WarehouseItemId),
             Arg.Is<string>(q => q == WarehouseQueueName),
             Arg.Any<CancellationToken>());
+
+        await _warehouseRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenStockIsInsufficient_ShouldFailWithoutTouchingWarehouse()
+    {
+        // Arrange
+        const int availableQuantity = 1;
+
+        var removeQuantityModel = new RemoveQuantityModel
+        {
+            QuantityToRemove = QuantityToRemove
+        };
+        var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
+
+        var warehouse = new Warehouse { Id = WarehouseId };
+
+        var warehouseItem = new WarehouseItem
+        {
+            Id = WarehouseItemId,
+            Quantity = availableQuantity
+        };
+
+        _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
+            .Returns(warehouse);
+
+        _warehouseRepository.GetWarehouseItemByIdAsync(
+                Arg.Is<Guid>(id => id == WarehouseItemId),
+                Arg.Any<CancellationToken>())
+            .Returns(warehouseItem);
+
+        // Act & Assert
+        Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+
+        Assert.Equal(
+            $"Not enough stock. Available: {availableQuantity}, requested: {QuantityToRemove}.",
+            result.Errors[0].Message);
+
+        Assert.Equal(availableQuantity, warehouseItem.Quantity);
 
         await _warehouseRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }

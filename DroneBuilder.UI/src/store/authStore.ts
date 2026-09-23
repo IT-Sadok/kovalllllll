@@ -1,47 +1,40 @@
 import { create } from 'zustand';
-import { jwtDecode } from 'jwt-decode';
-import type { AuthUser, DecodedToken } from '../types';
+import type { AuthUser, CurrentUser } from '../types';
+import { getCurrentUser } from '../api/auth';
+
+// The token now lives in an HttpOnly cookie, so the browser cannot read it and cannot tell whether
+// it is signed in without asking the server. Hydration is therefore asynchronous, and anything that
+// gates on authentication has to wait for 'loading' to resolve instead of assuming anonymous.
+type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
 
 interface AuthState {
-  token: string | null;
   user: AuthUser | null;
-  login: (token: string) => void;
-  logout: () => void;
+  status: AuthStatus;
+  hydrate: () => Promise<void>;
+  clear: () => void;
 }
 
-const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
-const ID_CLAIM = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier';
-
-function decodeUser(token: string): AuthUser | null {
-  try {
-    const decoded = jwtDecode<DecodedToken>(token);
-    const role = decoded[ROLE_CLAIM] as string | undefined;
-    const id = decoded[ID_CLAIM] || decoded.sub || '';
-    const email = decoded.email || '';
-    return {
-      id,
-      email,
-      role: (role === 'Admin' ? 'Admin' : 'User') as AuthUser['role'],
-    };
-  } catch {
-    return null;
-  }
+function toAuthUser(current: CurrentUser): AuthUser {
+  return {
+    id: current.id,
+    email: current.email,
+    role: current.roles.includes('Admin') ? 'Admin' : 'User',
+  };
 }
-
-// Re-hydrate from localStorage on page load
-const savedToken = localStorage.getItem('token');
 
 export const useAuthStore = create<AuthState>((set) => ({
-  token: savedToken,
-  user: savedToken ? decodeUser(savedToken) : null,
+  user: null,
+  status: 'loading',
 
-  login: (token: string) => {
-    localStorage.setItem('token', token);
-    set({ token, user: decodeUser(token) });
+  hydrate: async () => {
+    try {
+      const current = await getCurrentUser();
+      set({ user: toAuthUser(current), status: 'authenticated' });
+    } catch {
+      // A 401 here is the normal "not signed in" answer, not a failure worth surfacing.
+      set({ user: null, status: 'anonymous' });
+    }
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
-    set({ token: null, user: null });
-  },
+  clear: () => set({ user: null, status: 'anonymous' }),
 }));

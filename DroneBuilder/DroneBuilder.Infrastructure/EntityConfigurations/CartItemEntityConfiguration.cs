@@ -13,6 +13,11 @@ public class CartItemEntityConfiguration : IEntityTypeConfiguration<CartItem>
         builder.Property(ci => ci.Quantity)
             .IsRequired();
 
+        builder.Property(ci => ci.ReservedAt)
+            .IsRequired();
+
+        builder.HasIndex(ci => ci.ReservedAt);
+
         builder.HasOne(ci => ci.Cart)
             .WithMany(c => c.CartItems)
             .HasForeignKey(ci => ci.CartId)

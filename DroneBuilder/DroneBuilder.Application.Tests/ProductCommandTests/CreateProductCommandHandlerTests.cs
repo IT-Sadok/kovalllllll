@@ -136,7 +136,7 @@ public class CreateProductCommandHandlerTests
         var command = new CreateProductCommand(createProductModel);
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
-            .Returns((Warehouse)null);
+            .Returns((Warehouse)null!);
 
         // Act & Assert
         Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -187,7 +187,7 @@ public class CreateProductCommandHandlerTests
         _productRepository.GetProductByIdAsync(Arg.Is<Guid>(id => id == ProductId), Arg.Any<CancellationToken>())
             .Returns(mappedProduct);
 
-        WarehouseItem capturedWarehouseItem = null;
+        WarehouseItem? capturedWarehouseItem = null;
         await _warehouseRepository.AddWarehouseItemAsync(
             Arg.Do<WarehouseItem>(wi => capturedWarehouseItem = wi),
             Arg.Any<CancellationToken>());

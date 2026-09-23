@@ -24,14 +24,14 @@ const CartPage: React.FC = () => {
     },
   });
 
-  // DELETE /carts/items/{productId} — param is productId!
+  // DELETE /carts/items/{productId}
   const removeMutation = useMutation({
     mutationFn: (productId: string) => removeCartItem(productId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Item removed');
     },
-    onError: () => toast.error('Failed to remove item'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to remove item')),
   });
 
   const updateQuantityMutation = useMutation({
@@ -163,7 +163,7 @@ const CartPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Remove uses productId — matches DELETE /carts/items/{productId} */}
+
               <button
                 onClick={() => removeMutation.mutate(item.productId)}
                 id={`remove-cart-item-${item.productId}`}

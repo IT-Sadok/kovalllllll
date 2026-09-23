@@ -1,9 +1,12 @@
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Interfaces;
+using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Events.CartEvents;
 using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
@@ -12,6 +15,8 @@ public class RemoveItemFromCartCommandHandler(
     ICartRepository cartRepository,
     IProductRepository productRepository,
     IWarehouseRepository warehouseRepository,
+    IOutboxEventService outboxService,
+    MessageQueuesConfiguration queuesConfig,
     IUserContext userContext)
     : ICommandHandler<RemoveItemFromCartCommand>
 {
@@ -61,6 +66,10 @@ public class RemoveItemFromCartCommandHandler(
         }
 
         await cartRepository.RemoveCartItemAsync(cartItem.Id, cancellationToken);
+
+        var @event = new UpdatedCartItemQuantityEvent(userContext.UserId, command.ProductId, 0);
+        await outboxService.StoreEventAsync(@event, queuesConfig.CartQueue.Name, cancellationToken);
+
         await cartRepository.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();

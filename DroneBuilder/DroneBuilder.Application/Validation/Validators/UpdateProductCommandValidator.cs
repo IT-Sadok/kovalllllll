@@ -10,9 +10,13 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
         RuleFor(x => x.ProductId)
             .NotEmpty().WithMessage("Product ID is required.");
 
+        RuleFor(x => x.Model)
+            .NotNull().WithMessage("Product data is required.");
+
         When(x => x.Model != null, () =>
         {
             RuleFor(x => x.Model.Name)
+                .NotEmpty().WithMessage("Product name must not be empty.")
                 .MaximumLength(200).WithMessage("Product name must not exceed 200 characters.")
                 .When(x => x.Model.Name != null);
 
@@ -21,6 +25,7 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
                 .When(x => x.Model.Price.HasValue);
 
             RuleFor(x => x.Model.Category)
+                .NotEmpty().WithMessage("Category must not be empty.")
                 .MaximumLength(100).WithMessage("Category must not exceed 100 characters.")
                 .When(x => x.Model.Category != null);
         });

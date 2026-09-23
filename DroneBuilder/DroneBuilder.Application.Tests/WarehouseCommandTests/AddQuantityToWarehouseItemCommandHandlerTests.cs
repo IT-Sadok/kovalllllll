@@ -25,7 +25,7 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
 
     public AddQuantityToWarehouseItemCommandHandlerTests()
     {
-        // Arrange - створення substitutes
+        // Arrange
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
 
@@ -102,7 +102,7 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
         var command = new AddQuantityToWarehouseItemCommand(WarehouseItemId, addQuantityModel);
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
-            .Returns((Warehouse)null);
+            .Returns((Warehouse)null!);
 
         // Act & Assert
         Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -137,7 +137,7 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
         _warehouseRepository.GetWarehouseItemByIdAsync(
                 Arg.Is<Guid>(id => id == WarehouseItemId),
                 Arg.Any<CancellationToken>())
-            .Returns((WarehouseItem)null);
+            .Returns((WarehouseItem)null!);
 
         // Act & Assert
         Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

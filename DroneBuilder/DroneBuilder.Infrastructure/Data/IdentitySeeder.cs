@@ -8,12 +8,9 @@ namespace DroneBuilder.Infrastructure.Data;
 
 public static class IdentitySeeder
 {
-    public static async Task SeedRolesAndUsersAsync(
-        IServiceProvider serviceProvider,
-        IConfiguration configuration)
+    public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
     {
         RoleManager<IdentityRole<Guid>> roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-        UserManager<User> userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
         string[] roles = [RoleNames.Admin, RoleNames.User];
         foreach (string role in roles)
@@ -23,6 +20,13 @@ public static class IdentitySeeder
                 await roleManager.CreateAsync(new IdentityRole<Guid> { Name = role });
             }
         }
+    }
+
+    public static async Task SeedUsersAsync(
+        IServiceProvider serviceProvider,
+        IConfiguration configuration)
+    {
+        UserManager<User> userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
         await SeedUserAsync(userManager, configuration, "IdentitySeed:Admin", RoleNames.Admin);
         await SeedUserAsync(userManager, configuration, "IdentitySeed:User", RoleNames.User);

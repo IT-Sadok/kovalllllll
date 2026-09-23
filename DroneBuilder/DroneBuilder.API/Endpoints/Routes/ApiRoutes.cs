@@ -9,6 +9,10 @@ public abstract class ApiRoutes
         private const string BaseRoute = Base + "/users";
         public const string SignUp = BaseRoute + "/sign-up";
         public const string SignIn = BaseRoute + "/sign-in";
+        public const string ConfirmEmail = BaseRoute + "/confirm-email";
+        public const string ResendConfirmation = BaseRoute + "/resend-confirmation";
+        public const string SignOut = BaseRoute + "/sign-out";
+        public const string Me = BaseRoute + "/me";
     }
 
     public static class Products
@@ -24,6 +28,8 @@ public abstract class ApiRoutes
         public const string AssignValueToProductProperty = BaseRoute + "/{productId}/properties/{propertyId}/values/{valueId}";
         public const string RemoveValueFromProductProperty = BaseRoute + "/{productId}/properties/{propertyId}/values/{valueId}";
         public const string RemovePropertyFromProduct = BaseRoute + "/{productId}/properties/{propertyId}";
+        public const string GetDelisted = BaseRoute + "/delisted";
+        public const string Restore = BaseRoute + "/{productId}/restore";
     }
 
     public static class Properties
@@ -65,7 +71,8 @@ public abstract class ApiRoutes
         public const string AddItemToCart = BaseRoute + "/items";
         public const string GetCart = BaseRoute;
         public const string GetCartItems = BaseRoute + "/items";
-        public const string RemoveItemFromCart = BaseRoute + "/items/{itemId}";
+        public const string UpdateItemQuantity = BaseRoute + "/items/{productId}";
+        public const string RemoveItemFromCart = BaseRoute + "/items/{productId}";
         public const string ClearCart = BaseRoute + "/clear";
     }
 
@@ -74,7 +81,6 @@ public abstract class ApiRoutes
         private const string BaseRoute = Base + "/warehouse";
         public const string Get = BaseRoute;
         public const string GetAllItems = BaseRoute + "/items";
-        public const string UpdateWarehouseItem = BaseRoute + "/items/{itemId}";
         public const string GetItemById = BaseRoute + "/items/{itemId}";
         public const string AddQuantityToItem = BaseRoute + "/items/{itemId}";
         public const string RemoveQuantityFromItem = BaseRoute + "/items/{itemId}";
@@ -84,10 +90,10 @@ public abstract class ApiRoutes
     {
         private const string BaseRoute = Base + "/orders";
         public const string CreateOrder = BaseRoute;
-        public const string GetOrderById = BaseRoute + "/{orderId}";
         public const string GetAllOrders = BaseRoute;
         public const string GetAllAdminOrders = BaseRoute + "/admin";
         public const string PayForOrder = BaseRoute + "/{orderId}/pay";
+        public const string CancelOrder = BaseRoute + "/{orderId}/cancel";
         public const string UpdateStatus = BaseRoute + "/{orderId}/status";
     }
 }

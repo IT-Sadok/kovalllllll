@@ -16,10 +16,13 @@ public interface IProductRepository
         ProductFilterModel filter,
         CancellationToken cancellationToken = default);
 
-    Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
+    Task<Product?> GetDelistedProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<PagedResult<Product>> GetDelistedProductsAsync(PaginationParams pagination,
         CancellationToken cancellationToken = default);
 
-    void RemoveProduct(Product product);
+    Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
+        CancellationToken cancellationToken = default);
 
     Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default);
 

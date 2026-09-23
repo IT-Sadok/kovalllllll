@@ -17,6 +17,7 @@ public class UploadImageCommandHandlerTests
     private readonly IImageRepository _imageRepository;
     private readonly IAzureStorageService _azureStorageService;
     private readonly IOutboxEventService _outboxService;
+    private readonly IProductRepository _productRepository;
     private readonly UploadImageCommandHandler _handler;
 
     private const string ImageQueueName = "image-queue";
@@ -30,6 +31,10 @@ public class UploadImageCommandHandlerTests
         _imageRepository = Substitute.For<IImageRepository>();
         _azureStorageService = Substitute.For<IAzureStorageService>();
         _outboxService = Substitute.For<IOutboxEventService>();
+        _productRepository = Substitute.For<IProductRepository>();
+
+        _productRepository.GetProductByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(call => new Product { Id = call.Arg<Guid>() });
 
         var queuesConfig = new MessageQueuesConfiguration
         {
@@ -38,6 +43,7 @@ public class UploadImageCommandHandlerTests
 
         _handler = new UploadImageCommandHandler(
             _imageRepository,
+            _productRepository,
             _azureStorageService,
             _outboxService,
             queuesConfig);
@@ -130,6 +136,48 @@ public class UploadImageCommandHandlerTests
     }
 
     [Fact]
+    public async Task ExecuteCommandAsync_WhenProductNotFound_ShouldNotUploadToStorage()
+    {
+        // Arrange
+        IFormFile mockFile = Substitute.For<IFormFile>();
+        var command = new UploadImageCommand(mockFile, ProductId);
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns((Product)null!);
+
+        // Act
+        Result<ImageModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<NotFoundError>());
+
+        await _azureStorageService.DidNotReceive().UploadFileAsync(Arg.Any<IFormFile>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenSavingFails_ShouldDeleteUploadedBlob()
+    {
+        // Arrange
+        IFormFile mockFile = Substitute.For<IFormFile>();
+        mockFile.FileName.Returns(FileName);
+        var command = new UploadImageCommand(mockFile, ProductId);
+
+        _azureStorageService.UploadFileAsync(Arg.Any<IFormFile>(), Arg.Any<CancellationToken>())
+            .Returns((true, UploadedImageUrl));
+        _imageRepository.GetImagesByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(new List<Image>());
+        _imageRepository.SaveChangesAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new InvalidOperationException("db down")));
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.ExecuteCommandAsync(command, CancellationToken.None));
+
+        await _azureStorageService.Received(1).DeleteFileAsync(UploadedImageUrl, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task ExecuteCommandAsync_WhenSuccessful_ShouldCreateImageWithCorrectProperties()
     {
         // Arrange
@@ -143,7 +191,7 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        Image capturedImage = null;
+        Image? capturedImage = null;
         await _imageRepository.AddImageAsync(
             Arg.Do<Image>(img => capturedImage = img),
             Arg.Any<CancellationToken>());
@@ -207,7 +255,7 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        string capturedQueueName = null;
+        string? capturedQueueName = null;
         await _outboxService.StoreEventAsync(
             Arg.Any<ImageUploadedEvent>(),
             Arg.Do<string>(q => capturedQueueName = q),
@@ -293,7 +341,7 @@ public class UploadImageCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns((true, UploadedImageUrl));
 
-        Image capturedImage = null;
+        Image? capturedImage = null;
         await _imageRepository.AddImageAsync(
             Arg.Do<Image>(img => capturedImage = img),
             Arg.Any<CancellationToken>());

@@ -14,7 +14,7 @@ public class CreateValueCommandValidator : AbstractValidator<CreateValueCommand>
         {
             RuleFor(x => x.Model.Text)
                 .NotEmpty().WithMessage("Value text is required.")
-                .MaximumLength(500).WithMessage("Value text must not exceed 500 characters.");
+                .MaximumLength(100).WithMessage("Value text must not exceed 100 characters.");
 
             RuleFor(x => x.Model.PropertyId)
                 .NotEmpty().WithMessage("Property ID is required.");

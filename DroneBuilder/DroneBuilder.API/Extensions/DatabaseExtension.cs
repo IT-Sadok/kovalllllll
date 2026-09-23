@@ -25,9 +25,11 @@ public static class DatabaseExtension
             await dbContext.Database.MigrateAsync();
         }
 
+        await IdentitySeeder.SeedRolesAsync(services);
+
         if (seedIdentity)
         {
-            await IdentitySeeder.SeedRolesAndUsersAsync(services, app.Configuration);
+            await IdentitySeeder.SeedUsersAsync(services, app.Configuration);
         }
     }
 }

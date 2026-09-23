@@ -37,8 +37,8 @@ public class AddValueToProductPropertyCommandHandlerTests
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
 
         var product = new Product { Id = ProductId, ProductPropertyValues = new List<ProductPropertyValue>() };
-        var property = new Property { Id = PropertyId };
         var value = new Value { Id = ValueId };
+        var property = new Property { Id = PropertyId, Values = [value] };
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
             .Returns(product);
@@ -66,7 +66,7 @@ public class AddValueToProductPropertyCommandHandlerTests
     {
         // Arrange
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
-        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product)null);
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -81,7 +81,7 @@ public class AddValueToProductPropertyCommandHandlerTests
         // Arrange
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(new Product());
-        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property)null);
+        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -97,7 +97,7 @@ public class AddValueToProductPropertyCommandHandlerTests
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(new Product());
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns(new Property());
-        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value)null);
+        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -107,7 +107,7 @@ public class AddValueToProductPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenAlreadyAssociated_ShouldThrowValidationException()
+    public async Task ExecuteCommandAsync_WhenAlreadyAssociated_ShouldReturnConflict()
     {
         // Arrange
         var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
@@ -121,13 +121,38 @@ public class AddValueToProductPropertyCommandHandlerTests
         };
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(product);
-        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns(new Property { Id = PropertyId });
-        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns(new Value { Id = ValueId });
+        var value = new Value { Id = ValueId };
+        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>())
+            .Returns(new Property { Id = PropertyId, Values = [value] });
+        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns(value);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         Assert.True(result.IsFailed);
-        Assert.True(result.HasError<ValidationError>());
+        Assert.True(result.HasError<ConflictError>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenValueDoesNotBelongToProperty_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var command = new AddValueToProductPropertyCommand(ProductId, PropertyId, ValueId);
+        var product = new Product { Id = ProductId, ProductPropertyValues = new List<ProductPropertyValue>() };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(product);
+        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>())
+            .Returns(new Property { Id = PropertyId, Values = [new Value { Id = Guid.NewGuid() }] });
+        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns(new Value { Id = ValueId });
+
+        // Act
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+        Assert.Empty(product.ProductPropertyValues);
+
+        await _productRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

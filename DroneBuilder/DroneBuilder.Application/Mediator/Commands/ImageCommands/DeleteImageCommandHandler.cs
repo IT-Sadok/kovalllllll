@@ -18,9 +18,6 @@ public class DeleteImageCommandHandler(IAzureStorageService azureStorageService,
             return Result.Fail(new NotFoundError($"Image with id {command.ImageId} not found."));
         }
 
-        await azureStorageService.DeleteFileAsync(existingImage.Url, cancellationToken);
-
-        // If we are deleting the primary image, we should try to promote another one
         if (existingImage.IsPrimary)
         {
             ICollection<Image> otherImages = await imageRepository.GetImagesByProductIdAsync(existingImage.ProductId, cancellationToken);
@@ -28,12 +25,13 @@ public class DeleteImageCommandHandler(IAzureStorageService azureStorageService,
             if (nextPrimary != null)
             {
                 nextPrimary.IsPrimary = true;
-                // No need to call Update specifically if tracking is enabled, but ensuring it's in the repo context
             }
         }
 
         imageRepository.RemoveImage(existingImage);
         await imageRepository.SaveChangesAsync(cancellationToken);
+
+        await azureStorageService.DeleteFileAsync(existingImage.Url, cancellationToken);
 
         return Result.Ok();
     }

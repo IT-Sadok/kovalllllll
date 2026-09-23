@@ -6,13 +6,13 @@ using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Application.Validation;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Events.CartEvents;
 using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.CartCommands;
 
 public class UpdateCartItemQuantityCommandHandler(
     ICartRepository cartRepository,
-    IProductRepository productRepository,
     IWarehouseRepository warehouseRepository,
     IOutboxEventService outboxService,
     MessageQueuesConfiguration queuesConfig,
@@ -46,32 +46,16 @@ public class UpdateCartItemQuantityCommandHandler(
             return Result.Ok();
         }
 
-        // If we are increasing quantity, check warehouse
         if (quantityDifference > 0)
         {
-            Result validationResult = WarehouseValidation.ValidateState(warehouseItem);
-            if (validationResult.IsFailed)
+            Result availabilityResult = WarehouseValidation.EnsureEnoughAvailable(warehouseItem, quantityDifference);
+            if (availabilityResult.IsFailed)
             {
-                return validationResult;
-            }
-
-            // Note: We need to make sure the warehouse has enough stock for the delta
-            // WarehouseValidation.ValidateState might check if item.Quantity is >= 0, 
-            // but we need to check if warehouseItem.Quantity - quantityDifference >= 0.
-            // Let's assume WarehouseValidation handles it or do a manual check.
-            if (warehouseItem.Quantity < quantityDifference)
-            {
-                return Result.Fail(new BadRequestError("Not enough stock in warehouse."));
+                return availabilityResult;
             }
         }
 
-        // Adjust warehouse stock
         warehouseItem.Quantity -= quantityDifference;
-        Result postValidation = WarehouseValidation.ValidateState(warehouseItem);
-        if (postValidation.IsFailed)
-        {
-            return postValidation;
-        }
 
         if (command.Quantity == 0)
         {
@@ -80,12 +64,15 @@ public class UpdateCartItemQuantityCommandHandler(
         else
         {
             cartItem.Quantity = command.Quantity;
+
+            if (quantityDifference > 0)
+            {
+                cartItem.ReservedAt = DateTime.UtcNow;
+            }
         }
 
-        // We can reuse the AddedItemToCartEvent but maybe with a negative quantity for decrements, 
-        // or just let the outbox handle the state if it's simpler. 
-        // For now, let's just trigger a generic update or clear cart event if needed.
-        // Actually, let's just save changes.
+        var @event = new UpdatedCartItemQuantityEvent(userContext.UserId, command.ProductId, command.Quantity);
+        await outboxService.StoreEventAsync(@event, queuesConfig.CartQueue.Name, cancellationToken);
 
         await cartRepository.SaveChangesAsync(cancellationToken);
 

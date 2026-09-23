@@ -1,15 +1,9 @@
 // ─── Auth ────────────────────────────────────────────────────────────────────
-export interface AuthResponse {
-  accessToken: string;
-}
-
-export interface DecodedToken {
-  sub?: string;
-  email?: string;
-  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string;
-  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
-  exp?: number;
-  iat?: number;
+// What GET /users/me returns. The token itself is never exposed to the browser.
+export interface CurrentUser {
+  id: string;
+  email: string;
+  roles: string[];
 }
 
 export type UserRole = 'Admin' | 'User';
@@ -109,6 +103,14 @@ export const OrderStatusLabel: Record<OrderStatus, string> = {
   4: 'Cancelled',
 };
 
+export const OrderStatusTransitions: Record<OrderStatus, OrderStatus[]> = {
+  0: [1, 4],
+  1: [2, 4],
+  2: [3],
+  3: [],
+  4: [],
+};
+
 export interface OrderItem {
   productId: string;
   orderId: string;
@@ -159,10 +161,6 @@ export interface CreateProductRequest {
   name: string;
   price: number;
   category: string;
-  properties: {
-    name: string;
-    values: { text: string }[];
-  };
 }
 
 export interface UpdateProductRequest {

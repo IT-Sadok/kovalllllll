@@ -36,6 +36,15 @@ public class AddQuantityToWarehouseItemCommandValidatorTests
     }
 
     [Fact]
+    public void Should_Have_Error_When_Quantity_Exceeds_Limit()
+    {
+        var command = new AddQuantityToWarehouseItemCommand(Guid.NewGuid(),
+            new AddQuantityModel { QuantityToAdd = AddQuantityToWarehouseItemCommandValidator.MaxQuantityPerOperation + 1 });
+        TestValidationResult<AddQuantityToWarehouseItemCommand> result = _validator.TestValidate(command);
+        result.ShouldHaveValidationErrorFor(x => x.Model.QuantityToAdd);
+    }
+
+    [Fact]
     public void Should_Not_Have_Error_When_Command_Is_Valid()
     {
         var command = new AddQuantityToWarehouseItemCommand(Guid.NewGuid(), new AddQuantityModel { QuantityToAdd = 10 });

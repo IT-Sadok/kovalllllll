@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Contexts;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -6,12 +7,14 @@ using FluentResults;
 
 namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
 
-public class PayForOrderCommandHandler(IOrderRepository orderRepository) : ICommandHandler<PayForOrderCommand>
+public class PayForOrderCommandHandler(IOrderRepository orderRepository, IUserContext userContext)
+    : ICommandHandler<PayForOrderCommand>
 {
     public async Task<Result> ExecuteCommandAsync(PayForOrderCommand payForOrderCommand, CancellationToken cancellationToken)
     {
         Order? order = await orderRepository.GetOrderByIdAsync(payForOrderCommand.OrderId, cancellationToken);
-        if (order is null)
+
+        if (order is null || order.UserId != userContext.UserId)
         {
             return Result.Fail(new NotFoundError($"Order with id {payForOrderCommand.OrderId} not found."));
         }

@@ -32,10 +32,16 @@ public class AddValueToProductPropertyCommandHandler(
             return Result.Fail(new NotFoundError($"Value with ID {command.ValueId} not found."));
         }
 
+        if (property.Values.All(v => v.Id != command.ValueId))
+        {
+            return Result.Fail(new BadRequestError(
+                $"Value with ID {command.ValueId} does not belong to Property ID {command.PropertyId}."));
+        }
+
         if (product.ProductPropertyValues != null &&
             product.ProductPropertyValues.Any(p => p.PropertyId == command.PropertyId && p.ValueId == command.ValueId))
         {
-            return Result.Fail(new ValidationError($"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId} on Product ID {command.ProductId}."));
+            return Result.Fail(new ConflictError($"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId} on Product ID {command.ProductId}."));
         }
 
         product.ProductPropertyValues?.Add(new ProductPropertyValue

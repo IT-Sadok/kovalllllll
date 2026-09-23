@@ -41,6 +41,8 @@ public class RemoveValueFromPropertyCommandHandlerTests
 
         // Assert
         Assert.DoesNotContain(value, property.Values);
+        await _propertyRepository.Received(1).RemoveProductAssignmentsAsync(
+            PropertyId, ValueId, Arg.Any<CancellationToken>());
         await _propertyRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -50,7 +52,7 @@ public class RemoveValueFromPropertyCommandHandlerTests
         // Arrange
         var command = new RemoveValueFromPropertyCommand(PropertyId, ValueId);
         var property = new Property { Id = PropertyId, Values = new List<Value>() };
-        var value = new Value { Id = ValueId, Properties = new List<Property>() }; // Orphan after removal
+        var value = new Value { Id = ValueId, Properties = new List<Property>() };
         property.Values.Add(value);
 
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns(property);
@@ -70,7 +72,7 @@ public class RemoveValueFromPropertyCommandHandlerTests
     {
         // Arrange
         var command = new RemoveValueFromPropertyCommand(PropertyId, ValueId);
-        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property)null);
+        _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns((Property)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -85,7 +87,7 @@ public class RemoveValueFromPropertyCommandHandlerTests
         // Arrange
         var command = new RemoveValueFromPropertyCommand(PropertyId, ValueId);
         _propertyRepository.GetPropertyByIdAsync(PropertyId, Arg.Any<CancellationToken>()).Returns(new Property());
-        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value)null);
+        _valueRepository.GetValueByIdAsync(ValueId, Arg.Any<CancellationToken>()).Returns((Value)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

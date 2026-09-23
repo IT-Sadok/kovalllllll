@@ -13,7 +13,6 @@ namespace DroneBuilder.Application.Tests.CartCommandTests;
 public class UpdateCartItemQuantityCommandHandlerTests
 {
     private readonly ICartRepository _cartRepository;
-    private readonly IProductRepository _productRepository;
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IOutboxEventService _outboxService;
     private readonly IUserContext _userContext;
@@ -26,7 +25,6 @@ public class UpdateCartItemQuantityCommandHandlerTests
     public UpdateCartItemQuantityCommandHandlerTests()
     {
         _cartRepository = Substitute.For<ICartRepository>();
-        _productRepository = Substitute.For<IProductRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
         _outboxService = Substitute.For<IOutboxEventService>();
         _userContext = Substitute.For<IUserContext>();
@@ -36,7 +34,6 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         _handler = new UpdateCartItemQuantityCommandHandler(
             _cartRepository,
-            _productRepository,
             _warehouseRepository,
             _outboxService,
             queuesConfig,
@@ -60,7 +57,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         // Assert
         Assert.Equal(5, cartItem.Quantity);
-        Assert.Equal(7, warehouseItem.Quantity); // 10 - (5-2) = 7
+        Assert.Equal(7, warehouseItem.Quantity);
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -81,7 +78,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         // Assert
         Assert.Equal(1, cartItem.Quantity);
-        Assert.Equal(12, warehouseItem.Quantity); // 10 - (1-3) = 12
+        Assert.Equal(12, warehouseItem.Quantity);
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -102,7 +99,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         // Assert
         await _cartRepository.Received(1).RemoveCartItemAsync(CartItemId, Arg.Any<CancellationToken>());
-        Assert.Equal(12, warehouseItem.Quantity); // 10 - (0-2) = 12
+        Assert.Equal(12, warehouseItem.Quantity);
         await _cartRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -113,7 +110,7 @@ public class UpdateCartItemQuantityCommandHandlerTests
         var command = new UpdateCartItemQuantityCommand(ProductId, 10);
         var cartItem = new CartItem { Id = CartItemId, ProductId = ProductId, Quantity = 2 };
         var cart = new Cart { UserId = UserId, CartItems = new List<CartItem> { cartItem } };
-        var warehouseItem = new WarehouseItem { ProductId = ProductId, Quantity = 5 }; // Only 5 available, need 8 more
+        var warehouseItem = new WarehouseItem { ProductId = ProductId, Quantity = 5 };
 
         _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>()).Returns(cart);
         _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns(warehouseItem);
@@ -123,6 +120,63 @@ public class UpdateCartItemQuantityCommandHandlerTests
 
         Assert.True(result.IsFailed);
         Assert.True(result.HasError<BadRequestError>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenIncreasingQuantity_ShouldRestartTheReservation()
+    {
+        // Arrange
+        DateTime originalReservedAt = DateTime.UtcNow.AddHours(-3);
+
+        var command = new UpdateCartItemQuantityCommand(ProductId, 5);
+        var cartItem = new CartItem
+        {
+            Id = CartItemId,
+            ProductId = ProductId,
+            Quantity = 2,
+            ReservedAt = originalReservedAt
+        };
+        var cart = new Cart { UserId = UserId, CartItems = new List<CartItem> { cartItem } };
+        var warehouseItem = new WarehouseItem { ProductId = ProductId, Quantity = 10 };
+
+        _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>()).Returns(cart);
+        _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(warehouseItem);
+
+        // Act
+        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(cartItem.ReservedAt > originalReservedAt);
+        Assert.True(cartItem.ReservedAt > DateTime.UtcNow.AddMinutes(-1));
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenDecreasingQuantity_ShouldNotRestartTheReservation()
+    {
+        // Arrange
+        DateTime originalReservedAt = DateTime.UtcNow.AddHours(-3);
+
+        var command = new UpdateCartItemQuantityCommand(ProductId, 1);
+        var cartItem = new CartItem
+        {
+            Id = CartItemId,
+            ProductId = ProductId,
+            Quantity = 4,
+            ReservedAt = originalReservedAt
+        };
+        var cart = new Cart { UserId = UserId, CartItems = new List<CartItem> { cartItem } };
+        var warehouseItem = new WarehouseItem { ProductId = ProductId, Quantity = 10 };
+
+        _cartRepository.GetCartByUserIdAsync(UserId, Arg.Any<CancellationToken>()).Returns(cart);
+        _warehouseRepository.GetWarehouseItemByProductIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(warehouseItem);
+
+        // Act
+        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(originalReservedAt, cartItem.ReservedAt);
     }
 }
 

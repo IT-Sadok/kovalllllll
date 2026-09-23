@@ -1,4 +1,6 @@
+using System.Net.Http.Headers;
 using System.Reflection;
+using Azure.Storage.Blobs;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
@@ -23,7 +25,8 @@ public static class InfrastructureExtensions
         string? connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION")
                                ?? configuration.GetConnectionString("DefaultConnection");
 
-        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString,
+            npgsql => npgsql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
         services.AddValidatorsFromAssembly(typeof(InfrastructureExtensions).Assembly);
 
@@ -32,11 +35,22 @@ public static class InfrastructureExtensions
             .ValidateFluentValidation()
             .ValidateOnStart();
 
+        services.AddOptions<ResendOptions>()
+            .Bind(configuration.GetSection("Resend"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
+
         services.AddOptions<RabbitMqConfiguration>()
             .Bind(configuration.GetSection("RabbitMQ"))
             .ValidateFluentValidation()
             .ValidateOnStart();
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value);
+
+        services.AddOptions<CartReservationOptions>()
+            .Bind(configuration.GetSection("CartReservation"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<CartReservationOptions>>().Value);
 
         services.AddOptions<MessageQueuesConfiguration>()
             .Bind(configuration.GetSection("MessageQueues"))
@@ -52,9 +66,23 @@ public static class InfrastructureExtensions
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IJwtService, JwtService>();
+
+        services.AddSingleton(sp =>
+            new BlobServiceClient(sp.GetRequiredService<IOptions<AzureStorageConfig>>().Value.ConnectionString));
+
         services.AddScoped<IAzureStorageService, AzureStorageService>();
+
+        services.AddHttpClient<IEmailSender, ResendEmailService>((sp, client) =>
+        {
+            ResendOptions resendOptions = sp.GetRequiredService<IOptions<ResendOptions>>().Value;
+
+            client.BaseAddress = new Uri("https://api.resend.com/");
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", resendOptions.ApiKey);
+        });
 
         services.AddScoped<IOutboxEventService, OutboxEventService>();
 
@@ -62,6 +90,7 @@ public static class InfrastructureExtensions
 
         services.AddHostedService<OutboxProcessorHostedService>();
         services.AddHostedService<EventConsumerHostedService>();
+        services.AddHostedService<ExpiredCartReservationsHostedService>();
 
         return services;
     }

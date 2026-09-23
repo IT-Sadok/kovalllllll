@@ -78,7 +78,7 @@ public class UpdateValueCommandHandlerTests
         _valueRepository.GetValueByIdAsync(
                 Arg.Is<Guid>(id => id == ValueId),
                 Arg.Any<CancellationToken>())
-            .Returns((Value)null);
+            .Returns((Value)null!);
 
         // Act & Assert
         Result<ValueModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

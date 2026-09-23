@@ -4,15 +4,20 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { signUp, signIn } from '../api/auth';
+import { signUp } from '../api/auth';
 import { getErrorMessage } from '../api/errors';
-import { useAuthStore } from '../store/authStore';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 
 const schema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .regex(/[a-z]/, 'Password must contain a lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+    .regex(/\d/, 'Password must contain a digit')
+    .regex(/[^a-zA-Z0-9]/, 'Password must contain a special character'),
   confirm: z.string(),
 }).refine((d) => d.password === d.confirm, {
   path: ['confirm'],
@@ -22,7 +27,6 @@ type FormData = z.infer<typeof schema>;
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuthStore();
   const [showPass, setShowPass] = useState(false);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -32,10 +36,8 @@ const RegisterPage: React.FC = () => {
   const onSubmit = async (data: FormData) => {
     try {
       await signUp(data.email, data.password);
-      const res = await signIn(data.email, data.password);
-      login(res.accessToken);
-      toast.success('Account created! Welcome aboard 🚁');
-      navigate('/');
+      toast.success('Check your inbox to confirm your email 🚁');
+      navigate('/login');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Registration failed'));
     }

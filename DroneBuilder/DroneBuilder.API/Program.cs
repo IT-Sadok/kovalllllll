@@ -2,6 +2,7 @@ using DroneBuilder.API.Extensions;
 using DroneBuilder.API.Middleware;
 using DroneBuilder.Application;
 using DroneBuilder.Infrastructure;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace DroneBuilder.API;
 
@@ -23,6 +24,19 @@ public abstract class Program
             .AddAuth(builder.Configuration);
 
         builder.Services.AddRateLimitingConfig(builder.Configuration);
+
+        bool trustForwardedHeaders = builder.Configuration.GetValue<bool>("ForwardedHeaders:Enabled");
+
+        if (trustForwardedHeaders)
+        {
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+        }
 
         string[] allowedOrigins = builder.Configuration
             .GetSection("Cors:AllowedOrigins")
@@ -56,6 +70,14 @@ public abstract class Program
         await app.InitializeDatabaseAsync();
 
         app.UseExceptionHandler();
+
+        if (trustForwardedHeaders)
+        {
+            app.UseForwardedHeaders();
+        }
+
+        app.UseHttpsRedirection();
+
         app.MapOpenApiUi();
 
         app.UseCors("ConfiguredOrigins");
@@ -64,7 +86,6 @@ public abstract class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseHttpsRedirection();
 
         app.UseSpaStaticFiles();
         app.MapApplicationEndpoints();

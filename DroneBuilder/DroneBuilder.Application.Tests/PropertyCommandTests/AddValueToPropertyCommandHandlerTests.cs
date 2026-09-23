@@ -73,7 +73,7 @@ public class AddValueToPropertyCommandHandlerTests
         _propertyRepository.GetPropertyByIdAsync(
                 Arg.Is<Guid>(id => id == PropertyId),
                 Arg.Any<CancellationToken>())
-            .Returns((Property)null);
+            .Returns((Property)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -110,7 +110,7 @@ public class AddValueToPropertyCommandHandlerTests
         _valueRepository.GetValueByIdAsync(
                 Arg.Is<Guid>(id => id == ValueId),
                 Arg.Any<CancellationToken>())
-            .Returns((Value)null);
+            .Returns((Value)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
@@ -124,7 +124,7 @@ public class AddValueToPropertyCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenValueAlreadyExists_ShouldThrowValidationException()
+    public async Task ExecuteCommandAsync_WhenValueAlreadyExists_ShouldReturnConflict()
     {
         // Arrange
         var command = new AddValueToPropertyCommand(PropertyId, ValueId);
@@ -154,7 +154,7 @@ public class AddValueToPropertyCommandHandlerTests
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         Assert.True(result.IsFailed);
-        Assert.True(result.HasError<ValidationError>());
+        Assert.True(result.HasError<ConflictError>());
 
         Assert.Contains($"Value with ID {ValueId} is already associated with Property ID {PropertyId}",
             result.Errors[0].Message);

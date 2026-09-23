@@ -48,7 +48,7 @@ public class RemovePropertyFromProductCommandHandlerTests
     {
         // Arrange
         var command = new RemovePropertyFromProductCommand(ProductId, PropertyId);
-        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product)null);
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>()).Returns((Product)null!);
 
         // Act & Assert
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);

@@ -3,7 +3,6 @@ using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.CartModels;
 using DroneBuilder.Application.Repositories;
-using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 namespace DroneBuilder.Application.Mediator.Queries.CartQueries;
@@ -16,12 +15,9 @@ public class GetCartItemsQueryHandler(ICartRepository cartRepository, IUserConte
     {
         Cart? cart = await cartRepository.GetCartByUserIdAsync(userContext.UserId, cancellationToken);
 
-        if (cart == null)
-        {
-            return Result.Fail<ICollection<CartItemModel>>(new NotFoundError($"Cart for user with ID {userContext.UserId} not found."));
-        }
+        ICollection<CartItemModel> items = cart?.CartItems.Select(x => x.ToModel()).ToList() ?? [];
 
-        return Result.Ok<ICollection<CartItemModel>>(cart.CartItems.Select(x => x.ToModel()).ToList());
+        return Result.Ok(items);
     }
 }
 

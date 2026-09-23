@@ -47,6 +47,14 @@ public static class OrderEndpointExtensions
                 }).WithTags("Orders")
             .RequireAuthorization();
 
+        app.MapPatch(ApiRoutes.Orders.CancelOrder,
+                async (IMediator mediator, Guid orderId, CancellationToken cancellationToken) =>
+                {
+                    Result result = await mediator.ExecuteCommandAsync(new CancelOrderCommand(orderId), cancellationToken);
+                    return result.ToHttpResult();
+                }).WithTags("Orders")
+            .RequireAuthorization();
+
         app.MapGet(ApiRoutes.Orders.GetAllAdminOrders,
                 async (int page, int pageSize, IMediator mediator, CancellationToken cancellationToken) =>
                 {

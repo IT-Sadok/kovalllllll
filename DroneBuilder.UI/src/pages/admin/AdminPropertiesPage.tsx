@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { CreatePropertyRequest, UpdatePropertyRequest } from '../../types';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../api/errors';
 import { getProperties, createProperty, updateProperty, deleteProperty, getValues, assignValueToProperty, createValue, removeValueFromProperty } from '../../api/admin';
 import type { Property } from '../../types';
 import Button from '../../components/ui/Button';
@@ -52,7 +53,7 @@ const AdminPropertiesPage: React.FC = () => {
       setModalType(null);
       reset();
     },
-    onError: () => toast.error('Failed to create property'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to create property')),
   });
 
   const updateMutation = useMutation({
@@ -67,7 +68,7 @@ const AdminPropertiesPage: React.FC = () => {
       setEditTarget(null);
       reset();
     },
-    onError: () => toast.error('Failed to update property'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to update property')),
   });
 
   const deleteMutation = useMutation({
@@ -77,7 +78,7 @@ const AdminPropertiesPage: React.FC = () => {
       toast.success('Property deleted');
       setDeleteTarget(null);
     },
-    onError: () => toast.error('Failed to delete property'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to delete property')),
   });
 
   const assignMutation = useMutation({
@@ -88,7 +89,7 @@ const AdminPropertiesPage: React.FC = () => {
       setSelectedValId('');
       setAssignTarget(null);
     },
-    onError: () => toast.error('Failed to assign value. It might already be assigned.'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to assign value. It might already be assigned.')),
   });
 
   const createAndAssignMutation = useMutation({
@@ -99,7 +100,7 @@ const AdminPropertiesPage: React.FC = () => {
       toast.success('New value created & assigned!');
       setNewValueText('');
     },
-    onError: () => toast.error('Failed to create and assign value.'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to create and assign value.')),
   });
 
   const removeValMutation = useMutation({
@@ -109,7 +110,7 @@ const AdminPropertiesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['values'] });
       toast.success('Value unlinked & cleaned up!');
     },
-    onError: () => toast.error('Failed to remove value.'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to remove value.')),
   });
 
   const openCreate = () => {

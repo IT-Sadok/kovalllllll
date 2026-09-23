@@ -9,7 +9,7 @@ export const getCartItems = () =>
 export const addToCart = (productId: string, quantity: number = 1) =>
   api.post<CartItem>('/carts/items', { productId, quantity }).then((r) => r.data);
 
-// DELETE /carts/items/{productId} ← IMPORTANT: param is productId, NOT itemId/cartId
+// DELETE /carts/items/{productId}
 export const removeCartItem = (productId: string) =>
   api.delete(`/carts/items/${productId}`);
 
