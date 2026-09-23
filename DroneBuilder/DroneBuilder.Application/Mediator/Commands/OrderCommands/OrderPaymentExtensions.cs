@@ -7,8 +7,8 @@ namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
 
 public static class OrderPaymentExtensions
 {
-    public static long ToMinorUnits(this decimal amount) =>
-        (long)decimal.Round(amount * 100, MidpointRounding.AwayFromZero);
+    public static long ToMinorUnits(this decimal amount)
+        => (long)decimal.Round(amount * 100, MidpointRounding.AwayFromZero);
 
     public static async Task<Result> ClosePendingPaymentAsync(
         this IPaymentGateway paymentGateway,

@@ -119,8 +119,8 @@ public class ConfirmOrderPaymentCommandHandlerTests
         await _orderRepository.DidNotReceive().GetOrderByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
-    private static ConfirmOrderPaymentCommand Command(bool isPaid = true, long amount = OrderTotalMinor) =>
-        new(new PaymentNotification(SessionId, OrderId, isPaid, amount));
+    private static ConfirmOrderPaymentCommand Command(bool isPaid = true, long amount = OrderTotalMinor)
+        => new(new PaymentNotification(SessionId, OrderId, isPaid, amount));
 
     private static Order CreateOrder(Status status) => new()
     {

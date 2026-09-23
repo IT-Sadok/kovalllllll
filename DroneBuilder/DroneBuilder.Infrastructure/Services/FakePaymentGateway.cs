@@ -19,12 +19,12 @@ public class FakePaymentGateway(ILogger<FakePaymentGateway> logger) : IPaymentGa
         return Task.FromResult(session);
     }
 
-    public Task<PaymentSession?> GetCheckoutSessionAsync(string sessionId, CancellationToken cancellationToken = default) =>
-        Task.FromResult<PaymentSession?>(null);
+    public Task<PaymentSession?> GetCheckoutSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+        => Task.FromResult<PaymentSession?>(null);
 
-    public Task ExpireCheckoutSessionAsync(string sessionId, CancellationToken cancellationToken = default) =>
-        Task.CompletedTask;
+    public Task ExpireCheckoutSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 
-    public Result<PaymentNotification?> ParseNotification(string payload, string signature) =>
-        Result.Fail<PaymentNotification?>(new BadRequestError("The fake payment gateway does not accept webhooks."));
+    public Result<PaymentNotification?> ParseNotification(string payload, string signature)
+        => Result.Fail<PaymentNotification?>(new BadRequestError("The fake payment gateway does not accept webhooks."));
 }
