@@ -1,3 +1,5 @@
+using DroneBuilder.API.Common.Routes;
+
 namespace DroneBuilder.API.Common.Extensions;
 
 public static class SpaExtension
@@ -24,6 +26,7 @@ public static class SpaExtension
     {
         if (HasSpaAssets(app.Environment))
         {
+            app.MapFallback(ApiRoutes.Base + "/{**path}", () => Results.NotFound());
             app.MapFallbackToFile("index.html");
         }
 

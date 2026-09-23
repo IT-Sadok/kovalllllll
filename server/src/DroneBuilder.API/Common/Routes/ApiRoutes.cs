@@ -2,7 +2,7 @@ namespace DroneBuilder.API.Common.Routes;
 
 public abstract class ApiRoutes
 {
-    private const string Base = "/api";
+    public const string Base = "/api";
 
     public static class Users
     {
