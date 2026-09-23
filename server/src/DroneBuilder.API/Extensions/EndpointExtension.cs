@@ -1,5 +1,7 @@
 using DroneBuilder.API.Endpoints;
 using DroneBuilder.API.Features.Products;
+using DroneBuilder.API.Features.Properties;
+using DroneBuilder.API.Features.Values;
 
 namespace DroneBuilder.API.Extensions;
 
