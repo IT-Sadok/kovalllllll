@@ -2,7 +2,6 @@ using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Application.Repositories;
-using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 namespace DroneBuilder.Application.Mediator.Queries.PropertyQueries;
@@ -13,12 +12,7 @@ public class GetPropertiesQueryHandler(IPropertyRepository propertyRepository)
     public async Task<Result<ICollection<PropertyModel>>> ExecuteAsync(GetPropertiesQuery query,
         CancellationToken cancellationToken)
     {
-        ICollection<Property>? properties = await propertyRepository.GetPropertiesAsync(cancellationToken);
-
-        if (properties is null)
-        {
-            return Result.Fail<ICollection<PropertyModel>>(new NotFoundError("No properties found."));
-        }
+        ICollection<Property> properties = await propertyRepository.GetPropertiesAsync(cancellationToken);
 
         return Result.Ok<ICollection<PropertyModel>>(properties.Select(x => x.ToModel()).ToList());
     }

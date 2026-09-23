@@ -285,4 +285,83 @@ public class SignUpCommandHandlerTests
             x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenEmailBelongsToUnconfirmedAccount_ShouldResendConfirmationAndSucceed()
+    {
+        // Arrange
+        var command = new SignUpUserCommand(new SignUpModel { Email = ValidEmail, Password = ValidPassword });
+        var existingUser = new User { Id = Guid.NewGuid(), Email = ValidEmail, EmailConfirmed = false };
+
+        _mockUserManager
+            .Setup(x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Failed(DuplicateEmailError()));
+        _mockUserManager
+            .Setup(x => x.FindByEmailAsync(ValidEmail))
+            .ReturnsAsync(existingUser);
+
+        // Act
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        _mockEmailSender.Verify(
+            x => x.SendEmailConfirmationAsync(ValidEmail, existingUser.Id, It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        _mockUserManager.Verify(x => x.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()), Times.Never);
+        _mockUserRepository.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenEmailBelongsToConfirmedAccount_ShouldSucceedWithoutSendingEmail()
+    {
+        // Arrange
+        var command = new SignUpUserCommand(new SignUpModel { Email = ValidEmail, Password = ValidPassword });
+
+        _mockUserManager
+            .Setup(x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Failed(DuplicateEmailError()));
+        _mockUserManager
+            .Setup(x => x.FindByEmailAsync(ValidEmail))
+            .ReturnsAsync(new User { Email = ValidEmail, EmailConfirmed = true });
+
+        // Act
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        _mockEmailSender.Verify(
+            x => x.SendEmailConfirmationAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenEmailTakenAndPasswordWeak_ShouldReportOnlyPasswordErrors()
+    {
+        // Arrange
+        var command = new SignUpUserCommand(new SignUpModel { Email = ValidEmail, Password = InvalidPassword });
+
+        _mockUserManager
+            .Setup(x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Failed(
+                DuplicateEmailError(),
+                new IdentityError { Code = "PasswordTooShort", Description = ErrorMessage }));
+
+        // Act
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+        Assert.Contains(ErrorMessage, result.Errors[0].Message);
+        Assert.DoesNotContain("already taken", result.Errors[0].Message);
+    }
+
+    private static IdentityError DuplicateEmailError() => new()
+    {
+        Code = nameof(IdentityErrorDescriber.DuplicateEmail),
+        Description = $"Email '{ValidEmail}' is already taken."
+    };
 }

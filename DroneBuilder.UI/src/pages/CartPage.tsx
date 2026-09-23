@@ -31,7 +31,7 @@ const CartPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Item removed');
     },
-    onError: () => toast.error('Failed to remove item'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to remove item')),
   });
 
   const updateQuantityMutation = useMutation({

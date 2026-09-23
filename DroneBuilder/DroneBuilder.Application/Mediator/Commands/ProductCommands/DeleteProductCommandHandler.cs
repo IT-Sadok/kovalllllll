@@ -22,14 +22,15 @@ public class DeleteProductCommandHandler(
 
         existingProduct.IsDeleted = true;
 
-        await cartRepository.RemoveCartItemsByProductIdAsync(command.ProductId, cancellationToken);
+        int releasedQuantity =
+            await cartRepository.RemoveCartItemsByProductIdAsync(command.ProductId, cancellationToken);
 
         WarehouseItem? warehouseItem =
             await warehouseRepository.GetWarehouseItemByProductIdAsync(command.ProductId, cancellationToken);
 
         if (warehouseItem is not null)
         {
-            warehouseRepository.RemoveWarehouseItem(warehouseItem);
+            warehouseItem.Quantity += releasedQuantity;
         }
 
         await productRepository.SaveChangesAsync(cancellationToken);

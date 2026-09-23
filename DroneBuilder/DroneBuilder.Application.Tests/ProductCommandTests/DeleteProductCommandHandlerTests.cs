@@ -79,7 +79,7 @@ public class DeleteProductCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenProductHasWarehouseItem_ShouldRemoveIt()
+    public async Task ExecuteCommandAsync_WhenProductHasWarehouseItem_ShouldKeepItAndRestockCartReservations()
     {
         // Arrange
         var command = new DeleteProductCommand(ProductId);
@@ -91,17 +91,22 @@ public class DeleteProductCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(new Product { Id = ProductId, Name = ProductName });
 
+        _cartRepository.RemoveCartItemsByProductIdAsync(
+                Arg.Is<Guid>(id => id == ProductId),
+                Arg.Any<CancellationToken>())
+            .Returns(3);
+
         _warehouseRepository.GetWarehouseItemByProductIdAsync(
                 Arg.Is<Guid>(id => id == ProductId),
                 Arg.Any<CancellationToken>())
             .Returns(warehouseItem);
 
         // Act
-        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        _warehouseRepository.Received(1).RemoveWarehouseItem(
-            Arg.Is<WarehouseItem>(wi => wi.ProductId == ProductId));
+        Assert.True(result.IsSuccess);
+        Assert.Equal(8, warehouseItem.Quantity);
     }
 
     [Fact]
@@ -125,8 +130,6 @@ public class DeleteProductCommandHandlerTests
 
         // Assert
         Assert.True(result.IsSuccess);
-
-        _warehouseRepository.DidNotReceive().RemoveWarehouseItem(Arg.Any<WarehouseItem>());
 
         await _productRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }

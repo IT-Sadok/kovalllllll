@@ -1,7 +1,5 @@
 using DroneBuilder.Application.ResultErrors;
 using FluentResults;
-using Microsoft.AspNetCore.Mvc;
-using ValidationError = DroneBuilder.Application.ResultErrors.ValidationError;
 
 namespace DroneBuilder.API.Extensions;
 
@@ -30,11 +28,6 @@ public static class ResultExtensions
     private static IResult MapError(ResultBase result)
     {
         IError error = result.Errors.First();
-
-        var problemDetails = new ProblemDetails
-        {
-            Detail = error.Message
-        };
 
         return error switch
         {

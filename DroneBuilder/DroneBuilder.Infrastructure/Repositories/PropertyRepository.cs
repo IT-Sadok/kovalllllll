@@ -38,6 +38,16 @@ public class PropertyRepository(ApplicationDbContext dbContext) : IPropertyRepos
         dbContext.Properties.Remove(property);
     }
 
+    public async Task RemoveProductAssignmentsAsync(Guid propertyId, Guid valueId,
+        CancellationToken cancellationToken = default)
+    {
+        List<ProductPropertyValue> assignments = await dbContext.ProductPropertyValues
+            .Where(ppv => ppv.PropertyId == propertyId && ppv.ValueId == valueId)
+            .ToListAsync(cancellationToken);
+
+        dbContext.ProductPropertyValues.RemoveRange(assignments);
+    }
+
     public void UpdateProperty(Property property)
     {
         dbContext.Properties.Update(property);

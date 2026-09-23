@@ -3,21 +3,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { getProduct, getProductProperties } from '../api/products';
-import { getProductImages } from '../api/admin';
-import { addToCart } from '../api/cart';
+import { useAddToCart } from '../hooks/useAddToCart';
 import { useAuthStore } from '../store/authStore';
-import { useCartStore } from '../store/cartStore';
 import Skeleton from '../components/ui/Skeleton';
 import Button from '../components/ui/Button';
-import type { Image } from '../types';
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { increment } = useCartStore();
+  const addToCartMutation = useAddToCart();
+  const adding = addToCartMutation.isPending;
   const [selectedImage, setSelectedImage] = useState(0);
-  const [adding, setAdding] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
   const { data: product, isLoading: loadingProduct, isError } = useQuery({
@@ -32,28 +29,13 @@ const ProductPage: React.FC = () => {
     enabled: !!id,
   });
 
-  const { data: images } = useQuery({
-    queryKey: ['product-images', id],
-    queryFn: () => getProductImages(id!),
-    enabled: !!id,
-  });
-
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     if (!user) {
       toast.error('Please sign in to add items to cart');
       navigate('/login');
       return;
     }
-    setAdding(true);
-    try {
-      await addToCart(id!, quantity);
-      increment();
-      toast.success(`Added ${quantity}x ${product?.name} to cart!`);
-    } catch {
-      toast.error('Failed to add to cart');
-    } finally {
-      setAdding(false);
-    }
+    addToCartMutation.mutate({ productId: id!, productName: product?.name ?? 'item', quantity });
   };
 
   if (isError) {
@@ -65,8 +47,7 @@ const ProductPage: React.FC = () => {
     );
   }
 
-  const allImages = (images && images.length > 0 ? images : (product?.images || [])) as Image[];
-  const sortedImages = [...allImages].sort((a, b) => (a.isPrimary === b.isPrimary ? 0 : a.isPrimary ? -1 : 1));
+  const sortedImages = [...(product?.images ?? [])].sort((a, b) => (a.isPrimary === b.isPrimary ? 0 : a.isPrimary ? -1 : 1));
 
   const nextImage = () => {
     setSelectedImage((prev) => (prev + 1) % sortedImages.length);

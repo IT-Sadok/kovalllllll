@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { getAdminOrders, updateOrderStatus } from '../../api/orders';
 import { getErrorMessage } from '../../api/errors';
-import { OrderStatusLabel, type OrderStatus, type ShippingDetails } from '../../types';
+import { OrderStatusLabel, OrderStatusTransitions, type OrderStatus, type ShippingDetails } from '../../types';
 import { getShippingValue, parseShippingDetails } from '../../utils/shippingDetails';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
@@ -167,19 +167,20 @@ const AdminOrdersPage: React.FC = () => {
                       </button>
                       
                       <div className="absolute right-0 top-12 w-48 bg-[#0f172a] border border-white/10 rounded-2xl shadow-2xl opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 z-50 p-2 space-y-1">
-                        {Object.entries(OrderStatusLabel).map(([value, label]) => (
-                          <button
-                            key={value}
-                            onClick={() => updateStatusMutation.mutate({ orderId: order.id, status: parseInt(value) })}
-                            className={`w-full text-left px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
-                              parseInt(value) === order.status 
-                              ? 'bg-cyan-500/10 text-cyan-400' 
-                              : 'text-slate-400 hover:bg-white/5 hover:text-white'
-                            }`}
-                          >
-                            Set to {label}
-                          </button>
-                        ))}
+                        {OrderStatusTransitions[order.status].length === 0 ? (
+                          <p className="px-4 py-2 text-xs text-slate-500">No further status changes</p>
+                        ) : (
+                          OrderStatusTransitions[order.status].map((status) => (
+                            <button
+                              key={status}
+                              onClick={() => updateStatusMutation.mutate({ orderId: order.id, status })}
+                              disabled={updateStatusMutation.isPending}
+                              className="w-full text-left px-4 py-2 rounded-xl text-xs font-bold transition-colors text-slate-400 hover:bg-white/5 hover:text-white cursor-pointer disabled:opacity-50"
+                            >
+                              Set to {OrderStatusLabel[status]}
+                            </button>
+                          ))
+                        )}
                       </div>
                     </div>
                   </div>
@@ -234,7 +235,7 @@ const AdminOrdersPage: React.FC = () => {
                                 <p className="text-cyan-400 font-bold mb-2 uppercase">{getVal('fullName')}</p>
                                 <p>{getVal('addressLine1')}</p>
                                 {getVal('addressLine2') !== 'N/A' && <p>{getVal('addressLine2')}</p>}
-                                <p>{getVal('city')}, {getVal('state')} {getVal('postalCode')}</p>
+                                <p>{getVal('city')}, {getVal('state') !== 'N/A' && `${getVal('state')} `}{getVal('postalCode')}</p>
                                 <p>{getVal('country')}</p>
                                 <p className="mt-2 text-slate-500">Contact: {getVal('phoneNumber')}</p>
                               </div>

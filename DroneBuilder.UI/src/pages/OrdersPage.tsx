@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getOrders } from '../api/orders';
-import type { Order, OrderItem, OrderStatus, ShippingDetails } from '../types';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { cancelOrder, getOrders } from '../api/orders';
+import { getErrorMessage } from '../api/errors';
+import { OrderStatusLabel, type Order, type OrderItem, type OrderStatus, type ShippingDetails } from '../types';
+import Button from '../components/ui/Button';
 import { getShippingValue, parseShippingDetails } from '../utils/shippingDetails';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
@@ -47,9 +50,11 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
     }
   };
 
-  const OrderStatusLabel: Record<number, string> = {
-    0: 'New', 1: 'Paid', 2: 'Sent', 3: 'Completed', 4: 'Cancelled'
-  };
+  const cancelMutation = useMutation({
+    mutationFn: () => cancelOrder(order.id),
+    onSuccess: () => toast.success('Order cancelled'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Could not cancel the order')),
+  });
 
   return (
     <div className="glass-card overflow-hidden transition-all duration-300 hover:border-white/20">
@@ -113,12 +118,32 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
                   <p className="font-bold text-white mb-1">{shippingValue('fullName')}</p>
                   <p>{shippingValue('addressLine1')}</p>
                   {shippingValue('addressLine2') !== 'N/A' && <p>{shippingValue('addressLine2')}</p>}
-                  <p>{shippingValue('city')}, {shippingValue('state')} {shippingValue('postalCode')}</p>
+                  <p>
+                    {shippingValue('city')},{' '}
+                    {shippingValue('state') !== 'N/A' && `${shippingValue('state')} `}
+                    {shippingValue('postalCode')}
+                  </p>
                   <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">{shippingValue('country')}</p>
                   <p className="text-[10px] text-slate-500 pt-1">Contact: {shippingValue('phoneNumber')}</p>
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {order.status === 0 && (
+          <div className="flex justify-end">
+            <Button
+              variant="danger"
+              size="sm"
+              loading={cancelMutation.isPending}
+              onClick={() => {
+                if (window.confirm('Cancel this order?')) cancelMutation.mutate();
+              }}
+              id={`cancel-order-${order.id}`}
+            >
+              Cancel order
+            </Button>
           </div>
         )}
       </div>

@@ -46,13 +46,15 @@ public class CartRepository(ApplicationDbContext dbContext) : ICartRepository
         return await GetCartByUserIdAsync(userId, cancellationToken);
     }
 
-    public async Task RemoveCartItemsByProductIdAsync(Guid productId, CancellationToken cancellationToken = default)
+    public async Task<int> RemoveCartItemsByProductIdAsync(Guid productId, CancellationToken cancellationToken = default)
     {
         List<CartItem> cartItems = await dbContext.CartItems
             .Where(ci => ci.ProductId == productId)
             .ToListAsync(cancellationToken);
 
         dbContext.CartItems.RemoveRange(cartItems);
+
+        return cartItems.Sum(ci => ci.Quantity);
     }
 
     public async Task ClearCartAsync(Guid cartId, CancellationToken cancellationToken = default)

@@ -18,8 +18,6 @@ public class DeleteImageCommandHandler(IAzureStorageService azureStorageService,
             return Result.Fail(new NotFoundError($"Image with id {command.ImageId} not found."));
         }
 
-        await azureStorageService.DeleteFileAsync(existingImage.Url, cancellationToken);
-
         if (existingImage.IsPrimary)
         {
             ICollection<Image> otherImages = await imageRepository.GetImagesByProductIdAsync(existingImage.ProductId, cancellationToken);
@@ -32,6 +30,8 @@ public class DeleteImageCommandHandler(IAzureStorageService azureStorageService,
 
         imageRepository.RemoveImage(existingImage);
         await imageRepository.SaveChangesAsync(cancellationToken);
+
+        await azureStorageService.DeleteFileAsync(existingImage.Url, cancellationToken);
 
         return Result.Ok();
     }

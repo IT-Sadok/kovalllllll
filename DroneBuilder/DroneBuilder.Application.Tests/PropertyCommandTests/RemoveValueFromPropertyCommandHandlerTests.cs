@@ -41,6 +41,8 @@ public class RemoveValueFromPropertyCommandHandlerTests
 
         // Assert
         Assert.DoesNotContain(value, property.Values);
+        await _propertyRepository.Received(1).RemoveProductAssignmentsAsync(
+            PropertyId, ValueId, Arg.Any<CancellationToken>());
         await _propertyRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

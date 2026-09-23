@@ -27,7 +27,7 @@ public class AddValueToPropertyCommandHandler(IPropertyRepository propertyReposi
 
         if (property.Values != null && property.Values.Any(v => v.Id == command.ValueId))
         {
-            return Result.Fail(new ValidationError(
+            return Result.Fail(new ConflictError(
                 $"Value with ID {command.ValueId} is already associated with Property ID {command.PropertyId}."));
         }
 

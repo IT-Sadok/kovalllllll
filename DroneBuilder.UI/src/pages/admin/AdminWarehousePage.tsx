@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../api/errors';
 import { getWarehouseItems, addWarehouseQuantity, removeWarehouseQuantity } from '../../api/admin';
 import type { WarehouseItem } from '../../types';
 import Button from '../../components/ui/Button';
@@ -31,7 +32,7 @@ const AdminWarehousePage: React.FC = () => {
       setModalItem(null);
       setQty('');
     },
-    onError: () => toast.error('Failed to add quantity'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to add quantity')),
   });
 
   // DELETE /warehouse/items/{id} body: { quantityToRemove } → returns updated WarehouseItem
@@ -44,7 +45,7 @@ const AdminWarehousePage: React.FC = () => {
       setModalItem(null);
       setQty('');
     },
-    onError: () => toast.error('Failed to remove quantity'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to remove quantity')),
   });
 
   const handleSubmit = () => {
@@ -76,8 +77,8 @@ const AdminWarehousePage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
           { label: 'Total Items', value: data?.totalCount ?? '—', color: 'text-cyan-400' },
-          { label: 'In Stock', value: data?.items.filter((i) => i.quantity > 0).length ?? '—', color: 'text-emerald-400' },
-          { label: 'Out of Stock', value: data?.items.filter((i) => i.quantity === 0).length ?? '—', color: 'text-red-400' },
+          { label: 'In Stock (this page)', value: data?.items.filter((i) => i.quantity > 0).length ?? '—', color: 'text-emerald-400' },
+          { label: 'Out of Stock (this page)', value: data?.items.filter((i) => i.quantity === 0).length ?? '—', color: 'text-red-400' },
         ].map((stat) => (
           <div key={stat.label} className="glass-card p-4">
             <p className="text-sm text-slate-400">{stat.label}</p>

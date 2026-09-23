@@ -845,5 +845,46 @@ public class CreateOrderCommandHandlerTests
 
         Assert.Equal(250m, capturedOrder.TotalPrice);
     }
-}
 
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenCartProductIsNoLongerAvailable_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var command = new CreateOrderCommand(new ShippingDetailsModel());
+
+        var cart = new Cart
+        {
+            Id = CartId,
+            UserId = UserId,
+            CartItems = new List<CartItem>
+            {
+                new() { ProductId = ProductId1, ProductName = "Available", Quantity = 1 },
+                new() { ProductId = ProductId2, ProductName = "Delisted", Quantity = 1 }
+            }
+        };
+
+        _cartRepository.GetCartByUserIdForUpdateAsync(UserId, Arg.Any<CancellationToken>())
+            .Returns(cart);
+
+        _warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(Arg.Any<ICollection<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<WarehouseItem>
+            {
+                new() { ProductId = ProductId1, Quantity = 10 },
+                new() { ProductId = ProductId2, Quantity = 10 }
+            });
+
+        _productRepository.GetProductsByIdsAsync(Arg.Any<ICollection<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<Product> { new() { Id = ProductId1, Price = Product1Price } });
+
+        // Act
+        Result<OrderModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
+        Assert.Contains("Delisted", result.Errors[0].Message);
+
+        await _orderRepository.DidNotReceive().CreateOrderAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+}

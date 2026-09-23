@@ -42,7 +42,7 @@ public class UpdateOrderStatusCommandHandler(
 
         if (command.NewStatus == Status.Cancelled)
         {
-            Result restockResult = await RestockAsync(order, cancellationToken);
+            Result restockResult = await warehouseRepository.RestockAsync(order, cancellationToken);
             if (restockResult.IsFailed)
             {
                 return restockResult;
@@ -52,25 +52,6 @@ public class UpdateOrderStatusCommandHandler(
         order.Status = command.NewStatus;
 
         await orderRepository.SaveChangesAsync(cancellationToken);
-
-        return Result.Ok();
-    }
-
-    private async Task<Result> RestockAsync(Order order, CancellationToken cancellationToken)
-    {
-        foreach (OrderItem item in order.OrderItems)
-        {
-            WarehouseItem? warehouseItem =
-                await warehouseRepository.GetWarehouseItemByProductIdAsync(item.ProductId, cancellationToken);
-
-            if (warehouseItem is null)
-            {
-                return Result.Fail(new NotFoundError(
-                    $"Warehouse item for product {item.ProductId} not found while cancelling the order."));
-            }
-
-            warehouseItem.Quantity += item.Quantity;
-        }
 
         return Result.Ok();
     }

@@ -5,9 +5,16 @@ namespace DroneBuilder.API.Extensions;
 
 public static class RateLimitingExtension
 {
+    public const string LoginPolicy = "LoginPolicy";
+    public const string EmailPolicy = "EmailPolicy";
+
     public static IServiceCollection AddRateLimitingConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        LoginRateLimitOptions rateLimitConfig = configuration.GetSection("RateLimiting:Login").Get<LoginRateLimitOptions>() ?? new LoginRateLimitOptions();
+        RateLimitPolicyOptions loginOptions = configuration.GetSection("RateLimiting:Login").Get<RateLimitPolicyOptions>()
+                                              ?? new RateLimitPolicyOptions();
+
+        RateLimitPolicyOptions emailOptions = configuration.GetSection("RateLimiting:Email").Get<RateLimitPolicyOptions>()
+                                              ?? new RateLimitPolicyOptions { PermitLimit = 5 };
 
         services.AddRateLimiter(options =>
         {
@@ -18,7 +25,8 @@ public static class RateLimitingExtension
                 ILogger<Program> logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
                 string ipAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown IP";
 
-                logger.LogWarning("Login rate limit exceeded for IP {IpAddress}", ipAddress);
+                logger.LogWarning("Rate limit exceeded for IP {IpAddress} on {Path}",
+                    ipAddress, context.HttpContext.Request.Path);
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
 
@@ -34,22 +42,25 @@ public static class RateLimitingExtension
                 }, cancellationToken: token);
             };
 
-            options.AddPolicy("LoginPolicy", context =>
-            {
-                string ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: ipAddress,
-                    factory: partition => new FixedWindowRateLimiterOptions
-                    {
-                        AutoReplenishment = true,
-                        PermitLimit = rateLimitConfig.PermitLimit,
-                        QueueLimit = 0,
-                        Window = TimeSpan.FromMinutes(rateLimitConfig.WindowInMinutes)
-                    });
-            });
+            options.AddPolicy(LoginPolicy, context => CreatePerIpLimiter(context, loginOptions));
+            options.AddPolicy(EmailPolicy, context => CreatePerIpLimiter(context, emailOptions));
         });
 
         return services;
+    }
+
+    private static RateLimitPartition<string> CreatePerIpLimiter(HttpContext context, RateLimitPolicyOptions policyOptions)
+    {
+        string ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ipAddress,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = policyOptions.PermitLimit,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(policyOptions.WindowInMinutes)
+            });
     }
 }

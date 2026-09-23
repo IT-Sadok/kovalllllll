@@ -1,6 +1,6 @@
-using Azure.Storage.Blobs;
 using System.Net.Http.Headers;
 using System.Reflection;
+using Azure.Storage.Blobs;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
@@ -25,7 +25,8 @@ public static class InfrastructureExtensions
         string? connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION")
                                ?? configuration.GetConnectionString("DefaultConnection");
 
-        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString,
+            npgsql => npgsql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
         services.AddValidatorsFromAssembly(typeof(InfrastructureExtensions).Assembly);
 

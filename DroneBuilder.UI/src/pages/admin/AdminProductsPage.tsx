@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../api/errors';
 import { getProducts, getCategories } from '../../api/products';
 import {
   adminCreateProduct,
@@ -74,14 +75,13 @@ const AdminProductsPage: React.FC = () => {
     resolver: zodResolver(updateSchema),
   });
 
-  // POST /products — requires all required fields + properties (empty array for simple product)
+  // POST /products
   const createMutation = useMutation({
     mutationFn: (data: CreateFormData) => {
       const payload: CreateProductRequest = {
         name: data.name,
         price: data.price,
         category: data.category,
-        properties: { name: '', values: [] }, // required by API structure
       };
       return adminCreateProduct(payload);
     },
@@ -91,7 +91,7 @@ const AdminProductsPage: React.FC = () => {
       setModalType(null);
       createForm.reset();
     },
-    onError: () => toast.error('Failed to create product'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to create product')),
   });
 
   // PATCH /products/{id} — all fields optional
@@ -105,7 +105,7 @@ const AdminProductsPage: React.FC = () => {
       setEditTarget(null);
       updateForm.reset();
     },
-    onError: () => toast.error('Failed to update product'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to update product')),
   });
 
   const deleteMutation = useMutation({
@@ -115,7 +115,7 @@ const AdminProductsPage: React.FC = () => {
       toast.success('Product delisted');
       setDeleteTarget(null);
     },
-    onError: () => toast.error('Failed to delist product'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to delist product')),
   });
 
   // Only fetched while the panel is open: delisting is rare and this is the only place it is shown.
@@ -130,9 +130,9 @@ const AdminProductsPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['admin-delisted-products'] });
-      toast.success('Product restored with zero stock');
+      toast.success('Product restored');
     },
-    onError: () => toast.error('Failed to restore product'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to restore product')),
   });
 
   const openCreate = () => {
@@ -442,8 +442,8 @@ const AdminProductsPage: React.FC = () => {
           Are you sure you want to delist <strong className="text-white">{deleteTarget?.name}</strong>?
         </p>
         <p className="text-sm text-slate-500 mb-6">
-          It disappears from the catalogue and from every cart, and its stock record is dropped.
-          Past orders keep it. You can restore it later from Delisted, but stock starts back at zero.
+          It disappears from the catalogue and from every cart; items reserved in carts go back to stock.
+          Past orders keep it, and its stock count is kept so you can restore it later from Delisted.
         </p>
         <div className="flex gap-3">
           <Button variant="ghost" onClick={() => setDeleteTarget(null)} id="delete-cancel">Cancel</Button>
@@ -468,7 +468,7 @@ const AdminProductsPage: React.FC = () => {
         ) : (
           <>
             <p className="text-sm text-slate-500 mb-4">
-              Restoring puts a product back in the catalogue with a fresh stock record at zero.
+              Restoring puts a product back in the catalogue with the stock it had when it was delisted.
             </p>
             <ul className="divide-y divide-slate-800">
               {delisted.items.map((product) => (

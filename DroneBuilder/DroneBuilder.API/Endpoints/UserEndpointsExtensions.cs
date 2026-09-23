@@ -5,7 +5,9 @@ using DroneBuilder.API.Extensions;
 using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.UserModels;
+using DroneBuilder.Infrastructure.Options;
 using FluentResults;
+using Microsoft.Extensions.Options;
 
 namespace DroneBuilder.API.Endpoints;
 
@@ -18,10 +20,21 @@ public static class UserEndpointsExtensions
             {
                 Result result = await mediator.ExecuteCommandAsync(new SignUpUserCommand(model), cancellationToken);
                 return result.ToHttpResult();
-            }).WithTags("Users");
+            }).WithTags("Users")
+            .RequireRateLimiting(RateLimitingExtension.EmailPolicy);
+
+        app.MapPost(ApiRoutes.Users.ResendConfirmation,
+            async (IMediator mediator, ResendEmailConfirmationModel model, CancellationToken cancellationToken) =>
+            {
+                Result result = await mediator.ExecuteCommandAsync(
+                    new ResendEmailConfirmationCommand(model.Email),
+                    cancellationToken);
+                return result.ToHttpResult();
+            }).WithTags("Users")
+            .RequireRateLimiting(RateLimitingExtension.EmailPolicy);
 
         app.MapPost(ApiRoutes.Users.SignIn,
-            async (IMediator mediator, HttpContext httpContext, SignInModel model,
+            async (IMediator mediator, HttpContext httpContext, IOptions<JwtOptions> jwtOptions, SignInModel model,
                 CancellationToken cancellationToken) =>
             {
                 Result<AuthUserModel> result = await mediator.ExecuteCommandAsync<SignInCommand, AuthUserModel>(
@@ -34,11 +47,13 @@ public static class UserEndpointsExtensions
                 }
 
                 httpContext.Response.Cookies.Append(
-                    AuthCookie.Name, result.Value.AccessToken, AuthCookie.Options());
+                    AuthCookie.Name,
+                    result.Value.AccessToken,
+                    AuthCookie.Options(DateTimeOffset.UtcNow.AddMinutes(jwtOptions.Value.ExpiryMinutes)));
 
                 return Results.NoContent();
             }).WithTags("Users")
-            .RequireRateLimiting("LoginPolicy");
+            .RequireRateLimiting(RateLimitingExtension.LoginPolicy);
 
         app.MapPost(ApiRoutes.Users.SignOut,
             (HttpContext httpContext) =>

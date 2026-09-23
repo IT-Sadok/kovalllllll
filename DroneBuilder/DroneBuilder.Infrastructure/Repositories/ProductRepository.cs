@@ -88,6 +88,8 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         int totalCount = await query.CountAsync(cancellationToken);
 
         List<Product> items = await query
+            .OrderBy(p => p.Name)
+            .ThenBy(p => p.Id)
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);
@@ -114,7 +116,8 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .AsNoTracking()
             .Where(p => p.IsDeleted)
             .Include(p => p.Images)
-            .OrderBy(p => p.Name);
+            .OrderBy(p => p.Name)
+            .ThenBy(p => p.Id);
 
         int totalCount = await query.CountAsync(cancellationToken);
 
@@ -140,7 +143,6 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
             .ToListAsync(cancellationToken);
     }
-
 
     public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {

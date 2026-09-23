@@ -15,7 +15,7 @@ public class MediatorScopeTests
 
     private static ServiceProvider BuildProvider(IValueRepository repository, out Func<int> scopedResolutions)
     {
-        var count = 0;
+        int count = 0;
 
         var services = new ServiceCollection();
         services.AddApplication();

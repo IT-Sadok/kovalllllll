@@ -1,5 +1,4 @@
 using DroneBuilder.Application.Abstractions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DroneBuilder.Infrastructure.Repositories;
@@ -14,8 +13,8 @@ public class UnitOfWork(ApplicationDbContext dbContext) : IUnitOfWork
 
     private sealed class EfCoreTransaction(IDbContextTransaction transaction) : ITransaction
     {
-        public Task CommitAsync(CancellationToken cancellationToken = default) =>
-            transaction.CommitAsync(cancellationToken);
+        public Task CommitAsync(CancellationToken cancellationToken = default)
+            => transaction.CommitAsync(cancellationToken);
 
         public ValueTask DisposeAsync() => transaction.DisposeAsync();
     }

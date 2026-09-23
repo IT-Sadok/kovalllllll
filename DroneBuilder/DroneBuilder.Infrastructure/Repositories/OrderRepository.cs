@@ -22,7 +22,8 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                     .ThenInclude(p => p!.Images)
-            .OrderBy(o => o.CreatedAt);
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenBy(o => o.Id);
 
         int totalCount = await query.CountAsync(cancellationToken);
 
@@ -49,7 +50,8 @@ public class OrderRepository(ApplicationDbContext dbContext) : IOrderRepository
                 .ThenInclude(oi => oi.Product)
                     .ThenInclude(p => p!.Images)
             .Include(o => o.User)
-            .OrderByDescending(o => o.CreatedAt);
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenBy(o => o.Id);
 
         int totalCount = await query.CountAsync(cancellationToken);
 

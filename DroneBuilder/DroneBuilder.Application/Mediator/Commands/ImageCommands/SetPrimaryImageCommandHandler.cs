@@ -15,7 +15,7 @@ public class SetPrimaryImageCommandHandler(IImageRepository imageRepository)
 
         if (targetImage == null)
         {
-            return Result.Fail(new ValidationError("Image not found."));
+            return Result.Fail(new NotFoundError($"Image with id {command.ImageId} not found."));
         }
 
         ICollection<Image> productImages = await imageRepository.GetImagesByProductIdAsync(targetImage.ProductId, cancellationToken);

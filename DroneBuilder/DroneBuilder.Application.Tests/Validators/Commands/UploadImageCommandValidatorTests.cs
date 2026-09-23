@@ -26,8 +26,8 @@ public class UploadImageCommandValidatorTests
         };
     }
 
-    private static UploadImageCommand CreateCommand(string fileName, string contentType, byte[] content) =>
-        new(CreateFile(fileName, contentType, content), Guid.NewGuid());
+    private static UploadImageCommand CreateCommand(string fileName, string contentType, byte[] content)
+        => new(CreateFile(fileName, contentType, content), Guid.NewGuid());
 
     [Fact]
     public void Should_Not_Have_Error_When_File_Is_A_Real_Png()

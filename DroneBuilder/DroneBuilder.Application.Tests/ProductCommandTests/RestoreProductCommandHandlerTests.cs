@@ -29,8 +29,8 @@ public class RestoreProductCommandHandlerTests
         _handler = new RestoreProductCommandHandler(_productRepository, _warehouseRepository);
     }
 
-    private void GivenDelistedProduct(Product product) =>
-        _productRepository.GetDelistedProductByIdAsync(
+    private void GivenDelistedProduct(Product product)
+        => _productRepository.GetDelistedProductByIdAsync(
                 Arg.Is<Guid>(id => id == ProductId),
                 Arg.Any<CancellationToken>())
             .Returns(product);

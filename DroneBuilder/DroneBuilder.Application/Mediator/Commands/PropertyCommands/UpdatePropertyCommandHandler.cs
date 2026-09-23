@@ -20,10 +20,7 @@ public class UpdatePropertyCommandHandler(IPropertyRepository propertyRepository
             return Result.Fail<PropertyModel>(new NotFoundError($"Property with id {command.PropertyId} not found."));
         }
 
-        if (command.Model.Name is not null)
-        {
-            property.Name = command.Model.Name;
-        }
+        command.Model.UpdateEntity(property);
 
         await propertyRepository.SaveChangesAsync(cancellationToken);
 

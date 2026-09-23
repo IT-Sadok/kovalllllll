@@ -4,11 +4,13 @@ import { QueryClient, QueryClientProvider, MutationCache } from '@tanstack/react
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/PrivateRoute';
 import { useAuthStore } from './store/authStore';
+import { useCartStore } from './store/cartStore';
 
 // Pages
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ConfirmEmailPage from './pages/ConfirmEmailPage';
 import ProductPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -44,6 +46,19 @@ function App() {
     void hydrate();
   }, [hydrate]);
 
+  // Cached cart and orders belong to the session that fetched them. Drop them on sign-out or expiry so the
+  // next person on this browser never sees them.
+  useEffect(
+    () =>
+      useAuthStore.subscribe((state, prev) => {
+        if (prev.status === 'authenticated' && state.status !== 'authenticated') {
+          queryClient.clear();
+          useCartStore.getState().setItemCount(0);
+        }
+      }),
+    [],
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -53,6 +68,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/confirm-email" element={<ConfirmEmailPage />} />
             <Route path="/products/:id" element={<ProductPage />} />
 
             {/* User (authenticated) */}

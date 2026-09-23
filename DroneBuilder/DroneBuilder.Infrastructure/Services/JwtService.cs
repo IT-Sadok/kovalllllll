@@ -30,7 +30,7 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userM
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
@@ -44,7 +44,7 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userM
             issuer: _jwtOptions.Issuer,
             audience: _jwtOptions.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            expires: DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes),
             signingCredentials: creds);
 
         return Result.Ok(new JwtSecurityTokenHandler().WriteToken(token));

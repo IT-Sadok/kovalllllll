@@ -9,5 +9,6 @@ public interface IPropertyRepository
     Task<ICollection<Property>> GetPropertiesAsync(CancellationToken cancellationToken = default);
     Task<Property?> GetValuesByPropertyIdAsync(Guid propertyId, CancellationToken cancellationToken = default);
     void RemoveProperty(Property property);
+    Task RemoveProductAssignmentsAsync(Guid propertyId, Guid valueId, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -16,6 +16,7 @@ public class UpdatePropertyCommandValidator : AbstractValidator<UpdatePropertyCo
         When(x => x.Model != null, () =>
         {
             RuleFor(x => x.Model.Name)
+                .NotEmpty().WithMessage("Property name must not be empty.")
                 .MaximumLength(100).WithMessage("Property name must not exceed 100 characters.")
                 .When(x => x.Model.Name != null);
         });

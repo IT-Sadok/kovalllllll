@@ -13,6 +13,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - dronebuilder-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3.13-management
@@ -48,6 +53,7 @@ services:
       JwtOptions__Issuer: ${JWT_ISSUER:?JWT_ISSUER is required}
       JwtOptions__Audience: ${JWT_AUDIENCE:?JWT_AUDIENCE is required}
       JwtOptions__Key: ${JWT_KEY:?JWT_KEY is required}
+      JwtOptions__ExpiryMinutes: ${JWT_EXPIRY_MINUTES:-60}
       AzureStorage__ConnectionString: ${AZURE_STORAGE_CONNECTION_STRING:?AZURE_STORAGE_CONNECTION_STRING is required}
       AzureStorage__ContainerName: ${AZURE_STORAGE_CONTAINER:?AZURE_STORAGE_CONTAINER is required}
       Resend__ApiKey: ${RESEND_API_KEY:?RESEND_API_KEY is required}
@@ -64,7 +70,7 @@ services:
       - "8080:8080"
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     networks:

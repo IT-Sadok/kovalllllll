@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
   getProperties,
@@ -69,7 +70,7 @@ const AdminProductPropertiesPage: React.FC = () => {
       setNewPropInitialValue('');
       setIsCreatingProp(false);
     },
-    onError: () => toast.error('Failed to create property.'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to create property.')),
   });
 
   const createAndAssignValueMutation = useMutation({
@@ -87,15 +88,15 @@ const AdminProductPropertiesPage: React.FC = () => {
       toast.success('Value added!');
       setNewValueTexts((prev) => ({ ...prev, [variables.propertyId]: '' }));
     },
-    onError: () => toast.error('Failed to add value.'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to add value.')),
   });
 
   const assignExistingValueMutation = useMutation({
     mutationFn: async ({ pId, vId }: { pId: string; vId: string }) => {
       try {
         await assignValueToProperty(pId, vId);
-      } catch {
-        // Ignore "already assigned globally" errors
+      } catch (error: unknown) {
+        if (!axios.isAxiosError(error) || error.response?.status !== 409) throw error;
       }
       await assignValueToProductProperty(id!, pId, vId);
     },
@@ -104,10 +105,7 @@ const AdminProductPropertiesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['product-properties', id] });
       toast.success('Existing value assigned!');
     },
-    onError: (error: unknown) => {
-      console.error(error);
-      toast.error('Error assigning: ' + getErrorMessage(error, 'Unknown error'));
-    },
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to assign value')),
   });
 
   const removePropMutation = useMutation({
@@ -118,7 +116,7 @@ const AdminProductPropertiesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['product-properties', id] });
       toast.success('Property removed from product');
     },
-    onError: () => toast.error('Failed to remove property'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to remove property')),
   });
 
   const removeValueMutation = useMutation({
@@ -129,7 +127,7 @@ const AdminProductPropertiesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['product-properties', id] });
       toast.success('Value removed from property');
     },
-    onError: () => toast.error('Failed to remove value'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to remove value')),
   });
 
   // Handlers

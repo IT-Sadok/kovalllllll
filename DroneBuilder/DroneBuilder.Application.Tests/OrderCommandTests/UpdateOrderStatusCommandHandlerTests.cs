@@ -132,7 +132,44 @@ public class UpdateOrderStatusCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenWarehouseItemMissingOnCancel_ShouldThrowNotFoundException()
+    public async Task ExecuteCommandAsync_WhenWarehouseItemMissingOnCancel_ShouldRecreateItAndRestock()
+    {
+        // Arrange
+        var command = new UpdateOrderStatusCommand(OrderId, Status.Cancelled);
+        var warehouse = new Warehouse { Id = Guid.NewGuid() };
+
+        var order = new Order
+        {
+            Id = OrderId,
+            Status = Status.New,
+            OrderItems = [new OrderItem { ProductId = ProductId, Quantity = 3 }]
+        };
+
+        _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns(order);
+        _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>()).Returns(warehouse);
+
+        _warehouseRepository.GetWarehouseItemByProductIdAsync(
+                Arg.Is<Guid>(id => id == ProductId),
+                Arg.Any<CancellationToken>())
+            .Returns((WarehouseItem)null!);
+
+        // Act
+        Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(Status.Cancelled, order.Status);
+
+        await _warehouseRepository.Received(1).AddWarehouseItemAsync(
+            Arg.Is<WarehouseItem>(wi =>
+                wi.ProductId == ProductId && wi.WarehouseId == warehouse.Id && wi.Quantity == 3),
+            Arg.Any<CancellationToken>());
+
+        await _orderRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenWarehouseMissingOnCancel_ShouldReturnNotFound()
     {
         // Arrange
         var command = new UpdateOrderStatusCommand(OrderId, Status.Cancelled);
@@ -145,18 +182,19 @@ public class UpdateOrderStatusCommandHandlerTests
         };
 
         _orderRepository.GetOrderByIdAsync(OrderId, Arg.Any<CancellationToken>()).Returns(order);
+        _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>()).Returns((Warehouse)null!);
 
         _warehouseRepository.GetWarehouseItemByProductIdAsync(
                 Arg.Is<Guid>(id => id == ProductId),
                 Arg.Any<CancellationToken>())
             .Returns((WarehouseItem)null!);
 
-        // Act & Assert
+        // Act
         Result result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
+        // Assert
         Assert.True(result.IsFailed);
         Assert.True(result.HasError<NotFoundError>());
-
         Assert.Equal(Status.New, order.Status);
 
         await _orderRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());

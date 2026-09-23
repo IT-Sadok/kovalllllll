@@ -25,24 +25,6 @@ public static class OrderMappingExtensions
         };
     }
 
-    public static Order ToEntity(this CreateOrderModel model)
-    {
-        if (model == null)
-        {
-            return null!;
-        }
-
-        return new Order
-        {
-            UserId = model.UserId,
-            Status = model.Status,
-            OrderItems = model.OrderItems?.Select(i => i.ToEntity()).ToList() ?? new List<OrderItem>(),
-            TotalPrice = model.TotalPrice,
-            ShippingDetails = model.ShippingDetails,
-            CreatedAt = model.CreatedAt
-        };
-    }
-
     public static OrderItemModel ToModel(this OrderItem item)
     {
         if (item == null)
@@ -61,36 +43,6 @@ public static class OrderMappingExtensions
             ProductImageUrl = (item.Product?.Images != null && item.Product.Images.Any())
                 ? (item.Product.Images.FirstOrDefault(x => x.IsPrimary) ?? item.Product.Images.First()).Url
                 : string.Empty
-        };
-    }
-
-    public static OrderItem ToEntity(this CreateOrderItemModel model)
-    {
-        if (model == null)
-        {
-            return null!;
-        }
-
-        return new OrderItem
-        {
-            ProductId = model.ProductId,
-            Quantity = model.Quantity,
-            PriceAtPurchase = model.Price
-        };
-    }
-
-    public static OrderItem ToEntity(this OrderItemModel model)
-    {
-        if (model == null)
-        {
-            return null!;
-        }
-
-        return new OrderItem
-        {
-            ProductId = model.ProductId,
-            Quantity = model.Quantity,
-            PriceAtPurchase = model.Price
         };
     }
 }

@@ -18,11 +18,6 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
         await dbContext.WarehouseItems.AddAsync(warehouseItem, cancellationToken);
     }
 
-    public void RemoveWarehouseItem(WarehouseItem warehouseItem)
-    {
-        dbContext.WarehouseItems.Remove(warehouseItem);
-    }
-
     public async Task<WarehouseItem?> GetWarehouseItemByIdAsync(Guid warehouseItemId,
         CancellationToken cancellationToken = default)
     {
@@ -44,7 +39,9 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
     {
         IOrderedQueryable<WarehouseItem> query = dbContext.WarehouseItems
             .Include(wi => wi.Product)
-            .OrderBy(wi => wi.Product!.Name);
+            .Where(wi => !wi.Product!.IsDeleted)
+            .OrderBy(wi => wi.Product!.Name)
+            .ThenBy(wi => wi.Id);
 
         int totalCount = await query.CountAsync(cancellationToken);
 

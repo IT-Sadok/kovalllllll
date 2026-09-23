@@ -20,10 +20,13 @@ public class OutboxProcessorHostedService(
 
     private static readonly TimeSpan IdleDelay = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan StuckMessageLogInterval = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan PurgeInterval = TimeSpan.FromHours(1);
+    private static readonly TimeSpan ProcessedMessageRetention = TimeSpan.FromDays(7);
 
     private IConnection? _connection;
     private IChannel? _channel;
     private DateTime _lastStuckMessageLogUtc = DateTime.MinValue;
+    private DateTime _lastPurgeUtc = DateTime.MinValue;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -40,6 +43,7 @@ public class OutboxProcessorHostedService(
                     if (published < BatchSize)
                     {
                         await LogStuckMessagesAsync(stoppingToken);
+                        await PurgeProcessedMessagesAsync(stoppingToken);
                         await Task.Delay(IdleDelay, stoppingToken);
                     }
                 }
@@ -147,6 +151,31 @@ public class OutboxProcessorHostedService(
             basicProperties: properties,
             body: Encoding.UTF8.GetBytes(message.Payload),
             cancellationToken: cancellationToken);
+    }
+
+    private async Task PurgeProcessedMessagesAsync(CancellationToken cancellationToken)
+    {
+        if (DateTime.UtcNow - _lastPurgeUtc < PurgeInterval)
+        {
+            return;
+        }
+
+        _lastPurgeUtc = DateTime.UtcNow;
+
+        using IServiceScope scope = serviceProvider.CreateScope();
+        ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        DateTime cutoff = DateTime.UtcNow - ProcessedMessageRetention;
+
+        int purged = await context.Messages
+            .Where(m => m.ProcessedAt != null && m.ProcessedAt < cutoff)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        if (purged > 0)
+        {
+            logger.LogInformation("Purged {Count} processed outbox messages older than {Days} days",
+                purged, ProcessedMessageRetention.TotalDays);
+        }
     }
 
     private async Task LogStuckMessagesAsync(CancellationToken cancellationToken)

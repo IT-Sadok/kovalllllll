@@ -33,6 +33,22 @@ public class TextLengthLimitsValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public void CreateProperty_Should_Reject_Empty_Or_Too_Long_Value_Text(string? text)
+    {
+        var command = new CreatePropertyCommand(new CreatePropertyModel
+        {
+            Name = AtLimit,
+            Values = [new CreateValueModel { Text = text ?? TooLong }]
+        });
+
+        TestValidationResult<CreatePropertyCommand> result = new CreatePropertyCommandValidator().TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor("Model.Values[0].Text");
+    }
+
     [Fact]
     public void UpdateProperty_Should_Reject_Name_Longer_Than_Column()
     {

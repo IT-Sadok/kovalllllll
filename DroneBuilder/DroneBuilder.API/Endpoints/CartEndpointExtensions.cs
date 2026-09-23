@@ -50,7 +50,7 @@ public static class CartEndpointExtensions
             .WithTags("Cart")
             .RequireAuthorization();
 
-        app.MapPatch(ApiRoutes.Cart.AddItemToCart + "/{productId}",
+        app.MapPatch(ApiRoutes.Cart.UpdateItemQuantity,
                 async (IMediator mediator, Guid productId, [FromBody] int quantity,
                     CancellationToken cancellationToken) =>
                 {

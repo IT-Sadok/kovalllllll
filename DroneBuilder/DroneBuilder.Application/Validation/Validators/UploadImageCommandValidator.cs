@@ -42,8 +42,8 @@ public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
         });
     }
 
-    private static bool HasAllowedExtension(string? fileName) =>
-        !string.IsNullOrWhiteSpace(fileName)
+    private static bool HasAllowedExtension(string? fileName)
+        => !string.IsNullOrWhiteSpace(fileName)
         && AllowedExtensions.Contains(Path.GetExtension(fileName), StringComparer.OrdinalIgnoreCase);
 
     private static bool HasImageSignature(IFormFile file)
@@ -61,17 +61,17 @@ public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
         return IsJpeg(header) || IsPng(header) || IsGif(header) || IsWebp(header);
     }
 
-    private static bool IsJpeg(ReadOnlySpan<byte> header) =>
-        header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF;
+    private static bool IsJpeg(ReadOnlySpan<byte> header)
+        => header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF;
 
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
-    private static bool IsPng(ReadOnlySpan<byte> header) =>
-        header[..8].SequenceEqual(PngSignature);
+    private static bool IsPng(ReadOnlySpan<byte> header)
+        => header[..8].SequenceEqual(PngSignature);
 
-    private static bool IsGif(ReadOnlySpan<byte> header) =>
-        header[..4].SequenceEqual("GIF8"u8);
+    private static bool IsGif(ReadOnlySpan<byte> header)
+        => header[..4].SequenceEqual("GIF8"u8);
 
-    private static bool IsWebp(ReadOnlySpan<byte> header) =>
-        header[..4].SequenceEqual("RIFF"u8) && header[8..12].SequenceEqual("WEBP"u8);
+    private static bool IsWebp(ReadOnlySpan<byte> header)
+        => header[..4].SequenceEqual("RIFF"u8) && header[8..12].SequenceEqual("WEBP"u8);
 }

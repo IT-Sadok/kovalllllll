@@ -26,12 +26,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
   }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

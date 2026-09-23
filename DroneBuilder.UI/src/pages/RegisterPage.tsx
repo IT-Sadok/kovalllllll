@@ -11,7 +11,13 @@ import Button from '../components/ui/Button';
 
 const schema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .regex(/[a-z]/, 'Password must contain a lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+    .regex(/\d/, 'Password must contain a digit')
+    .regex(/[^a-zA-Z0-9]/, 'Password must contain a special character'),
   confirm: z.string(),
 }).refine((d) => d.password === d.confirm, {
   path: ['confirm'],
@@ -30,7 +36,7 @@ const RegisterPage: React.FC = () => {
   const onSubmit = async (data: FormData) => {
     try {
       await signUp(data.email, data.password);
-      toast.success('Account created! Check your inbox to confirm your email 🚁');
+      toast.success('Check your inbox to confirm your email 🚁');
       navigate('/login');
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Registration failed'));

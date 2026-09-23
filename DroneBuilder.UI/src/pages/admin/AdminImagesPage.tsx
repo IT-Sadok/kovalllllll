@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../api/errors';
 import { getProductImages, uploadImage, deleteImage, setPrimaryImage } from '../../api/admin';
 import { ProductCardSkeleton } from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
@@ -27,7 +28,7 @@ const AdminImagesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['product-images', id] });
       toast.success('Image uploaded!');
     },
-    onError: () => toast.error('Upload failed'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Upload failed')),
   });
 
   // DELETE /images/{imageId}
@@ -39,7 +40,7 @@ const AdminImagesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       toast.success('Image deleted');
     },
-    onError: () => toast.error('Failed to delete image'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to delete image')),
   });
 
   // POST /images/{imageId}/set-primary
@@ -51,7 +52,7 @@ const AdminImagesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       toast.success('Primary image updated');
     },
-    onError: () => toast.error('Failed to set primary image'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to set primary image')),
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

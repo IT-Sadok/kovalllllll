@@ -15,6 +15,11 @@ public class CreatePropertyCommandValidator : AbstractValidator<CreatePropertyCo
             RuleFor(x => x.Model.Name)
                 .NotEmpty().WithMessage("Property name is required.")
                 .MaximumLength(100).WithMessage("Property name must not exceed 100 characters.");
+
+            RuleForEach(x => x.Model.Values)
+                .ChildRules(value => value.RuleFor(v => v.Text)
+                    .NotEmpty().WithMessage("Value text is required.")
+                    .MaximumLength(100).WithMessage("Value text must not exceed 100 characters."));
         });
     }
 }

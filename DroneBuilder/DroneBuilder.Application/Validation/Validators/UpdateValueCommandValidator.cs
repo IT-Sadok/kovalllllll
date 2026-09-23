@@ -16,6 +16,7 @@ public class UpdateValueCommandValidator : AbstractValidator<UpdateValueCommand>
         When(x => x.Model != null, () =>
         {
             RuleFor(x => x.Model.Text)
+                .NotEmpty().WithMessage("Value text must not be empty.")
                 .MaximumLength(100).WithMessage("Value text must not exceed 100 characters.")
                 .When(x => x.Model.Text != null);
         });

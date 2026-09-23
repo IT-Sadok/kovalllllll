@@ -1,4 +1,3 @@
-using System.Text;
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models.UserModels;
@@ -10,7 +9,6 @@ using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.UserEvents;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace DroneBuilder.Application.Mediator.Commands.UserCommands;
 
@@ -22,14 +20,29 @@ public class SignUpCommandHandler(
     MessageQueuesConfiguration queuesConfig)
     : ICommandHandler<SignUpUserCommand>
 {
+    private static readonly string[] DuplicateAccountErrorCodes =
+    [
+        nameof(IdentityErrorDescriber.DuplicateEmail),
+        nameof(IdentityErrorDescriber.DuplicateUserName)
+    ];
+
     public async Task<Result> ExecuteCommandAsync(SignUpUserCommand command, CancellationToken cancellationToken)
     {
         User user = command.Model.ToEntity();
         IdentityResult createResult = await userManager.CreateAsync(user, command.Model.Password);
         if (!createResult.Succeeded)
         {
-            string errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
-            return Result.Fail(new BadRequestError($"User creation failed: {errors}"));
+            var otherErrors = createResult.Errors
+                .Where(e => !DuplicateAccountErrorCodes.Contains(e.Code))
+                .ToList();
+
+            if (otherErrors.Count > 0)
+            {
+                string errors = string.Join("; ", otherErrors.Select(e => e.Description));
+                return Result.Fail(new BadRequestError($"User creation failed: {errors}"));
+            }
+
+            return await HandleExistingAccountAsync(command.Model.Email, cancellationToken);
         }
 
         IdentityResult roleResult = await userManager.AddToRoleAsync(user, RoleNames.User);
@@ -40,11 +53,7 @@ public class SignUpCommandHandler(
             return Result.Fail(new BadRequestError($"Could not assign the default role: {errors}"));
         }
 
-        string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        string encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-        Result emailResult =
-            await emailSender.SendEmailConfirmationAsync(user.Email!, user.Id, encodedToken, cancellationToken);
+        Result emailResult = await userManager.SendEmailConfirmationAsync(emailSender, user, cancellationToken);
 
         if (emailResult.IsFailed)
         {
@@ -59,6 +68,18 @@ public class SignUpCommandHandler(
         }
 
         await userRepository.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok();
+    }
+
+    private async Task<Result> HandleExistingAccountAsync(string email, CancellationToken cancellationToken)
+    {
+        User? existingUser = await userManager.FindByEmailAsync(email);
+
+        if (existingUser is { EmailConfirmed: false })
+        {
+            await userManager.SendEmailConfirmationAsync(emailSender, existingUser, cancellationToken);
+        }
 
         return Result.Ok();
     }

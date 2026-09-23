@@ -28,6 +28,8 @@ public class RemoveValueFromPropertyCommandHandler(
         if (property.Values.Contains(value))
         {
             property.Values.Remove(value);
+
+            await propertyRepository.RemoveProductAssignmentsAsync(command.PropertyId, command.ValueId, cancellationToken);
             await propertyRepository.SaveChangesAsync(cancellationToken);
 
             Value? updatedValue = await valueRepository.GetValueWithPropertiesByIdAsync(command.ValueId, cancellationToken);

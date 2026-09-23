@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { createOrder } from '../api/orders';
-import { clearCart } from '../api/cart';
 import { getErrorMessage } from '../api/errors';
 import { useCartStore } from '../store/cartStore';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,7 +16,7 @@ const schema = z.object({
   addressLine1: z.string().min(5, 'Address is required'),
   addressLine2: z.string().default(''), // required string in ShippingDetails (can be empty)
   city: z.string().min(2, 'City is required'),
-  state: z.string().min(2, 'State is required'),
+  state: z.string().default(''),
   postalCode: z.string().min(3, 'Postal code is required'),
   country: z.string().min(2, 'Country is required'),
   phoneNumber: z.string().min(7, 'Phone number is required'),
@@ -40,7 +39,6 @@ const CheckoutPage: React.FC = () => {
       // ShippingDetails has all required fields including addressLine2 as string
       const payload = { ...data, addressLine2: data.addressLine2 ?? '' };
       await createOrder(payload);
-      await clearCart().catch(() => {});
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       setItemCount(0);
       toast.success('Order placed successfully! 🚁');
@@ -99,7 +97,7 @@ const CheckoutPage: React.FC = () => {
               error={errors.city?.message}
             />
             <Input
-              label="State / Region"
+              label="State / Region (optional)"
               id="checkout-state"
               placeholder="Kyiv Oblast"
               {...register('state')}

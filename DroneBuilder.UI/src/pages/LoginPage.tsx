@@ -123,6 +123,11 @@ const LoginPage: React.FC = () => {
               Create one
             </Link>
           </p>
+          <p className="text-center text-sm text-slate-500 mt-2">
+            <Link to="/confirm-email" id="login-resend-confirmation-link" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              Didn't get the confirmation email?
+            </Link>
+          </p>
         </div>
       </div>
     </div>

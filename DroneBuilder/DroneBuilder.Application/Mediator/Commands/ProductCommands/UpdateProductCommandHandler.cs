@@ -19,20 +19,7 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
             return Result.Fail<ProductModel>(new NotFoundError($"Product with id {command.ProductId} not found."));
         }
 
-        if (command.Model.Name is not null)
-        {
-            existingProduct.Name = command.Model.Name;
-        }
-
-        if (command.Model.Price.HasValue)
-        {
-            existingProduct.Price = command.Model.Price.Value;
-        }
-
-        if (command.Model.Category is not null)
-        {
-            existingProduct.Category = command.Model.Category;
-        }
+        command.Model.UpdateEntity(existingProduct);
 
         await productRepository.SaveChangesAsync(cancellationToken);
 

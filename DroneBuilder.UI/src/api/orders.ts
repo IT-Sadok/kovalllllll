@@ -13,6 +13,9 @@ export const createOrder = (payload: ShippingDetails) =>
 export const payOrder = (orderId: string) =>
   api.patch(`/orders/${orderId}/pay`);
 
+export const cancelOrder = (orderId: string) =>
+  api.patch(`/orders/${orderId}/cancel`);
+
 // GET /orders/admin — all orders for admin
 export const getAdminOrders = (page = 1, pageSize = 20) =>
   api.get<PagedResult<Order>>(`/orders/admin?page=${page}&pageSize=${pageSize}`).then((r) => r.data);

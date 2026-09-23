@@ -20,10 +20,7 @@ public class UpdateValueCommandHandler(IValueRepository valueRepository) :
             return Result.Fail<ValueModel>(new NotFoundError($"Value with id {command.ValueId} not found."));
         }
 
-        if (command.Model.Text is not null)
-        {
-            value.Text = command.Model.Text;
-        }
+        command.Model.UpdateEntity(value);
 
         await valueRepository.SaveChangesAsync(cancellationToken);
 

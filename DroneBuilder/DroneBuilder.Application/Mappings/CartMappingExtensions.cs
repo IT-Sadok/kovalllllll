@@ -21,21 +21,6 @@ public static class CartMappingExtensions
         };
     }
 
-    public static Cart ToEntity(this CreateCartModel model)
-    {
-        if (model == null)
-        {
-            return null!;
-        }
-
-        return new Cart
-        {
-            UserId = model.UserId,
-            CartItems = model.CartItems?.Select(i => i.ToEntity()).ToList() ?? new List<CartItem>(),
-            CreatedAt = model.CreatedAt
-        };
-    }
-
     public static CartItemModel ToModel(this CartItem item)
     {
         if (item == null)
@@ -53,43 +38,5 @@ public static class CartMappingExtensions
                 ? (item.Product.Images.FirstOrDefault(x => x.IsPrimary) ?? item.Product.Images.First()).Url
                 : string.Empty
         };
-    }
-
-    public static CartItem ToEntity(this CreateCartItemModel model)
-    {
-        if (model == null)
-        {
-            return null!;
-        }
-
-        return new CartItem
-        {
-            ProductId = model.ProductId,
-            Quantity = model.Quantity
-        };
-    }
-
-    public static CartItem ToEntity(this CartItemModel model)
-    {
-        if (model == null)
-        {
-            return null!;
-        }
-
-        return new CartItem
-        {
-            ProductId = model.ProductId,
-            Quantity = model.Quantity
-        };
-    }
-
-    public static void UpdateEntity(this UpdateCartItemModel model, CartItem entity)
-    {
-        if (model == null || entity == null)
-        {
-            return;
-        }
-
-        entity.Quantity = model.Quantity;
     }
 }

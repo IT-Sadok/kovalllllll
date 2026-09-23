@@ -48,11 +48,19 @@ public class CreateOrderCommandHandler(
             }
         }
 
-        ICollection<Product> products = await productRepository.GetProductsByIdsAsync(productIds, cancellationToken);
+        Dictionary<Guid, Product> products = (await productRepository.GetProductsByIdsAsync(productIds, cancellationToken))
+            .ToDictionary(p => p.Id);
+
+        CartItem? unavailableItem = cart.CartItems.FirstOrDefault(ci => !products.ContainsKey(ci.ProductId));
+        if (unavailableItem is not null)
+        {
+            return Result.Fail<OrderModel>(new BadRequestError(
+                $"Product {unavailableItem.ProductName} is no longer available. Remove it from the cart to continue."));
+        }
 
         var orderItems = cart.CartItems.Select(ci =>
         {
-            Product product = products.First(p => p.Id == ci.ProductId);
+            Product product = products[ci.ProductId];
 
             return new OrderItem
             {

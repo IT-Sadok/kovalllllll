@@ -110,10 +110,7 @@ public class DeleteImageCommandHandlerTests
         await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
         // Assert
-        Assert.Equal(3, callOrder.Count);
-        Assert.Equal("DeleteFileAsync", callOrder[0]);
-        Assert.Equal("RemoveImage", callOrder[1]);
-        Assert.Equal("SaveChangesAsync", callOrder[2]);
+        Assert.Equal(["RemoveImage", "SaveChangesAsync", "DeleteFileAsync"], callOrder);
     }
 
     [Fact]

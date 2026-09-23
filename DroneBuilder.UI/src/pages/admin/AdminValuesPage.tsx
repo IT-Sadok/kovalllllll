@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { getValues, createValue, updateValue, deleteValue } from '../../api/admin';
+import { getErrorMessage } from '../../api/errors';
+import { getValues, updateValue, deleteValue } from '../../api/admin';
 import type { Value } from '../../types';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -17,7 +18,7 @@ type FormData = z.infer<typeof schema>;
 
 const AdminValuesPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const [modalType, setModalType] = useState<'create' | 'edit' | null>(null);
+  const [modalType, setModalType] = useState<'edit' | null>(null);
   const [editTarget, setEditTarget] = useState<Value | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Value | null>(null);
   const [search, setSearch] = useState('');
@@ -31,17 +32,6 @@ const AdminValuesPage: React.FC = () => {
     resolver: zodResolver(schema),
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data: FormData) => createValue(data.text),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['values'] });
-      toast.success('Value created!');
-      setModalType(null);
-      reset();
-    },
-    onError: () => toast.error('Failed to create value'),
-  });
-
   const updateMutation = useMutation({
     mutationFn: ({ id, text }: { id: string; text: string }) => updateValue(id, text),
     onSuccess: () => {
@@ -51,7 +41,7 @@ const AdminValuesPage: React.FC = () => {
       setEditTarget(null);
       reset();
     },
-    onError: () => toast.error('Failed to update value'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to update value')),
   });
 
   const deleteMutation = useMutation({
@@ -61,7 +51,7 @@ const AdminValuesPage: React.FC = () => {
       toast.success('Value deleted');
       setDeleteTarget(null);
     },
-    onError: () => toast.error('Failed to delete value'),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to delete value')),
   });
 
 
@@ -72,8 +62,7 @@ const AdminValuesPage: React.FC = () => {
   };
 
   const onSubmit = (data: FormData) => {
-    if (modalType === 'create') createMutation.mutate(data);
-    else if (editTarget) updateMutation.mutate({ id: editTarget.id, text: data.text });
+    if (editTarget) updateMutation.mutate({ id: editTarget.id, text: data.text });
   };
 
   const filtered = (values as Value[]).filter((v) =>
@@ -147,13 +136,13 @@ const AdminValuesPage: React.FC = () => {
         )}
       </div>
 
-      <Modal isOpen={modalType !== null} onClose={() => { setModalType(null); setEditTarget(null); }} title={modalType === 'create' ? 'Add Value' : 'Edit Value'} size="sm">
+      <Modal isOpen={modalType !== null} onClose={() => { setModalType(null); setEditTarget(null); }} title="Edit Value" size="sm">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input label="Value Text" id="value-text-input" placeholder="e.g. 30 min / 4K / 120 km/h..." {...register('text')} error={errors.text?.message} />
           <div className="flex gap-3">
             <Button type="button" variant="ghost" onClick={() => setModalType(null)}>Cancel</Button>
-            <Button type="submit" fullWidth loading={isSubmitting || createMutation.isPending || updateMutation.isPending} id="value-form-submit">
-              {modalType === 'create' ? 'Create' : 'Update'}
+            <Button type="submit" fullWidth loading={isSubmitting || updateMutation.isPending} id="value-form-submit">
+              Update
             </Button>
           </div>
         </form>
