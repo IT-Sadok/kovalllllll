@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -8,7 +9,8 @@ namespace DroneBuilder.Application.Mediator.Commands.OrderCommands;
 
 public class UpdateOrderStatusCommandHandler(
     IOrderRepository orderRepository,
-    IWarehouseRepository warehouseRepository)
+    IWarehouseRepository warehouseRepository,
+    IPaymentGateway paymentGateway)
     : ICommandHandler<UpdateOrderStatusCommand>
 {
     private static readonly Dictionary<Status, Status[]> AllowedTransitions = new()
@@ -42,6 +44,12 @@ public class UpdateOrderStatusCommandHandler(
 
         if (command.NewStatus == Status.Cancelled)
         {
+            Result paymentResult = await paymentGateway.ClosePendingPaymentAsync(order, cancellationToken);
+            if (paymentResult.IsFailed)
+            {
+                return paymentResult;
+            }
+
             Result restockResult = await warehouseRepository.RestockAsync(order, cancellationToken);
             if (restockResult.IsFailed)
             {

@@ -59,6 +59,12 @@ services:
       Resend__ApiKey: ${RESEND_API_KEY:?RESEND_API_KEY is required}
       Resend__FromEmail: ${RESEND_FROM_EMAIL:?RESEND_FROM_EMAIL is required}
       Resend__ConfirmationUrl: ${RESEND_CONFIRMATION_URL:?RESEND_CONFIRMATION_URL is required}
+      Payments__Provider: ${PAYMENT_PROVIDER:-Stripe}
+      Payments__Stripe__SecretKey: ${STRIPE_SECRET_KEY:-}
+      Payments__Stripe__WebhookSecret: ${STRIPE_WEBHOOK_SECRET:-}
+      Payments__Stripe__Currency: ${STRIPE_CURRENCY:-usd}
+      Payments__Stripe__SuccessUrl: ${STRIPE_SUCCESS_URL:-http://localhost:8080/orders?payment=success}
+      Payments__Stripe__CancelUrl: ${STRIPE_CANCEL_URL:-http://localhost:8080/orders?payment=cancelled}
       DatabaseInitialization__ApplyMigrations: "true"
       DatabaseInitialization__SeedIdentity: "true"
       IdentitySeed__Admin__Email: ${IDENTITY_ADMIN_EMAIL:?IDENTITY_ADMIN_EMAIL is required}

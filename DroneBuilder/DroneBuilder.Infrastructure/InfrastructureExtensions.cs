@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Stripe;
 
 namespace DroneBuilder.Infrastructure;
 
@@ -86,11 +87,41 @@ public static class InfrastructureExtensions
 
         services.AddScoped<IOutboxEventService, OutboxEventService>();
 
+        services.AddPaymentGateway(configuration);
+
         services.AddEventHandlers();
 
         services.AddHostedService<OutboxProcessorHostedService>();
         services.AddHostedService<EventConsumerHostedService>();
         services.AddHostedService<ExpiredCartReservationsHostedService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddPaymentGateway(this IServiceCollection services, IConfiguration configuration)
+    {
+        string provider = configuration["Payments:Provider"] ?? "Stripe";
+
+        if (string.Equals(provider, "Fake", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddScoped<IPaymentGateway, FakePaymentGateway>();
+            return services;
+        }
+
+        if (!string.Equals(provider, "Stripe", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Unknown Payments:Provider '{provider}'. Use 'Stripe' or 'Fake'.");
+        }
+
+        services.AddOptions<StripeOptions>()
+            .Bind(configuration.GetSection("Payments:Stripe"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
+
+        services.AddSingleton<IStripeClient>(sp =>
+            new StripeClient(sp.GetRequiredService<IOptions<StripeOptions>>().Value.SecretKey));
+
+        services.AddScoped<IPaymentGateway, StripePaymentGateway>();
 
         return services;
     }

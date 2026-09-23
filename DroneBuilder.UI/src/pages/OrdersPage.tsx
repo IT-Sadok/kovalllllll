@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { cancelOrder, getOrders } from '../api/orders';
+import { cancelOrder, getOrders, startOrderPayment } from '../api/orders';
 import { getErrorMessage } from '../api/errors';
 import { OrderStatusLabel, type Order, type OrderItem, type OrderStatus, type ShippingDetails } from '../types';
 import Button from '../components/ui/Button';
 import { getShippingValue, parseShippingDetails } from '../utils/shippingDetails';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const OrderItemView: React.FC<{ item: OrderItem }> = ({ item }) => (
   <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 group hover:bg-white/[0.08] transition-all">
@@ -49,6 +49,18 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
       default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
     }
   };
+
+  const payMutation = useMutation({
+    mutationFn: () => startOrderPayment(order.id),
+    onSuccess: (session) => {
+      if (session.url) {
+        window.location.assign(session.url);
+      } else if (session.isPaid) {
+        toast.success('Order paid');
+      }
+    },
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Could not start the payment')),
+  });
 
   const cancelMutation = useMutation({
     mutationFn: () => cancelOrder(order.id),
@@ -132,11 +144,21 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
         )}
 
         {order.status === 0 && (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            <Button
+              size="sm"
+              loading={payMutation.isPending}
+              disabled={cancelMutation.isPending}
+              onClick={() => payMutation.mutate()}
+              id={`pay-order-${order.id}`}
+            >
+              Pay ${order.totalPrice.toLocaleString()}
+            </Button>
             <Button
               variant="danger"
               size="sm"
               loading={cancelMutation.isPending}
+              disabled={payMutation.isPending}
               onClick={() => {
                 if (window.confirm('Cancel this order?')) cancelMutation.mutate();
               }}
@@ -151,12 +173,34 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
   );
 };
 
+const PAYMENT_CONFIRMATION_WINDOW_MS = 30_000;
+
 const OrdersPage: React.FC = () => {
   const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [paymentReturn] = useState(() => searchParams.get('payment'));
+  const [awaitingPaymentUntil] = useState(() =>
+    paymentReturn === 'success' ? Date.now() + PAYMENT_CONFIRMATION_WINDOW_MS : 0);
+
+  useEffect(() => {
+    if (!paymentReturn) return;
+
+    if (paymentReturn === 'success') {
+      toast.success('Payment received. Your order will be marked as paid in a moment.', { id: 'payment-return' });
+    } else if (paymentReturn === 'cancelled') {
+      toast('Payment cancelled. You can pay later from this page.', { id: 'payment-return' });
+    }
+
+    setSearchParams({}, { replace: true });
+  }, [paymentReturn, setSearchParams]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['orders', page],
     queryFn: () => getOrders(page, 10),
+    refetchInterval: (query) => {
+      const hasUnpaid = query.state.data?.items.some((order) => order.status === 0) ?? false;
+      return hasUnpaid && Date.now() < awaitingPaymentUntil ? 3000 : false;
+    },
   });
 
   return (

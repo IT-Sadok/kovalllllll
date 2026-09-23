@@ -39,10 +39,13 @@ public static class OrderEndpointExtensions
                 }).WithTags("Orders")
             .RequireAuthorization();
 
-        app.MapPatch(ApiRoutes.Orders.PayForOrder,
+        app.MapPost(ApiRoutes.Orders.StartPayment,
                 async (IMediator mediator, Guid orderId, CancellationToken cancellationToken) =>
                 {
-                    Result result = await mediator.ExecuteCommandAsync(new PayForOrderCommand(orderId), cancellationToken);
+                    Result<PaymentSessionModel> result =
+                        await mediator.ExecuteCommandAsync<StartOrderPaymentCommand, PaymentSessionModel>(
+                            new StartOrderPaymentCommand(orderId),
+                            cancellationToken);
                     return result.ToHttpResult();
                 }).WithTags("Orders")
             .RequireAuthorization();

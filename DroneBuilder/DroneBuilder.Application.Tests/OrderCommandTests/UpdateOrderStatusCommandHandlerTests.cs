@@ -1,3 +1,4 @@
+using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Mediator.Commands.OrderCommands;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -11,6 +12,7 @@ public class UpdateOrderStatusCommandHandlerTests
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IWarehouseRepository _warehouseRepository;
+    private readonly IPaymentGateway _paymentGateway;
     private readonly UpdateOrderStatusCommandHandler _handler;
 
     private static readonly Guid OrderId = Guid.NewGuid();
@@ -20,7 +22,8 @@ public class UpdateOrderStatusCommandHandlerTests
     {
         _orderRepository = Substitute.For<IOrderRepository>();
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
-        _handler = new UpdateOrderStatusCommandHandler(_orderRepository, _warehouseRepository);
+        _paymentGateway = Substitute.For<IPaymentGateway>();
+        _handler = new UpdateOrderStatusCommandHandler(_orderRepository, _warehouseRepository, _paymentGateway);
     }
 
     [Fact]

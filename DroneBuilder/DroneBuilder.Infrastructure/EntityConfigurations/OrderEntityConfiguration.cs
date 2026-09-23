@@ -22,6 +22,9 @@ public class OrderEntityConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired()
             .HasColumnType("decimal(18,2)");
 
+        builder.Property(o => o.PaymentSessionId)
+            .HasMaxLength(255);
+
         builder.HasMany(o => o.OrderItems)
             .WithOne(oi => oi.Order!)
             .HasForeignKey(oi => oi.OrderId)

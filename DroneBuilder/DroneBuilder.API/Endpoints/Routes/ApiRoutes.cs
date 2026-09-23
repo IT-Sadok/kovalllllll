@@ -86,13 +86,19 @@ public abstract class ApiRoutes
         public const string RemoveQuantityFromItem = BaseRoute + "/items/{itemId}";
     }
 
+    public static class Payments
+    {
+        private const string BaseRoute = Base + "/payments";
+        public const string StripeWebhook = BaseRoute + "/stripe/webhook";
+    }
+
     public static class Orders
     {
         private const string BaseRoute = Base + "/orders";
         public const string CreateOrder = BaseRoute;
         public const string GetAllOrders = BaseRoute;
         public const string GetAllAdminOrders = BaseRoute + "/admin";
-        public const string PayForOrder = BaseRoute + "/{orderId}/pay";
+        public const string StartPayment = BaseRoute + "/{orderId}/payment";
         public const string CancelOrder = BaseRoute + "/{orderId}/cancel";
         public const string UpdateStatus = BaseRoute + "/{orderId}/status";
     }
