@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
 using FluentValidation;
 
-namespace DroneBuilder.Application.Validation.Validators;
+namespace DroneBuilder.Application.Features.Warehouses.RemoveQuantityFromWarehouseItem;
 
 public class RemoveQuantityFromWarehouseItemCommandValidator : AbstractValidator<RemoveQuantityFromWarehouseItemCommand>
 {

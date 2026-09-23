@@ -2,7 +2,7 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 
-namespace DroneBuilder.Application.Validation;
+namespace DroneBuilder.Application.Features.Warehouses;
 
 public class WarehouseValidation
 {

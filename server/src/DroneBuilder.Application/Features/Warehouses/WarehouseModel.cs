@@ -1,4 +1,4 @@
-namespace DroneBuilder.Application.Models.WarehouseModels;
+namespace DroneBuilder.Application.Features.Warehouses;
 
 public class WarehouseModel
 {

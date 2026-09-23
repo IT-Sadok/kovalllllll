@@ -1,14 +1,12 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.WarehouseEvents;
 using FluentResults;
-namespace DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
+namespace DroneBuilder.Application.Features.Warehouses.AddQuantityToWarehouseItem;
 
 public class AddQuantityToWarehouseItemCommandHandler(
     IWarehouseRepository warehouseRepository,

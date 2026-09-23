@@ -1,8 +1,5 @@
-using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
-using DroneBuilder.Application.Models.WarehouseModels;
-using DroneBuilder.Application.Validation.Validators;
+using DroneBuilder.Application.Features.Warehouses.AddQuantityToWarehouseItem;
 using FluentValidation.TestHelper;
-
 namespace DroneBuilder.Application.Tests.Validators.Commands;
 
 public class AddQuantityToWarehouseItemCommandValidatorTests

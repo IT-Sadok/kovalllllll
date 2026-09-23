@@ -1,15 +1,17 @@
 using DroneBuilder.API.Authorization;
 using DroneBuilder.API.Endpoints.Routes;
 using DroneBuilder.API.Extensions;
-using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
+using DroneBuilder.Application.Features.Warehouses;
+using DroneBuilder.Application.Features.Warehouses.AddQuantityToWarehouseItem;
+using DroneBuilder.Application.Features.Warehouses.GetWarehouse;
+using DroneBuilder.Application.Features.Warehouses.GetWarehouseItemById;
+using DroneBuilder.Application.Features.Warehouses.GetWarehouseItems;
+using DroneBuilder.Application.Features.Warehouses.RemoveQuantityFromWarehouseItem;
 using DroneBuilder.Application.Mediator.Interfaces;
-using DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
 using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Models.WarehouseModels;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-
-namespace DroneBuilder.API.Endpoints;
+namespace DroneBuilder.API.Features.Warehouses;
 
 public static class WarehouseEndpointExtensions
 {
