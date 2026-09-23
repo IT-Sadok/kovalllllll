@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Mediator.Commands.UserCommands;
 using FluentValidation;
 
-namespace DroneBuilder.Application.Validation.Validators;
+namespace DroneBuilder.Application.Features.Users.SignUp;
 
 public class SignUpUserCommandValidator : AbstractValidator<SignUpUserCommand>
 {

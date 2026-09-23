@@ -1,11 +1,10 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.UserCommands;
+using DroneBuilder.Application.Features.Users.ResendEmailConfirmation;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 using Moq;
-
-namespace DroneBuilder.Application.Tests.UserCommandTests;
+namespace DroneBuilder.Application.Tests.Features.Users;
 
 public class ResendEmailConfirmationCommandHandlerTests
 {

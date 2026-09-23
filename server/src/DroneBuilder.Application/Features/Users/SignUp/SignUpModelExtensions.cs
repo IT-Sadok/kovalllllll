@@ -1,6 +1,6 @@
 using DroneBuilder.Domain.Entities;
 
-namespace DroneBuilder.Application.Models.UserModels;
+namespace DroneBuilder.Application.Features.Users.SignUp;
 
 public static class SignUpModelExtensions
 {
