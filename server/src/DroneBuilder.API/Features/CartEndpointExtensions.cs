@@ -10,7 +10,8 @@ using DroneBuilder.Application.Features.Carts.RemoveItemFromCart;
 using DroneBuilder.Application.Features.Carts.UpdateCartItemQuantity;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-namespace DroneBuilder.API.Features.Carts;
+
+namespace DroneBuilder.API.Features;
 
 public static class CartEndpointExtensions
 {

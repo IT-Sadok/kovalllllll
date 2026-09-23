@@ -11,7 +11,8 @@ using DroneBuilder.Application.Features.Images.SetPrimaryImage;
 using DroneBuilder.Application.Features.Images.UploadImage;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-namespace DroneBuilder.API.Features.Images;
+
+namespace DroneBuilder.API.Features;
 
 public static class ImageEndpointExtensions
 {

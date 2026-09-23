@@ -11,7 +11,8 @@ using DroneBuilder.Application.Features.Users.SignUp;
 using DroneBuilder.Infrastructure.Options;
 using FluentResults;
 using Microsoft.Extensions.Options;
-namespace DroneBuilder.API.Features.Users;
+
+namespace DroneBuilder.API.Features;
 
 public static class UserEndpointsExtensions
 {

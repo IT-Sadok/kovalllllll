@@ -13,7 +13,8 @@ using DroneBuilder.Application.Features.Orders.UpdateOrderStatus;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-namespace DroneBuilder.API.Features.Orders;
+
+namespace DroneBuilder.API.Features;
 
 public static class OrderEndpointExtensions
 {

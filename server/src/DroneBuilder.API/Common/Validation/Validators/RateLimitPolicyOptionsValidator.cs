@@ -1,7 +1,7 @@
 using DroneBuilder.API.Common.Options;
 using FluentValidation;
 
-namespace DroneBuilder.API.Common.Validation.Validators.Options;
+namespace DroneBuilder.API.Common.Validation.Validators;
 
 public class RateLimitPolicyOptionsValidator : AbstractValidator<RateLimitPolicyOptions>
 {

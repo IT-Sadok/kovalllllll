@@ -11,7 +11,8 @@ using DroneBuilder.Application.Features.Warehouses.GetWarehouseItems;
 using DroneBuilder.Application.Features.Warehouses.RemoveQuantityFromWarehouseItem;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
-namespace DroneBuilder.API.Features.Warehouses;
+
+namespace DroneBuilder.API.Features;
 
 public static class WarehouseEndpointExtensions
 {

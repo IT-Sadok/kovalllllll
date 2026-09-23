@@ -9,7 +9,8 @@ using DroneBuilder.Application.Features.Values.GetValueById;
 using DroneBuilder.Application.Features.Values.GetValues;
 using DroneBuilder.Application.Features.Values.UpdateValue;
 using FluentResults;
-namespace DroneBuilder.API.Features.Values;
+
+namespace DroneBuilder.API.Features;
 
 public static class ValueEndpointExtensions
 {

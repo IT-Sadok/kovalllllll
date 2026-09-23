@@ -11,7 +11,8 @@ using DroneBuilder.Application.Features.Properties.GetValuesByPropertyId;
 using DroneBuilder.Application.Features.Properties.RemoveValueFromProperty;
 using DroneBuilder.Application.Features.Properties.UpdateProperty;
 using FluentResults;
-namespace DroneBuilder.API.Features.Properties;
+
+namespace DroneBuilder.API.Features;
 
 public static class PropertyEndpointsExtensions
 {

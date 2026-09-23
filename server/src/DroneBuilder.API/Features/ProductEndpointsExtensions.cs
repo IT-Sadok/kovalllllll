@@ -18,7 +18,7 @@ using DroneBuilder.Application.Features.Products.RestoreProduct;
 using DroneBuilder.Application.Features.Products.UpdateProduct;
 using FluentResults;
 
-namespace DroneBuilder.API.Features.Products;
+namespace DroneBuilder.API.Features;
 
 public static class ProductEndpointsExtensions
 {

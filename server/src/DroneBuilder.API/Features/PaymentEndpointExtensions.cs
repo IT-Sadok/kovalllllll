@@ -3,7 +3,8 @@ using DroneBuilder.Application.Common.Abstractions;
 using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Features.Orders.ConfirmOrderPayment;
 using FluentResults;
-namespace DroneBuilder.API.Features.Orders;
+
+namespace DroneBuilder.API.Features;
 
 public static class PaymentEndpointExtensions
 {
