@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace DroneBuilder.Application.Features.Users.SignUp;
 
-public class SignUpUserCommandValidator : AbstractValidator<SignUpUserCommand>
+public class SignUpCommandValidator : AbstractValidator<SignUpCommand>
 {
-    public SignUpUserCommandValidator()
+    public SignUpCommandValidator()
     {
         RuleFor(x => x.Model)
             .NotNull().WithMessage("Sign-up data is required.");

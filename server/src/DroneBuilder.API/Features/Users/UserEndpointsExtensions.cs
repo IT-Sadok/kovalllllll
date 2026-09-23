@@ -20,7 +20,7 @@ public static class UserEndpointsExtensions
         app.MapPost(ApiRoutes.Users.SignUp,
             async (IMediator mediator, SignUpModel model, CancellationToken cancellationToken) =>
             {
-                Result result = await mediator.ExecuteCommandAsync(new SignUpUserCommand(model), cancellationToken);
+                Result result = await mediator.ExecuteCommandAsync(new SignUpCommand(model), cancellationToken);
                 return result.ToHttpResult();
             }).WithTags("Users")
             .RequireRateLimiting(RateLimitingExtension.EmailPolicy);

@@ -17,7 +17,7 @@ public class SignUpCommandHandler(
     IOutboxEventService outboxService,
     IEmailSender emailSender,
     MessageQueuesConfiguration queuesConfig)
-    : ICommandHandler<SignUpUserCommand>
+    : ICommandHandler<SignUpCommand>
 {
     private static readonly string[] DuplicateAccountErrorCodes =
     [
@@ -25,7 +25,7 @@ public class SignUpCommandHandler(
         nameof(IdentityErrorDescriber.DuplicateUserName)
     ];
 
-    public async Task<Result> ExecuteCommandAsync(SignUpUserCommand command, CancellationToken cancellationToken)
+    public async Task<Result> ExecuteCommandAsync(SignUpCommand command, CancellationToken cancellationToken)
     {
         User user = command.Model.ToEntity();
         IdentityResult createResult = await userManager.CreateAsync(user, command.Model.Password);
@@ -84,4 +84,4 @@ public class SignUpCommandHandler(
     }
 }
 
-public record SignUpUserCommand(SignUpModel Model);
+public record SignUpCommand(SignUpModel Model);

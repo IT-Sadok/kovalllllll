@@ -82,8 +82,8 @@ public static class CartEndpointExtensions
                 async (IMediator mediator,
                     CancellationToken cancellationToken) =>
                 {
-                    var query = new GetCartByUserIdQuery();
-                    Result<CartModel> result = await mediator.ExecuteQueryAsync<GetCartByUserIdQuery, CartModel>(query,
+                    var query = new GetCartQuery();
+                    Result<CartModel> result = await mediator.ExecuteQueryAsync<GetCartQuery, CartModel>(query,
                         cancellationToken);
                     return result.ToHttpResult();
                 })
