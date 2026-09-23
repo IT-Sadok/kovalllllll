@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Mediator.Queries.ImageQueries;
 using FluentValidation;
 
-namespace DroneBuilder.Application.Validation.Validators;
+namespace DroneBuilder.Application.Features.Images.GetImagesByProductId;
 
 public class GetImagesByProductIdQueryValidator : AbstractValidator<GetImagesByProductIdQuery>
 {

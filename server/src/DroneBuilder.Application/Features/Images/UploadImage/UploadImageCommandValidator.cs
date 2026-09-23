@@ -1,8 +1,7 @@
-using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
-namespace DroneBuilder.Application.Validation.Validators;
+namespace DroneBuilder.Application.Features.Images.UploadImage;
 
 public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
 {

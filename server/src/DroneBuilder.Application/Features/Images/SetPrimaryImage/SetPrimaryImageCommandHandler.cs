@@ -4,7 +4,7 @@ using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 
-namespace DroneBuilder.Application.Mediator.Commands.ImageCommands;
+namespace DroneBuilder.Application.Features.Images.SetPrimaryImage;
 
 public class SetPrimaryImageCommandHandler(IImageRepository imageRepository)
     : ICommandHandler<SetPrimaryImageCommand>

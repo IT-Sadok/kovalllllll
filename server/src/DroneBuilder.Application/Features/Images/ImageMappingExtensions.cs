@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Models.ProductModels;
 using DroneBuilder.Domain.Entities;
 
-namespace DroneBuilder.Application.Mappings;
+namespace DroneBuilder.Application.Features.Images;
 
 public static class ImageMappingExtensions
 {
