@@ -1,4 +1,4 @@
-namespace DroneBuilder.Application.Common.Models;
+namespace DroneBuilder.Application.Common.Pagination;
 
 public class PagedResult<T>
 {

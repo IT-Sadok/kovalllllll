@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using DroneBuilder.Application.Common.Abstractions;
-using DroneBuilder.Application.Common.ResultErrors;
+using DroneBuilder.Application.Common.Errors;
 using DroneBuilder.Infrastructure.Options;
 using FluentResults;
 using Microsoft.Extensions.Logging;

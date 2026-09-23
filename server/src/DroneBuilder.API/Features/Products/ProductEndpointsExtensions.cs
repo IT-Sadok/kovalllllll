@@ -2,7 +2,7 @@ using DroneBuilder.API.Common.Authorization;
 using DroneBuilder.API.Common.Extensions;
 using DroneBuilder.API.Common.Routes;
 using DroneBuilder.Application.Common.Mediator.Interfaces;
-using DroneBuilder.Application.Common.Models;
+using DroneBuilder.Application.Common.Pagination;
 using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Application.Features.Products.AddValueToProductProperty;
 using DroneBuilder.Application.Features.Products.CreateProduct;

@@ -1,6 +1,6 @@
 using FluentResults;
 
-namespace DroneBuilder.Application.Common.ResultErrors;
+namespace DroneBuilder.Application.Common.Errors;
 
 public class ValidationError : Error
 {
