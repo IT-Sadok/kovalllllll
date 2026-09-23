@@ -60,6 +60,26 @@ export interface PagedResult<T> {
   pageSize: number;
 }
 
+export interface ApiError {
+  code: string;
+  field?: string | null;
+  message: string;
+}
+
+export interface ApiPagination {
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+export interface ApiResponse<T = undefined> {
+  success: boolean;
+  errors: ApiError[];
+  data?: T;
+  pagination?: ApiPagination | null;
+}
+
 export interface ProductFilters {
   page?: number;
   pageSize?: number;

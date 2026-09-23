@@ -1,5 +1,6 @@
 import { api } from './axiosInstance';
-import type { Product, PagedResult } from '../types';
+import { unwrap, unwrapPaged } from './response';
+import type { ApiResponse, Product } from '../types';
 
 export const getProducts = (filters: {
   page?: number;
@@ -16,14 +17,16 @@ export const getProducts = (filters: {
   if (filters.minPrice !== undefined && filters.minPrice !== '') params.set('minPrice', String(filters.minPrice));
   if (filters.maxPrice !== undefined && filters.maxPrice !== '') params.set('maxPrice', String(filters.maxPrice));
   if (filters.category) params.set('category', filters.category);
-  return api.get<PagedResult<Product>>(`/products?${params.toString()}`).then((r) => r.data);
+  return api.get<ApiResponse<Product[]>>(`/products?${params.toString()}`).then(unwrapPaged);
 };
 
 export const getProduct = (id: string) =>
-  api.get<Product>(`/products/${id}`).then((r) => r.data);
+  api.get<ApiResponse<Product>>(`/products/${id}`).then(unwrap);
 
 // GET /products/{productId}/properties → returns ProductPropertiesResponse, extract the properties array
 export const getProductProperties = (id: string) =>
-  api.get<import('../types').ProductPropertiesResponse>(`/products/${id}/properties`).then((r) => r.data.properties);
+  api.get<ApiResponse<import('../types').ProductPropertiesResponse>>(`/products/${id}/properties`)
+    .then(unwrap)
+    .then((response) => response.properties);
 
-export const getCategories = () => api.get<string[]>('/products/categories').then(r => r.data);
+export const getCategories = () => api.get<ApiResponse<string[]>>('/products/categories').then(unwrap);
