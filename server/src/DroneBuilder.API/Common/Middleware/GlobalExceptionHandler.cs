@@ -1,5 +1,6 @@
+using DroneBuilder.API.Common.Responses;
+using DroneBuilder.Application.Common.Errors;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace DroneBuilder.API.Common.Middleware;
@@ -11,41 +12,36 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             Exception exception,
             CancellationToken cancellationToken)
     {
-        (int statusCode, string? title, string detail) = MapException(exception);
+        (int statusCode, string code, string message) = MapException(exception);
 
         logger.LogError(exception,
             "Exception occurred: {Message}. StatusCode: {StatusCode}",
             exception.Message,
             statusCode);
 
-        var problemDetails = new ProblemDetails
-        {
-            Status = statusCode,
-            Title = title,
-            Detail = detail,
-            Instance = httpContext.Request.Path
-        };
-
         httpContext.Response.StatusCode = statusCode;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+        await httpContext.Response.WriteAsJsonAsync(ApiResults.Failure(code, message), cancellationToken);
 
         return true;
     }
 
-    private static (int StatusCode, string Title, string Detail) MapException(Exception exception)
+    private static (int StatusCode, string Code, string Message) MapException(Exception exception)
     {
         return exception switch
         {
             UnauthorizedAccessException =>
-                (401, "Unauthorized", "Authentication is required."),
+                (401, AppError.Codes.Unauthorized, "Authentication is required."),
 
             DbUpdateConcurrencyException =>
-                (409, "Conflict", "The record was changed by another request. Please try again."),
+                (409, AppError.Codes.Conflict, "The record was changed by another request. Please try again."),
+
+            BadHttpRequestException badRequest =>
+                (badRequest.StatusCode, ApiResults.CodeFor(badRequest.StatusCode), exception.Message),
 
             ArgumentNullException or ArgumentException =>
-                (400, "Bad Request", exception.Message),
+                (400, AppError.Codes.BadRequest, exception.Message),
 
-            _ => (500, "Internal Server Error", "An unexpected error occurred.")
+            _ => (500, AppError.Codes.Internal, "An unexpected error occurred.")
         };
     }
 }

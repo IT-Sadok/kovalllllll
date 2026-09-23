@@ -1,8 +1,6 @@
-using FluentResults;
-
 namespace DroneBuilder.Application.Common.Errors;
 
-public class BadRequestError : Error
+public class BadRequestError : AppError
 {
-    public BadRequestError(string message) : base(message) { }
+    public BadRequestError(string message) : base(message, Codes.BadRequest) { }
 }

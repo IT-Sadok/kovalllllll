@@ -70,6 +70,7 @@ public abstract class Program
         await app.InitializeDatabaseAsync();
 
         app.UseExceptionHandler();
+        app.UseApiStatusCodePages();
 
         if (trustForwardedHeaders)
         {

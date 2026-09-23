@@ -1,5 +1,7 @@
 using System.Threading.RateLimiting;
 using DroneBuilder.API.Common.Options;
+using DroneBuilder.API.Common.Responses;
+using DroneBuilder.Application.Common.Errors;
 using DroneBuilder.Application.Common.Validation.Options;
 using FluentValidation;
 using Microsoft.AspNetCore.RateLimiting;
@@ -45,11 +47,9 @@ public static class RateLimitingExtension
                     context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
                 }
 
-                await context.HttpContext.Response.WriteAsJsonAsync(new
-                {
-                    Error = "Too many requests. Please try again later.",
-                    RetryAfterSeconds = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan wait) ? (int)wait.TotalSeconds : 0
-                }, cancellationToken: token);
+                await context.HttpContext.Response.WriteAsJsonAsync(
+                    ApiResults.Failure(AppError.Codes.TooManyRequests, "Too many requests. Please try again later."),
+                    cancellationToken: token);
             };
         });
 

@@ -1,6 +1,8 @@
 using DroneBuilder.API.Common.Authorization;
 using DroneBuilder.API.Common.Extensions;
+using DroneBuilder.API.Common.Responses;
 using DroneBuilder.API.Common.Routes;
+using DroneBuilder.Application.Common.Errors;
 using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Features.Images;
 using DroneBuilder.Application.Features.Images.DeleteImage;
@@ -23,7 +25,7 @@ public static class ImageEndpointExtensions
                 {
                     if (file.Length == 0)
                     {
-                        return Results.BadRequest("File is empty");
+                        return ApiResults.Error(StatusCodes.Status400BadRequest, AppError.Codes.BadRequest, "File is empty");
                     }
 
                     var command = new UploadImageCommand(file, productId);
