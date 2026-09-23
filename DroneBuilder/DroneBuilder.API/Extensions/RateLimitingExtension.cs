@@ -1,5 +1,9 @@
 using System.Threading.RateLimiting;
 using DroneBuilder.API.Options;
+using DroneBuilder.Application.Validation.Options;
+using FluentValidation;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace DroneBuilder.API.Extensions;
 
@@ -10,11 +14,17 @@ public static class RateLimitingExtension
 
     public static IServiceCollection AddRateLimitingConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        RateLimitPolicyOptions loginOptions = configuration.GetSection("RateLimiting:Login").Get<RateLimitPolicyOptions>()
-                                              ?? new RateLimitPolicyOptions();
+        services.AddValidatorsFromAssembly(typeof(RateLimitingExtension).Assembly);
 
-        RateLimitPolicyOptions emailOptions = configuration.GetSection("RateLimiting:Email").Get<RateLimitPolicyOptions>()
-                                              ?? new RateLimitPolicyOptions { PermitLimit = 5 };
+        services.AddOptions<RateLimitPolicyOptions>(LoginPolicy)
+            .Bind(configuration.GetSection("RateLimiting:Login"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
+
+        services.AddOptions<RateLimitPolicyOptions>(EmailPolicy)
+            .Bind(configuration.GetSection("RateLimiting:Email"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
 
         services.AddRateLimiter(options =>
         {
@@ -41,10 +51,14 @@ public static class RateLimitingExtension
                     RetryAfterSeconds = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan wait) ? (int)wait.TotalSeconds : 0
                 }, cancellationToken: token);
             };
-
-            options.AddPolicy(LoginPolicy, context => CreatePerIpLimiter(context, loginOptions));
-            options.AddPolicy(EmailPolicy, context => CreatePerIpLimiter(context, emailOptions));
         });
+
+        services.AddOptions<RateLimiterOptions>()
+            .Configure<IOptionsMonitor<RateLimitPolicyOptions>>((options, policyOptions) =>
+            {
+                options.AddPolicy(LoginPolicy, context => CreatePerIpLimiter(context, policyOptions.Get(LoginPolicy)));
+                options.AddPolicy(EmailPolicy, context => CreatePerIpLimiter(context, policyOptions.Get(EmailPolicy)));
+            });
 
         return services;
     }
