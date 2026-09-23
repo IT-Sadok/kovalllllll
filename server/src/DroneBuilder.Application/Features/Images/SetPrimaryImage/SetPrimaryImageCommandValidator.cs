@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Mediator.Commands.ImageCommands;
 using FluentValidation;
 
-namespace DroneBuilder.Application.Validation.Validators;
+namespace DroneBuilder.Application.Features.Images.SetPrimaryImage;
 
 public class SetPrimaryImageCommandValidator : AbstractValidator<SetPrimaryImageCommand>
 {

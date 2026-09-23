@@ -1,12 +1,11 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.ImageCommands;
+using DroneBuilder.Application.Features.Images.DeleteImage;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 using NSubstitute;
-
-namespace DroneBuilder.Application.Tests.ImageCommandTests;
+namespace DroneBuilder.Application.Tests.Features.Images;
 
 public class DeleteImageCommandHandlerTests
 {

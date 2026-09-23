@@ -1,5 +1,5 @@
+using DroneBuilder.Application.Features.Images;
 using DroneBuilder.Application.Features.Properties;
-using DroneBuilder.Application.Models.ProductModels;
 namespace DroneBuilder.Application.Features.Products.GetPropertiesByProductId;
 
 public class ProductPropertiesResponseModel

@@ -1,6 +1,6 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.ImageCommands;
-using DroneBuilder.Application.Models.ProductModels;
+using DroneBuilder.Application.Features.Images;
+using DroneBuilder.Application.Features.Images.UploadImage;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -9,8 +9,7 @@ using DroneBuilder.Domain.Events.ImageEvents;
 using FluentResults;
 using Microsoft.AspNetCore.Http;
 using NSubstitute;
-
-namespace DroneBuilder.Application.Tests.ImageCommandTests;
+namespace DroneBuilder.Application.Tests.Features.Images;
 
 public class UploadImageCommandHandlerTests
 {
