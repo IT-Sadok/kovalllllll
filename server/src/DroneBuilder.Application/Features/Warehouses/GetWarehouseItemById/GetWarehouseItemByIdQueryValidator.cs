@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
 using FluentValidation;
 
-namespace DroneBuilder.Application.Validation.Validators;
+namespace DroneBuilder.Application.Features.Warehouses.GetWarehouseItemById;
 
 public class GetWarehouseItemByIdQueryValidator : AbstractValidator<GetWarehouseItemByIdQuery>
 {

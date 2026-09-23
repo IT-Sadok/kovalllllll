@@ -1,11 +1,9 @@
-using DroneBuilder.Application.Mappings;
 using DroneBuilder.Application.Mediator.Interfaces;
 using DroneBuilder.Application.Models;
-using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
-namespace DroneBuilder.Application.Mediator.Queries.WarehouseQueries;
+namespace DroneBuilder.Application.Features.Warehouses.GetWarehouseItems;
 
 public class GetWarehouseItemsQueryHandler(IWarehouseRepository warehouseRepository)
     : IQueryHandler<GetWarehouseItemsQuery, PagedResult<WarehouseItemModel>>

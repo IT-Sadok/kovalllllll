@@ -1,6 +1,6 @@
 using DroneBuilder.Application.Abstractions;
-using DroneBuilder.Application.Mediator.Commands.WarehouseCommands;
-using DroneBuilder.Application.Models.WarehouseModels;
+using DroneBuilder.Application.Features.Warehouses;
+using DroneBuilder.Application.Features.Warehouses.RemoveQuantityFromWarehouseItem;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -8,22 +8,21 @@ using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.WarehouseEvents;
 using FluentResults;
 using NSubstitute;
+namespace DroneBuilder.Application.Tests.Features.Warehouses;
 
-namespace DroneBuilder.Application.Tests.WarehouseCommandTests;
-
-public class AddQuantityToWarehouseItemCommandHandlerTests
+public class RemoveQuantityFromWarehouseItemCommandHandlerTests
 {
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IOutboxEventService _outboxService;
-    private readonly AddQuantityToWarehouseItemCommandHandler _handler;
+    private readonly RemoveQuantityFromWarehouseItemCommandHandler _handler;
 
     private const string WarehouseQueueName = "warehouse-queue";
     private static readonly Guid WarehouseId = Guid.NewGuid();
     private static readonly Guid WarehouseItemId = Guid.NewGuid();
-    private const int InitialQuantity = 50;
-    private const int QuantityToAdd = 30;
+    private const int InitialQuantity = 100;
+    private const int QuantityToRemove = 30;
 
-    public AddQuantityToWarehouseItemCommandHandlerTests()
+    public RemoveQuantityFromWarehouseItemCommandHandlerTests()
     {
         // Arrange
         _warehouseRepository = Substitute.For<IWarehouseRepository>();
@@ -34,21 +33,21 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
             WarehouseQueue = new QueueConfiguration { Name = WarehouseQueueName }
         };
 
-        _handler = new AddQuantityToWarehouseItemCommandHandler(
+        _handler = new RemoveQuantityFromWarehouseItemCommandHandler(
             _warehouseRepository,
             _outboxService,
             queuesConfig);
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenValidQuantity_ShouldAddQuantitySuccessfully()
+    public async Task ExecuteCommandAsync_WhenValidQuantity_ShouldRemoveQuantitySuccessfully()
     {
         // Arrange
-        var addQuantityModel = new AddQuantityModel
+        var removeQuantityModel = new RemoveQuantityModel
         {
-            QuantityToAdd = QuantityToAdd
+            QuantityToRemove = QuantityToRemove
         };
-        var command = new AddQuantityToWarehouseItemCommand(WarehouseItemId, addQuantityModel);
+        var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
 
         var warehouse = new Warehouse { Id = WarehouseId };
 
@@ -61,7 +60,7 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
         var expectedModel = new WarehouseItemModel
         {
             Id = WarehouseItemId,
-            Quantity = InitialQuantity + QuantityToAdd
+            Quantity = InitialQuantity - QuantityToRemove
         };
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
@@ -78,13 +77,13 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Equal(InitialQuantity + QuantityToAdd, result.Value.Quantity);
-        Assert.Equal(InitialQuantity + QuantityToAdd, warehouseItem.Quantity);
+        Assert.Equal(InitialQuantity - QuantityToRemove, result.Value.Quantity);
+        Assert.Equal(InitialQuantity - QuantityToRemove, warehouseItem.Quantity);
 
         await _outboxService.Received(1).StoreEventAsync(
-            Arg.Is<AddedQuantityToWarehouseItemEvent>(e =>
+            Arg.Is<RemovedQuantityFromWarehouseItemEvent>(e =>
                 e.WarehouseItemId == WarehouseItemId &&
-                e.QuantityAdded == QuantityToAdd),
+                e.QuantityRemoved == QuantityToRemove),
             Arg.Is<string>(q => q == WarehouseQueueName),
             Arg.Any<CancellationToken>());
 
@@ -95,11 +94,11 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenWarehouseNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
-        var addQuantityModel = new AddQuantityModel
+        var removeQuantityModel = new RemoveQuantityModel
         {
-            QuantityToAdd = QuantityToAdd
+            QuantityToRemove = QuantityToRemove
         };
-        var command = new AddQuantityToWarehouseItemCommand(WarehouseItemId, addQuantityModel);
+        var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
             .Returns((Warehouse)null!);
@@ -123,11 +122,11 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenWarehouseItemNotFound_ShouldReturnFailedResultWithNotFoundError()
     {
         // Arrange
-        var addQuantityModel = new AddQuantityModel
+        var removeQuantityModel = new RemoveQuantityModel
         {
-            QuantityToAdd = QuantityToAdd
+            QuantityToRemove = QuantityToRemove
         };
-        var command = new AddQuantityToWarehouseItemCommand(WarehouseItemId, addQuantityModel);
+        var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
 
         var warehouse = new Warehouse { Id = WarehouseId };
 
@@ -148,7 +147,7 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
         Assert.Equal($"Warehouse item with id {WarehouseItemId} not found.", result.Errors[0].Message);
 
         await _outboxService.DidNotReceive().StoreEventAsync(
-            Arg.Is<AddedQuantityToWarehouseItemEvent>(e => e.WarehouseItemId == WarehouseItemId),
+            Arg.Is<RemovedQuantityFromWarehouseItemEvent>(e => e.WarehouseItemId == WarehouseItemId),
             Arg.Is<string>(q => q == WarehouseQueueName),
             Arg.Any<CancellationToken>());
 
@@ -156,21 +155,23 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
     }
 
     [Fact]
-    public async Task ExecuteCommandAsync_WhenSuccessful_ShouldGenerateCorrectEvent()
+    public async Task ExecuteCommandAsync_WhenStockIsInsufficient_ShouldFailWithoutTouchingWarehouse()
     {
         // Arrange
-        var addQuantityModel = new AddQuantityModel
+        const int availableQuantity = 1;
+
+        var removeQuantityModel = new RemoveQuantityModel
         {
-            QuantityToAdd = 25
+            QuantityToRemove = QuantityToRemove
         };
-        var command = new AddQuantityToWarehouseItemCommand(WarehouseItemId, addQuantityModel);
+        var command = new RemoveQuantityFromWarehouseItemCommand(WarehouseItemId, removeQuantityModel);
 
         var warehouse = new Warehouse { Id = WarehouseId };
 
         var warehouseItem = new WarehouseItem
         {
             Id = WarehouseItemId,
-            Quantity = 100
+            Quantity = availableQuantity
         };
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
@@ -181,24 +182,19 @@ public class AddQuantityToWarehouseItemCommandHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(warehouseItem);
 
-        Guid capturedItemId = Guid.Empty;
-        int capturedQuantity = 0;
+        // Act & Assert
+        Result<WarehouseItemModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
 
-        await _outboxService.StoreEventAsync(
-            Arg.Do<AddedQuantityToWarehouseItemEvent>(e =>
-            {
-                capturedItemId = e.WarehouseItemId;
-                capturedQuantity = e.QuantityAdded;
-            }),
-            Arg.Is<string>(q => q == WarehouseQueueName),
-            Arg.Any<CancellationToken>());
+        Assert.True(result.IsFailed);
+        Assert.True(result.HasError<BadRequestError>());
 
-        // Act
-        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+        Assert.Equal(
+            $"Not enough stock. Available: {availableQuantity}, requested: {QuantityToRemove}.",
+            result.Errors[0].Message);
 
-        // Assert
-        Assert.Equal(WarehouseItemId, capturedItemId);
-        Assert.Equal(25, capturedQuantity);
+        Assert.Equal(availableQuantity, warehouseItem.Quantity);
+
+        await _warehouseRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }
 

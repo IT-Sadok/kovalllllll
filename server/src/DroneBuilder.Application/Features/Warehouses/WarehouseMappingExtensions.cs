@@ -1,7 +1,6 @@
-using DroneBuilder.Application.Models.WarehouseModels;
 using DroneBuilder.Domain.Entities;
 
-namespace DroneBuilder.Application.Mappings;
+namespace DroneBuilder.Application.Features.Warehouses;
 
 public static class WarehouseMappingExtensions
 {
