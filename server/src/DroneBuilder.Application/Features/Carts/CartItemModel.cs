@@ -1,4 +1,4 @@
-namespace DroneBuilder.Application.Models.CartModels;
+namespace DroneBuilder.Application.Features.Carts;
 
 public class CartItemModel
 {

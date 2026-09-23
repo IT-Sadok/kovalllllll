@@ -1,6 +1,6 @@
 using DroneBuilder.Application.Abstractions;
 using DroneBuilder.Application.Contexts;
-using DroneBuilder.Application.Mediator.Commands.CartCommands;
+using DroneBuilder.Application.Features.Carts.RemoveItemFromCart;
 using DroneBuilder.Application.Options;
 using DroneBuilder.Application.Repositories;
 using DroneBuilder.Application.ResultErrors;
@@ -8,8 +8,7 @@ using DroneBuilder.Domain.Entities;
 using DroneBuilder.Domain.Events.CartEvents;
 using FluentResults;
 using NSubstitute;
-
-namespace DroneBuilder.Application.Tests.CartCommandTests;
+namespace DroneBuilder.Application.Tests.Features.Carts;
 
 public class RemoveItemFromCartCommandHandlerTests
 {
