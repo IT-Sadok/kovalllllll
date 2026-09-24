@@ -1,11 +1,13 @@
 import {
   BATTERY_CONNECTORS,
+  COMPONENT_TYPES,
   MOUNT_PATTERNS,
   RADIO_PROTOCOLS,
   RF_CONNECTORS,
   VIDEO_SYSTEMS,
   type ComponentSpec,
   type ComponentType,
+  type ProductCategory,
 } from '../types';
 
 export type SpecField =
@@ -14,7 +16,7 @@ export type SpecField =
   | { key: string; label: string; kind: 'enum'; options: readonly string[] }
   | { key: string; label: string; kind: 'enumList'; options: readonly string[] };
 
-export const COMPONENT_TYPE_LABELS: Record<ComponentType, string> = {
+export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   Frame: 'Frame',
   Motor: 'Motor',
   Propeller: 'Propeller',
@@ -26,7 +28,16 @@ export const COMPONENT_TYPE_LABELS: Record<ComponentType, string> = {
   Camera: 'Camera',
   Receiver: 'Receiver',
   Antenna: 'Antenna',
+  Goggles: 'Goggles',
+  Radio: 'Radio',
+  Charger: 'Charger',
+  Tool: 'Tool',
+  ReadyToFly: 'Ready to fly',
+  Accessory: 'Accessory',
 };
+
+export const toComponentType = (category: ProductCategory): ComponentType | null =>
+  (COMPONENT_TYPES as readonly string[]).includes(category) ? (category as ComponentType) : null;
 
 const OPTION_LABELS: Record<string, string> = {
   M9x9: '9×9 mm',

@@ -7,7 +7,7 @@ import { useAddToCart } from '../hooks/useAddToCart';
 import { useAuthStore } from '../store/authStore';
 import Skeleton from '../components/ui/Skeleton';
 import Button from '../components/ui/Button';
-import { COMPONENT_TYPE_LABELS, SPEC_FIELDS, formatSpecValue } from '../utils/componentSpecs';
+import { CATEGORY_LABELS, SPEC_FIELDS, formatSpecValue } from '../utils/componentSpecs';
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,12 +47,9 @@ const ProductPage: React.FC = () => {
     ...(product?.manufacturer ? [['Manufacturer', product.manufacturer] as [string, string]] : []),
     ...(product?.weightGrams ? [['Weight', `${product.weightGrams} g`] as [string, string]] : []),
     ...(spec
-      ? [
-          ['Component', COMPONENT_TYPE_LABELS[spec.type]] as [string, string],
-          ...SPEC_FIELDS[spec.type].map(
-            (field) => [field.label, formatSpecValue(field, (spec as Record<string, unknown>)[field.key])] as [string, string],
-          ),
-        ]
+      ? SPEC_FIELDS[spec.type].map(
+          (field) => [field.label, formatSpecValue(field, (spec as Record<string, unknown>)[field.key])] as [string, string],
+        )
       : []),
     ...(product?.attributes ?? []).map((a) => [a.name, a.value] as [string, string]),
   ];
@@ -165,7 +162,7 @@ const ProductPage: React.FC = () => {
             <>
               {product?.category && (
                 <span className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-medium">
-                  {product.category}
+                  {CATEGORY_LABELS[product.category]}
                 </span>
               )}
               <h1 className="text-3xl font-bold text-white font-orbitron">{product?.name}</h1>

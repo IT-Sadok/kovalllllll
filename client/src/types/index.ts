@@ -32,7 +32,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  category: string;
+  category: ProductCategory;
   manufacturer?: string | null;
   weightGrams?: number | null;
   stockQuantity: number;
@@ -47,6 +47,10 @@ export const COMPONENT_TYPES = [
   'Battery', 'VideoTransmitter', 'Camera', 'Receiver', 'Antenna',
 ] as const;
 export type ComponentType = typeof COMPONENT_TYPES[number];
+
+export const OTHER_CATEGORIES = ['Goggles', 'Radio', 'Charger', 'Tool', 'ReadyToFly', 'Accessory'] as const;
+export const PRODUCT_CATEGORIES = [...COMPONENT_TYPES, ...OTHER_CATEGORIES] as const;
+export type ProductCategory = typeof PRODUCT_CATEGORIES[number];
 
 export const MOUNT_PATTERNS = ['M9x9', 'M12x12', 'M16x16', 'M19x19', 'M20x20', 'M25_5x25_5', 'M30_5x30_5'] as const;
 export type MountPattern = typeof MOUNT_PATTERNS[number];
@@ -109,8 +113,7 @@ export interface ProductFilters {
   name?: string;
   minPrice?: number | '';
   maxPrice?: number | '';
-  category?: string;
-  componentType?: ComponentType;
+  category?: ProductCategory;
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
@@ -209,7 +212,7 @@ export interface WarehouseItem {
 export interface CreateProductRequest {
   name: string;
   price: number;
-  category: string;
+  category: ProductCategory;
   manufacturer?: string;
   weightGrams?: number;
 }
@@ -217,7 +220,7 @@ export interface CreateProductRequest {
 export interface UpdateProductRequest {
   name?: string;
   price?: number;
-  category?: string;
+  category?: ProductCategory;
   manufacturer?: string;
   weightGrams?: number;
 }

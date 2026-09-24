@@ -1,6 +1,6 @@
 import { api } from './axiosInstance';
 import { unwrap, unwrapPaged } from './response';
-import type { ApiResponse, ComponentType, Product } from '../types';
+import type { ApiResponse, Product, ProductCategory } from '../types';
 
 export const getProducts = (filters: {
   page?: number;
@@ -8,8 +8,7 @@ export const getProducts = (filters: {
   name?: string;
   minPrice?: number | '';
   maxPrice?: number | '';
-  category?: string;
-  componentType?: ComponentType;
+  category?: ProductCategory;
 } = {}) => {
   const params = new URLSearchParams();
   params.set('page', String(filters.page ?? 1));
@@ -18,11 +17,8 @@ export const getProducts = (filters: {
   if (filters.minPrice !== undefined && filters.minPrice !== '') params.set('minPrice', String(filters.minPrice));
   if (filters.maxPrice !== undefined && filters.maxPrice !== '') params.set('maxPrice', String(filters.maxPrice));
   if (filters.category) params.set('category', filters.category);
-  if (filters.componentType) params.set('componentType', filters.componentType);
   return api.get<ApiResponse<Product[]>>(`/products?${params.toString()}`).then(unwrapPaged);
 };
 
 export const getProduct = (id: string) =>
   api.get<ApiResponse<Product>>(`/products/${id}`).then(unwrap);
-
-export const getCategories = () => api.get<ApiResponse<string[]>>('/products/categories').then(unwrap);
