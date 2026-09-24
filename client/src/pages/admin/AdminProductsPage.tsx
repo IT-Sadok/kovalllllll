@@ -30,6 +30,8 @@ const createSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   price: z.coerce.number().positive('Price must be positive'),
   category: z.string().min(1, 'Category is required'),
+  manufacturer: z.string().max(100, 'Max 100 characters').optional(),
+  weightGrams: z.coerce.number().min(0, 'Weight cannot be negative').optional(),
 });
 
 // Update schema — all fields optional
@@ -37,6 +39,8 @@ const updateSchema = z.object({
   name: z.string().min(2, 'Name is required').optional(),
   price: z.coerce.number().positive('Price must be positive').optional(),
   category: z.string().min(1, 'Category is required').optional(),
+  manufacturer: z.string().max(100, 'Max 100 characters').optional(),
+  weightGrams: z.coerce.number().min(0, 'Weight cannot be negative').optional(),
 });
 
 type CreateFormInput = z.input<typeof createSchema>;
@@ -83,6 +87,8 @@ const AdminProductsPage: React.FC = () => {
         name: data.name,
         price: data.price,
         category: data.category,
+        manufacturer: data.manufacturer || undefined,
+        weightGrams: data.weightGrams || undefined,
       };
       return adminCreateProduct(payload);
     },
@@ -137,7 +143,7 @@ const AdminProductsPage: React.FC = () => {
   });
 
   const openCreate = () => {
-    createForm.reset({ name: '', price: 0, category: '' });
+    createForm.reset({ name: '', price: 0, category: '', manufacturer: '', weightGrams: '' });
     setIsCustomCategory(false);
     setEditTarget(null);
     setModalType('create');
@@ -150,6 +156,8 @@ const AdminProductsPage: React.FC = () => {
       name: product.name,
       price: product.price,
       category: product.category,
+      manufacturer: product.manufacturer ?? '',
+      weightGrams: product.weightGrams ?? '',
     });
     setEditTarget(product);
     setModalType('edit');
@@ -244,11 +252,11 @@ const AdminProductsPage: React.FC = () => {
                           <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <Link
-                            to={`/admin/products/${product.id}/properties`}
-                            id={`admin-props-${product.id}`}
+                            to={`/admin/products/${product.id}/attributes`}
+                            id={`admin-attributes-${product.id}`}
                             className="text-xs px-2.5 py-1 rounded-lg border border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all"
                           >
-                            Props
+                            Attributes
                           </Link>
                           <Link
                             to={`/admin/products/${product.id}/spec`}
@@ -312,6 +320,7 @@ const AdminProductsPage: React.FC = () => {
             label="Price ($)"
             id="product-form-price"
             type="number"
+            step="0.01"
             placeholder="999"
             {...createForm.register('price')}
             error={createForm.formState.errors.price?.message}
@@ -353,6 +362,24 @@ const AdminProductsPage: React.FC = () => {
               <p className="text-xs text-red-400">{createForm.formState.errors.category.message}</p>
             )}
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Manufacturer"
+              id="product-form-manufacturer"
+              placeholder="T-Motor"
+              {...createForm.register('manufacturer')}
+              error={createForm.formState.errors.manufacturer?.message}
+            />
+            <Input
+              label="Weight (g)"
+              id="product-form-weight"
+              type="number"
+              step="0.1"
+              placeholder="32.9"
+              {...createForm.register('weightGrams')}
+              error={createForm.formState.errors.weightGrams?.message}
+            />
+          </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="ghost" onClick={() => setModalType(null)} id="product-form-cancel">
               Cancel
@@ -387,6 +414,7 @@ const AdminProductsPage: React.FC = () => {
             label="Price ($)"
             id="product-edit-price"
             type="number"
+            step="0.01"
             placeholder="999"
             {...updateForm.register('price')}
             error={updateForm.formState.errors.price?.message}
@@ -427,6 +455,24 @@ const AdminProductsPage: React.FC = () => {
             {updateForm.formState.errors.category && (
               <p className="text-xs text-red-400">{updateForm.formState.errors.category.message}</p>
             )}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Manufacturer"
+              id="product-edit-manufacturer"
+              placeholder="T-Motor"
+              {...updateForm.register('manufacturer')}
+              error={updateForm.formState.errors.manufacturer?.message}
+            />
+            <Input
+              label="Weight (g)"
+              id="product-edit-weight"
+              type="number"
+              step="0.1"
+              placeholder="32.9"
+              {...updateForm.register('weightGrams')}
+              error={updateForm.formState.errors.weightGrams?.message}
+            />
           </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="ghost" onClick={() => { setModalType(null); setEditTarget(null); }} id="product-edit-cancel">

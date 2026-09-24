@@ -126,8 +126,9 @@ const AdminProductSpecPage: React.FC = () => {
           id={fieldId}
           type="number"
           step={field.step ?? 1}
-          value={value as number}
-          onChange={(e) => setField(field.key, e.target.value === '' ? 0 : Number(e.target.value))}
+          value={(value as number | null) ?? ''}
+          placeholder={field.optional ? 'Optional' : undefined}
+          onChange={(e) => setField(field.key, e.target.value === '' ? (field.optional ? null : 0) : Number(e.target.value))}
           className={inputClass}
         />
         {field.unit && <span className="text-slate-500 text-sm w-10">{field.unit}</span>}

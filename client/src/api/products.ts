@@ -25,10 +25,4 @@ export const getProducts = (filters: {
 export const getProduct = (id: string) =>
   api.get<ApiResponse<Product>>(`/products/${id}`).then(unwrap);
 
-// GET /products/{productId}/properties → returns ProductPropertiesResponse, extract the properties array
-export const getProductProperties = (id: string) =>
-  api.get<ApiResponse<import('../types').ProductPropertiesResponse>>(`/products/${id}/properties`)
-    .then(unwrap)
-    .then((response) => response.properties);
-
 export const getCategories = () => api.get<ApiResponse<string[]>>('/products/categories').then(unwrap);

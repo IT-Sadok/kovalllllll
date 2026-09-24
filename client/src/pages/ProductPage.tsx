@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { getProduct, getProductProperties } from '../api/products';
+import { getProduct } from '../api/products';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { useAuthStore } from '../store/authStore';
 import Skeleton from '../components/ui/Skeleton';
@@ -21,12 +21,6 @@ const ProductPage: React.FC = () => {
   const { data: product, isLoading: loadingProduct, isError } = useQuery({
     queryKey: ['product', id],
     queryFn: () => getProduct(id!),
-    enabled: !!id,
-  });
-
-  const { data: properties, isLoading: loadingProps } = useQuery({
-    queryKey: ['product-properties', id],
-    queryFn: () => getProductProperties(id!),
     enabled: !!id,
   });
 
@@ -49,6 +43,19 @@ const ProductPage: React.FC = () => {
   }
 
   const spec = product?.spec;
+  const specRows: [string, string][] = [
+    ...(product?.manufacturer ? [['Manufacturer', product.manufacturer] as [string, string]] : []),
+    ...(product?.weightGrams ? [['Weight', `${product.weightGrams} g`] as [string, string]] : []),
+    ...(spec
+      ? [
+          ['Component', COMPONENT_TYPE_LABELS[spec.type]] as [string, string],
+          ...SPEC_FIELDS[spec.type].map(
+            (field) => [field.label, formatSpecValue(field, (spec as Record<string, unknown>)[field.key])] as [string, string],
+          ),
+        ]
+      : []),
+    ...(product?.attributes ?? []).map((a) => [a.name, a.value] as [string, string]),
+  ];
   const sortedImages = [...(product?.images ?? [])].sort((a, b) => (a.isPrimary === b.isPrimary ? 0 : a.isPrimary ? -1 : 1));
 
   const nextImage = () => {
@@ -224,7 +231,7 @@ const ProductPage: React.FC = () => {
             </>
           )}
 
-          {/* Properties */}
+          {/* Specifications */}
           <div className="glass-card p-5">
             <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
               <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,38 +239,20 @@ const ProductPage: React.FC = () => {
               </svg>
               Specifications
             </h2>
-            {spec && (
-              <div className="divide-y divide-white/5 mb-2">
-                <div className="flex justify-between py-2.5 text-sm">
-                  <span className="text-slate-400">Component</span>
-                  <span className="text-cyan-400 font-medium">{COMPONENT_TYPE_LABELS[spec.type]}</span>
-                </div>
-                {SPEC_FIELDS[spec.type].map((field) => (
-                  <div key={field.key} className="flex justify-between py-2.5 text-sm">
-                    <span className="text-slate-400">{field.label}</span>
-                    <span className="text-white text-right max-w-[60%]">
-                      {formatSpecValue(field, (spec as Record<string, unknown>)[field.key])}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {loadingProps ? (
+            {loadingProduct ? (
               <div className="space-y-2">
                 <Skeleton className="h-4 w-full" count={4} />
               </div>
-            ) : properties && properties.length > 0 ? (
+            ) : specRows.length > 0 ? (
               <div className="divide-y divide-white/5">
-                {properties.map((prop) => (
-                  <div key={prop.id} className="flex justify-between py-2.5 text-sm">
-                    <span className="text-slate-400">{prop.name}</span>
-                    <span className="text-white text-right max-w-[60%]">
-                      {prop.values?.map((v) => v.text).join(', ') || '—'}
-                    </span>
+                {specRows.map(([label, value]) => (
+                  <div key={label} className="flex justify-between py-2.5 text-sm">
+                    <span className="text-slate-400">{label}</span>
+                    <span className="text-white text-right max-w-[60%]">{value}</span>
                   </div>
                 ))}
               </div>
-            ) : !spec && (
+            ) : (
               <p className="text-slate-500 text-sm">No specifications available.</p>
             )}
           </div>

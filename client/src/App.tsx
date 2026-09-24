@@ -18,9 +18,7 @@ import OrdersPage from './pages/OrdersPage';
 import AdminProductsPage from './pages/admin/AdminProductsPage';
 import AdminImagesPage from './pages/admin/AdminImagesPage';
 import AdminWarehousePage from './pages/admin/AdminWarehousePage';
-import AdminPropertiesPage from './pages/admin/AdminPropertiesPage';
-import AdminValuesPage from './pages/admin/AdminValuesPage';
-import AdminProductPropertiesPage from './pages/admin/AdminProductPropertiesPage';
+import AdminProductAttributesPage from './pages/admin/AdminProductAttributesPage';
 import AdminProductSpecPage from './pages/admin/AdminProductSpecPage';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 
@@ -90,20 +88,14 @@ function App() {
             <Route path="/admin/products/:id/images" element={
               <PrivateRoute requireAdmin><AdminImagesPage /></PrivateRoute>
             } />
-            <Route path="/admin/products/:id/properties" element={
-              <PrivateRoute requireAdmin><AdminProductPropertiesPage /></PrivateRoute>
+            <Route path="/admin/products/:id/attributes" element={
+              <PrivateRoute requireAdmin><AdminProductAttributesPage /></PrivateRoute>
             } />
             <Route path="/admin/products/:id/spec" element={
               <PrivateRoute requireAdmin><AdminProductSpecPage /></PrivateRoute>
             } />
             <Route path="/admin/warehouse" element={
               <PrivateRoute requireAdmin><AdminWarehousePage /></PrivateRoute>
-            } />
-            <Route path="/admin/properties" element={
-              <PrivateRoute requireAdmin><AdminPropertiesPage /></PrivateRoute>
-            } />
-            <Route path="/admin/values" element={
-              <PrivateRoute requireAdmin><AdminValuesPage /></PrivateRoute>
             } />
             <Route path="/admin/orders" element={
               <PrivateRoute requireAdmin><AdminOrdersPage /></PrivateRoute>
