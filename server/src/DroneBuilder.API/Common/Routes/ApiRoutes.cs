@@ -30,6 +30,8 @@ public abstract class ApiRoutes
         public const string RemovePropertyFromProduct = BaseRoute + "/{productId}/properties/{propertyId}";
         public const string GetDelisted = BaseRoute + "/delisted";
         public const string Restore = BaseRoute + "/{productId}/restore";
+        public const string SetSpec = BaseRoute + "/{productId}/spec";
+        public const string RemoveSpec = BaseRoute + "/{productId}/spec";
     }
 
     public static class Properties

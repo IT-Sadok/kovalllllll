@@ -12,9 +12,11 @@ using DroneBuilder.Application.Features.Products.GetDelistedProducts;
 using DroneBuilder.Application.Features.Products.GetProductById;
 using DroneBuilder.Application.Features.Products.GetProducts;
 using DroneBuilder.Application.Features.Products.GetPropertiesByProductId;
+using DroneBuilder.Application.Features.Products.RemoveProductSpec;
 using DroneBuilder.Application.Features.Products.RemovePropertyFromProduct;
 using DroneBuilder.Application.Features.Products.RemoveValueFromProductProperty;
 using DroneBuilder.Application.Features.Products.RestoreProduct;
+using DroneBuilder.Application.Features.Products.SetProductSpec;
 using DroneBuilder.Application.Features.Products.UpdateProduct;
 using FluentResults;
 
@@ -137,6 +139,25 @@ public static class ProductEndpointsExtensions
                 CancellationToken cancellationToken) =>
             {
                 Result result = await mediator.ExecuteCommandAsync(new RemovePropertyFromProductCommand(productId, propertyId),
+                    cancellationToken);
+                return result.ToHttpResult();
+            }).WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapPut(ApiRoutes.Products.SetSpec,
+                async (Guid productId, ComponentSpecModel spec, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    Result<ProductModel> result = await mediator.ExecuteCommandAsync<SetProductSpecCommand, ProductModel>(
+                        new SetProductSpecCommand(productId, spec),
+                        cancellationToken);
+                    return result.ToHttpResult();
+                }).WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapDelete(ApiRoutes.Products.RemoveSpec, async (IMediator mediator, Guid productId,
+                CancellationToken cancellationToken) =>
+            {
+                Result result = await mediator.ExecuteCommandAsync(new RemoveProductSpecCommand(productId),
                     cancellationToken);
                 return result.ToHttpResult();
             }).WithTags("Products")
