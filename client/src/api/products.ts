@@ -9,6 +9,7 @@ export const getProducts = (filters: {
   minPrice?: number | '';
   maxPrice?: number | '';
   category?: ProductCategory;
+  collapseVariants?: boolean;
 } = {}) => {
   const params = new URLSearchParams();
   params.set('page', String(filters.page ?? 1));
@@ -17,6 +18,7 @@ export const getProducts = (filters: {
   if (filters.minPrice !== undefined && filters.minPrice !== '') params.set('minPrice', String(filters.minPrice));
   if (filters.maxPrice !== undefined && filters.maxPrice !== '') params.set('maxPrice', String(filters.maxPrice));
   if (filters.category) params.set('category', filters.category);
+  if (filters.collapseVariants) params.set('collapseVariants', 'true');
   return api.get<ApiResponse<Product[]>>(`/products?${params.toString()}`).then(unwrapPaged);
 };
 

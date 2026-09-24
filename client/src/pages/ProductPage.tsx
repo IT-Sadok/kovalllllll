@@ -165,7 +165,33 @@ const ProductPage: React.FC = () => {
                   {CATEGORY_LABELS[product.category]}
                 </span>
               )}
-              <h1 className="text-3xl font-bold text-white font-orbitron">{product?.name}</h1>
+              <h1 className="text-3xl font-bold text-white font-orbitron">{product?.group?.name ?? product?.name}</h1>
+              {product?.group?.variants && product.group.variants.length > 1 && (
+                <div className="space-y-2" id="product-variants">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider">Variant</p>
+                  <div className="flex flex-wrap gap-2">
+                    {product.group.variants.map((variant) => {
+                      const selected = variant.id === product.id;
+                      return (
+                        <button
+                          key={variant.id}
+                          type="button"
+                          id={`variant-${variant.id}`}
+                          onClick={() => !selected && navigate(`/products/${variant.id}`, { replace: true })}
+                          title={variant.stockQuantity === 0 ? 'Out of stock' : undefined}
+                          className={`text-sm px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
+                            selected
+                              ? 'border-cyan-400 bg-cyan-500/15 text-cyan-300'
+                              : 'border-white/10 text-slate-300 hover:border-white/30'
+                          } ${variant.stockQuantity === 0 ? 'opacity-50 line-through' : ''}`}
+                        >
+                          {variant.variantName ?? 'Default'}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               {product?.sourceUrl && (
                 <a
                   href={product.sourceUrl}

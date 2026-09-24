@@ -18,4 +18,5 @@ public class ProductModel
     public ICollection<ImageModel> Images { get; set; } = [];
     public int StockQuantity { get; set; }
     public ComponentSpecModel? Spec { get; set; }
+    public ProductGroupModel? Group { get; set; }
 }

@@ -38,11 +38,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         IQueryable<Product> query = dbContext.Products
             .AsNoTracking()
-            .Where(p => !p.IsDeleted)
-            .Include(p => p.Images)
-            .Include(p => p.Spec)
-            .Include(p => p.Attributes)
-            .AsQueryable();
+            .Where(p => !p.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
@@ -65,9 +61,23 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             query = query.Where(p => p.Category == filter.Category.Value);
         }
 
+        if (filter.CollapseVariants == true)
+        {
+            IQueryable<Product> matching = query;
+            query = query.Where(p => p.GroupId == null || p.Id == matching
+                .Where(v => v.GroupId == p.GroupId)
+                .OrderBy(v => v.Price)
+                .ThenBy(v => v.Name)
+                .Select(v => v.Id)
+                .First());
+        }
+
         int totalCount = await query.CountAsync(cancellationToken);
 
         List<Product> items = await query
+            .Include(p => p.Images)
+            .Include(p => p.Spec)
+            .Include(p => p.Attributes)
             .OrderBy(p => p.Name)
             .ThenBy(p => p.Id)
             .Skip((pagination.Page - 1) * pagination.PageSize)
@@ -145,6 +155,29 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     public async Task AddGroupAsync(ProductGroup group, CancellationToken cancellationToken = default)
     {
         await dbContext.ProductGroups.AddAsync(group, cancellationToken);
+    }
+
+    public async Task<ICollection<ProductGroupSummary>> GetGroupSummariesAsync(ICollection<Guid> groupIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await (
+                from product in dbContext.Products
+                where product.GroupId != null && groupIds.Contains(product.GroupId.Value) && !product.IsDeleted
+                join stock in dbContext.WarehouseItems on product.Id equals stock.ProductId into stocks
+                from stock in stocks.DefaultIfEmpty()
+                group new { product.Price, Quantity = stock == null ? 0 : stock.Quantity }
+                    by new { GroupId = product.GroupId!.Value, product.Group!.Name } into g
+                select new ProductGroupSummary(g.Key.GroupId, g.Key.Name, g.Count(), g.Min(x => x.Price),
+                    g.Max(x => x.Price), g.Sum(x => x.Quantity)))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ICollection<Product>> GetGroupVariantsAsync(Guid groupId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .AsNoTracking()
+            .Where(p => p.GroupId == groupId && !p.IsDeleted)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
