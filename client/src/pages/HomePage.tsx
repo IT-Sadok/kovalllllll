@@ -36,18 +36,22 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     addToCartMutation.mutate({ productId: product.id, productName: product.name, quantity: 1 });
   };
 
+  const group = product.group;
+  const title = group?.name ?? product.name;
+  const outOfStock = (group ? group.totalStock : product.stockQuantity) === 0;
+
   const primaryImage = product.images?.find(img => img.isPrimary) || product.images?.[0];
   const imageUrl = primaryImage?.url;
 
   return (
     <Link to={`/products/${product.id}`} id={`product-card-${product.id}`} className="block group">
-      <div className={`glass-card overflow-hidden h-full flex flex-col transition-all duration-300 ${product.stockQuantity === 0 ? 'opacity-60 grayscale' : ''}`}>
+      <div className={`glass-card overflow-hidden h-full flex flex-col transition-all duration-300 ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
         {/* Image */}
         <div className="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden">
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt={product.name}
+              alt={title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
@@ -72,7 +76,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             </span>
           )}
           {/* Out of Stock Badge */}
-          {product.stockQuantity === 0 && (
+          {outOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
               <span className="px-4 py-1.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 text-[10px] font-bold uppercase tracking-widest font-orbitron shadow-[0_0_15px_rgba(239,68,68,0.2)]">
                 Out of Stock
@@ -84,39 +88,54 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         {/* Content */}
         <div className="p-4 flex flex-col flex-1 gap-3">
           <h3 className="font-semibold text-white text-sm leading-tight group-hover:text-cyan-400 transition-colors line-clamp-2">
-            {product.name}
+            {title}
           </h3>
+          {group && (
+            <span className="text-xs text-slate-400" id={`product-variants-${product.id}`}>
+              {group.variantCount} variants
+            </span>
+          )}
 
           <div className="mt-auto flex items-center justify-between">
             <span className="text-xl font-bold text-cyan-400 font-orbitron">
-              ${product.price.toLocaleString()}
+              {group && group.minPrice !== group.maxPrice && <span className="text-xs text-slate-400 font-sans mr-1">from</span>}
+              ${(group ? group.minPrice : product.price).toLocaleString()}
             </span>
-            <button
-              onClick={handleAddToCart}
-              disabled={adding || product.stockQuantity === 0}
-              id={`add-to-cart-${product.id}`}
-              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200 ${
-                product.stockQuantity === 0 
-                ? 'bg-slate-800/50 border-slate-700 text-slate-500 cursor-not-allowed'
-                : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 cursor-pointer'
-              } disabled:opacity-50`}
-            >
-              {adding ? (
-                <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                </svg>
-              ) : product.stockQuantity === 0 ? (
-                <span>Sold Out</span>
-              ) : (
-                <>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            {group ? (
+              <span
+                id={`choose-variant-${product.id}`}
+                className="text-xs px-3 py-1.5 rounded-lg border bg-cyan-500/10 border-cyan-500/20 text-cyan-400"
+              >
+                Choose
+              </span>
+            ) : (
+              <button
+                onClick={handleAddToCart}
+                disabled={adding || outOfStock}
+                id={`add-to-cart-${product.id}`}
+                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200 ${
+                  outOfStock 
+                  ? 'bg-slate-800/50 border-slate-700 text-slate-500 cursor-not-allowed'
+                  : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 cursor-pointer'
+                } disabled:opacity-50`}
+              >
+                {adding ? (
+                  <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                   </svg>
-                  <span>Add</span>
-                </>
-              )}
-            </button>
+                ) : outOfStock ? (
+                  <span>Sold Out</span>
+                ) : (
+                  <>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Add</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -133,7 +152,7 @@ const HomePage: React.FC = () => {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['products', filters],
-    queryFn: () => getProducts(filters),
+    queryFn: () => getProducts({ ...filters, collapseVariants: true }),
   });
 
   const onFilter = useCallback((form: FilterForm) => {

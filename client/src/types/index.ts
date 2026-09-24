@@ -43,6 +43,24 @@ export interface Product {
   attributes: ProductAttribute[];
   images?: Image[];
   spec?: ComponentSpec | null;
+  group?: ProductGroup | null;
+}
+
+export interface ProductVariant {
+  id: string;
+  variantName?: string | null;
+  price: number;
+  stockQuantity: number;
+}
+
+export interface ProductGroup {
+  id: string;
+  name: string;
+  variantCount: number;
+  minPrice: number;
+  maxPrice: number;
+  totalStock: number;
+  variants?: ProductVariant[] | null;
 }
 
 // ─── Component specs ──────────────────────────────────────────────────────────
