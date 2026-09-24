@@ -21,6 +21,7 @@ import Modal from '../../components/ui/Modal';
 import Pagination from '../../components/ui/Pagination';
 import EmptyState from '../../components/ui/EmptyState';
 import { TableRowSkeleton } from '../../components/ui/Skeleton';
+import { COMPONENT_TYPE_LABELS } from '../../utils/componentSpecs';
 
 const DEFAULT_CATEGORIES = ['Racing', 'Photography', 'Industrial', 'Military', 'Consumer', 'FPV'];
 
@@ -248,6 +249,13 @@ const AdminProductsPage: React.FC = () => {
                             className="text-xs px-2.5 py-1 rounded-lg border border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all"
                           >
                             Props
+                          </Link>
+                          <Link
+                            to={`/admin/products/${product.id}/spec`}
+                            id={`admin-spec-${product.id}`}
+                            className="text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                          >
+                            {product.spec ? COMPONENT_TYPE_LABELS[product.spec.type] : 'Spec'}
                           </Link>
                           <Link
                             to={`/admin/products/${product.id}/images`}

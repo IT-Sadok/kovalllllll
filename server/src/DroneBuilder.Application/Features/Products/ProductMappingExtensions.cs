@@ -34,6 +34,7 @@ public static class ProductMappingExtensions
                         Text = ppv.Value.Text
                     }).ToList()
                 }).ToList() ?? new List<PropertyModel>(),
+            Spec = product.Spec?.ToModel(),
             Images = product.Images != null ? product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ToModel()).ToList() : new List<ImageModel>()
         };
     }

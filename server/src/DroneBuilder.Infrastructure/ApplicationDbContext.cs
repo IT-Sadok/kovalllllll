@@ -1,4 +1,5 @@
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Property> Properties { get; set; }
     public DbSet<Value> Values { get; set; }
     public DbSet<ProductPropertyValue> ProductPropertyValues { get; set; }
+    public DbSet<ComponentSpec> ComponentSpecs { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }

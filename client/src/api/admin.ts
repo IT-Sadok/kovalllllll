@@ -8,6 +8,7 @@ import type {
   Value,
   Image,
   ApiResponse,
+  ComponentSpec,
   CreateProductRequest,
   UpdateProductRequest,
   CreatePropertyRequest,
@@ -39,6 +40,12 @@ export const removeValueFromProductProperty = (productId: string, propertyId: st
 
 export const removePropertyFromProduct = (productId: string, propertyId: string) =>
   api.delete(`/products/${productId}/properties/${propertyId}`);
+
+export const setProductSpec = (productId: string, spec: ComponentSpec) =>
+  api.put<ApiResponse<Product>>(`/products/${productId}/spec`, spec).then(unwrap);
+
+export const removeProductSpec = (productId: string) =>
+  api.delete(`/products/${productId}/spec`);
 
 // ─── Warehouse ────────────────────────────────────────────────────────────────
 // GET /warehouse → Warehouse (summary: name, createdAt)

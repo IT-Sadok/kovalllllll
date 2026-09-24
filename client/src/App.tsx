@@ -21,6 +21,7 @@ import AdminWarehousePage from './pages/admin/AdminWarehousePage';
 import AdminPropertiesPage from './pages/admin/AdminPropertiesPage';
 import AdminValuesPage from './pages/admin/AdminValuesPage';
 import AdminProductPropertiesPage from './pages/admin/AdminProductPropertiesPage';
+import AdminProductSpecPage from './pages/admin/AdminProductSpecPage';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 
 const queryClient = new QueryClient({
@@ -91,6 +92,9 @@ function App() {
             } />
             <Route path="/admin/products/:id/properties" element={
               <PrivateRoute requireAdmin><AdminProductPropertiesPage /></PrivateRoute>
+            } />
+            <Route path="/admin/products/:id/spec" element={
+              <PrivateRoute requireAdmin><AdminProductSpecPage /></PrivateRoute>
             } />
             <Route path="/admin/warehouse" element={
               <PrivateRoute requireAdmin><AdminWarehousePage /></PrivateRoute>

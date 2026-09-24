@@ -17,6 +17,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
     {
         return await dbContext.Products
             .Include(p => p.Images)
+            .Include(p => p.Spec)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Property)
             .Include(p => p.ProductPropertyValues)
@@ -57,6 +58,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .AsNoTracking()
             .Where(p => !p.IsDeleted)
             .Include(p => p.Images)
+            .Include(p => p.Spec)
             .Include(p => p.ProductPropertyValues)
                 .ThenInclude(ppv => ppv.Property)
             .Include(p => p.ProductPropertyValues)
@@ -83,6 +85,11 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         {
             string category = filter.Category.Trim().ToLower();
             query = query.Where(p => p.Category.ToLower() == category);
+        }
+
+        if (filter.ComponentType.HasValue)
+        {
+            query = query.Where(p => p.Spec != null && p.Spec.Type == filter.ComponentType.Value);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);

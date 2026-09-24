@@ -1,3 +1,5 @@
+using DroneBuilder.Domain.Entities.Components;
+
 namespace DroneBuilder.Domain.Entities;
 
 public class Product
@@ -10,4 +12,5 @@ public class Product
 
     public ICollection<Image> Images { get; set; } = [];
     public ICollection<ProductPropertyValue> ProductPropertyValues { get; set; } = [];
+    public ComponentSpec? Spec { get; set; }
 }
