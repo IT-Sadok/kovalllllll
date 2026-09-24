@@ -10,6 +10,10 @@ public class ProductModel
     public ProductCategory Category { get; set; }
     public string? Manufacturer { get; set; }
     public decimal? WeightGrams { get; set; }
+    public Guid? GroupId { get; set; }
+    public string? VariantName { get; set; }
+    public string? SourceUrl { get; set; }
+    public bool NeedsReview { get; set; }
     public ICollection<ProductAttributeModel> Attributes { get; set; } = [];
     public ICollection<ImageModel> Images { get; set; } = [];
     public int StockQuantity { get; set; }

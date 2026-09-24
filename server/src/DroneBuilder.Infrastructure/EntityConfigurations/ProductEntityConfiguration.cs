@@ -31,6 +31,22 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
 
         builder.HasIndex(p => p.Manufacturer);
 
+        builder.Property(p => p.VariantName)
+            .HasMaxLength(100);
+
+        builder.Property(p => p.ExternalSource)
+            .HasMaxLength(50);
+
+        builder.Property(p => p.ExternalId)
+            .HasMaxLength(100);
+
+        builder.Property(p => p.SourceUrl)
+            .HasMaxLength(500);
+
+        builder.HasIndex(p => new { p.ExternalSource, p.ExternalId })
+            .IsUnique()
+            .HasFilter("\"ExternalId\" IS NOT NULL");
+
         builder.HasMany(p => p.Images)
             .WithOne(i => i.Product)
             .HasForeignKey(i => i.ProductId)

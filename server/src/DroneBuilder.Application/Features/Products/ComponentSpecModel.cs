@@ -21,7 +21,7 @@ public record FrameSpecModel(
     decimal MaxPropSizeInch,
     List<MountPattern> FcMountPatterns,
     List<MountPattern> MotorMountPatterns,
-    int CameraWidthMm) : ComponentSpecModel;
+    int? CameraWidthMm) : ComponentSpecModel;
 
 public record MotorSpecModel(
     string StatorSize,
@@ -29,15 +29,15 @@ public record MotorSpecModel(
     MountPattern MountPattern,
     int MinCells,
     int MaxCells,
-    decimal MaxCurrentA,
-    decimal ShaftMm,
+    decimal? MaxCurrentA,
+    decimal? ShaftMm,
     int? MaxThrustGrams = null) : ComponentSpecModel;
 
 public record PropellerSpecModel(
     decimal DiameterInch,
-    decimal PitchInch,
-    int BladeCount,
-    decimal HubMm) : ComponentSpecModel;
+    decimal? PitchInch,
+    int? BladeCount,
+    decimal? HubMm) : ComponentSpecModel;
 
 public record FlightControllerSpecModel(
     MountPattern MountPattern,
@@ -48,23 +48,23 @@ public record EscSpecModel(
     MountPattern MountPattern,
     int MinCells,
     int MaxCells,
-    decimal ContinuousCurrentA,
-    BatteryConnector BatteryConnector) : ComponentSpecModel;
+    decimal? ContinuousCurrentA,
+    BatteryConnector? BatteryConnector) : ComponentSpecModel;
 
 public record BatterySpecModel(
     int Cells,
     int CapacityMah,
-    int CRating,
+    int? CRating,
     BatteryConnector Connector) : ComponentSpecModel;
 
 public record VideoTransmitterSpecModel(
     VideoSystem VideoSystem,
-    RfConnector AntennaConnector,
-    MountPattern MountPattern) : ComponentSpecModel;
+    RfConnector? AntennaConnector,
+    MountPattern? MountPattern) : ComponentSpecModel;
 
 public record CameraSpecModel(
     VideoSystem VideoSystem,
-    int WidthMm) : ComponentSpecModel;
+    int? WidthMm) : ComponentSpecModel;
 
 public record ReceiverSpecModel(
     RadioProtocol Protocol) : ComponentSpecModel;
@@ -76,5 +76,5 @@ public record StackSpecModel(
     MountPattern MountPattern,
     int MinCells,
     int MaxCells,
-    decimal ContinuousCurrentA,
-    BatteryConnector BatteryConnector) : ComponentSpecModel;
+    decimal? ContinuousCurrentA,
+    BatteryConnector? BatteryConnector) : ComponentSpecModel;

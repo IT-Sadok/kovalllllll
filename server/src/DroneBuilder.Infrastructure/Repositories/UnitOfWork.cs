@@ -11,6 +11,8 @@ public class UnitOfWork(ApplicationDbContext dbContext) : IUnitOfWork
         return new EfCoreTransaction(transaction);
     }
 
+    public void ClearChanges() => dbContext.ChangeTracker.Clear();
+
     private sealed class EfCoreTransaction(IDbContextTransaction transaction) : ITransaction
     {
         public Task CommitAsync(CancellationToken cancellationToken = default)

@@ -126,6 +126,55 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("DroneBuilder.Domain.Entities.ImportRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Added")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("Failed")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("NeedsReview")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Skipped")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Updated")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.ToTable("ImportRuns");
+                });
+
             modelBuilder.Entity("DroneBuilder.Domain.Entities.Message", b =>
                 {
                     b.Property<string>("Id")
@@ -244,6 +293,17 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ExternalSource")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -256,8 +316,19 @@ namespace DroneBuilder.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<bool>("NeedsReview")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("SourceUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("VariantName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal?>("WeightGrams")
                         .HasPrecision(7, 1)
@@ -267,7 +338,13 @@ namespace DroneBuilder.Infrastructure.Migrations
 
                     b.HasIndex("Category");
 
+                    b.HasIndex("GroupId");
+
                     b.HasIndex("Manufacturer");
+
+                    b.HasIndex("ExternalSource", "ExternalId")
+                        .IsUnique()
+                        .HasFilter("\"ExternalId\" IS NOT NULL");
 
                     b.ToTable("Products");
                 });
@@ -299,6 +376,34 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductAttributes");
+                });
+
+            modelBuilder.Entity("DroneBuilder.Domain.Entities.ProductGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ExternalSource")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalSource", "ExternalId")
+                        .IsUnique()
+                        .HasFilter("\"ExternalId\" IS NOT NULL");
+
+                    b.ToTable("ProductGroups");
                 });
 
             modelBuilder.Entity("DroneBuilder.Domain.Entities.User", b =>
@@ -569,7 +674,7 @@ namespace DroneBuilder.Infrastructure.Migrations
                 {
                     b.HasBaseType("DroneBuilder.Domain.Entities.Components.ComponentSpec");
 
-                    b.Property<int>("CRating")
+                    b.Property<int?>("CRating")
                         .HasColumnType("integer");
 
                     b.Property<int>("CapacityMah")
@@ -595,7 +700,7 @@ namespace DroneBuilder.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("VideoSystem");
 
-                    b.Property<int>("WidthMm")
+                    b.Property<int?>("WidthMm")
                         .HasColumnType("integer");
 
                     b.HasDiscriminator().HasValue(7);
@@ -605,12 +710,12 @@ namespace DroneBuilder.Infrastructure.Migrations
                 {
                     b.HasBaseType("DroneBuilder.Domain.Entities.Components.ComponentSpec");
 
-                    b.Property<int>("BatteryConnector")
+                    b.Property<int?>("BatteryConnector")
                         .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("integer")
                         .HasColumnName("BatteryConnector");
 
-                    b.Property<decimal>("ContinuousCurrentA")
+                    b.Property<decimal?>("ContinuousCurrentA")
                         .ValueGeneratedOnUpdateSometimes()
                         .HasPrecision(5, 1)
                         .HasColumnType("numeric(5,1)")
@@ -660,7 +765,7 @@ namespace DroneBuilder.Infrastructure.Migrations
                 {
                     b.HasBaseType("DroneBuilder.Domain.Entities.Components.ComponentSpec");
 
-                    b.Property<int>("CameraWidthMm")
+                    b.Property<int?>("CameraWidthMm")
                         .HasColumnType("integer");
 
                     b.PrimitiveCollection<int[]>("FcMountPatterns")
@@ -690,7 +795,7 @@ namespace DroneBuilder.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("MaxCells");
 
-                    b.Property<decimal>("MaxCurrentA")
+                    b.Property<decimal?>("MaxCurrentA")
                         .HasPrecision(5, 1)
                         .HasColumnType("numeric(5,1)");
 
@@ -707,7 +812,7 @@ namespace DroneBuilder.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("MountPattern");
 
-                    b.Property<decimal>("ShaftMm")
+                    b.Property<decimal?>("ShaftMm")
                         .HasPrecision(4, 1)
                         .HasColumnType("numeric(4,1)");
 
@@ -723,18 +828,18 @@ namespace DroneBuilder.Infrastructure.Migrations
                 {
                     b.HasBaseType("DroneBuilder.Domain.Entities.Components.ComponentSpec");
 
-                    b.Property<int>("BladeCount")
+                    b.Property<int?>("BladeCount")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("DiameterInch")
                         .HasPrecision(4, 1)
                         .HasColumnType("numeric(4,1)");
 
-                    b.Property<decimal>("HubMm")
+                    b.Property<decimal?>("HubMm")
                         .HasPrecision(4, 1)
                         .HasColumnType("numeric(4,1)");
 
-                    b.Property<decimal>("PitchInch")
+                    b.Property<decimal?>("PitchInch")
                         .HasPrecision(4, 1)
                         .HasColumnType("numeric(4,1)");
 
@@ -755,12 +860,12 @@ namespace DroneBuilder.Infrastructure.Migrations
                 {
                     b.HasBaseType("DroneBuilder.Domain.Entities.Components.ComponentSpec");
 
-                    b.Property<int>("BatteryConnector")
+                    b.Property<int?>("BatteryConnector")
                         .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("integer")
                         .HasColumnName("BatteryConnector");
 
-                    b.Property<decimal>("ContinuousCurrentA")
+                    b.Property<decimal?>("ContinuousCurrentA")
                         .ValueGeneratedOnUpdateSometimes()
                         .HasPrecision(5, 1)
                         .HasColumnType("numeric(5,1)")
@@ -788,12 +893,12 @@ namespace DroneBuilder.Infrastructure.Migrations
                 {
                     b.HasBaseType("DroneBuilder.Domain.Entities.Components.ComponentSpec");
 
-                    b.Property<int>("AntennaConnector")
+                    b.Property<int?>("AntennaConnector")
                         .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("integer")
                         .HasColumnName("RfConnector");
 
-                    b.Property<int>("MountPattern")
+                    b.Property<int?>("MountPattern")
                         .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("integer")
                         .HasColumnName("MountPattern");
@@ -886,6 +991,16 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("DroneBuilder.Domain.Entities.Product", b =>
+                {
+                    b.HasOne("DroneBuilder.Domain.Entities.ProductGroup", "Group")
+                        .WithMany("Products")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("DroneBuilder.Domain.Entities.ProductAttribute", b =>
@@ -986,6 +1101,11 @@ namespace DroneBuilder.Infrastructure.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Spec");
+                });
+
+            modelBuilder.Entity("DroneBuilder.Domain.Entities.ProductGroup", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("DroneBuilder.Domain.Entities.User", b =>

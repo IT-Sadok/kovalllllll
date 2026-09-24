@@ -1,5 +1,6 @@
 using DroneBuilder.Application.Common.Contexts;
 using DroneBuilder.Application.Common.Mediator.Interfaces;
+using DroneBuilder.Application.Features.Imports.RaceDayQuads;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +12,7 @@ public static class ApplicationExtensions
     {
         services.AddScoped<IMediator, Common.Mediator.Mediator>();
         services.AddScoped<IUserContext, UserContext>();
+        services.AddScoped<IRaceDayQuadsImporter, RaceDayQuadsImporter>();
         services.AddValidatorsFromAssembly(typeof(ApplicationExtensions).Assembly);
 
         services.Scan(scan => scan

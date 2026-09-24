@@ -104,6 +104,9 @@ const Navbar: React.FC = () => {
                 <NavLink to="/admin/warehouse" id="nav-admin-warehouse" className={navLinkClass}>
                   Warehouse
                 </NavLink>
+                <NavLink to="/admin/import" id="nav-admin-import" className={navLinkClass}>
+                  Import
+                </NavLink>
                 <NavLink to="/admin/orders" id="nav-admin-orders" className={navLinkClass}>
                   Manage Orders
                 </NavLink>
@@ -210,6 +213,9 @@ const Navbar: React.FC = () => {
                 </NavLink>
                 <NavLink to="/admin/warehouse" className={navLinkClass} onClick={() => setMenuOpen(false)}>
                   <div className="py-2">Warehouse</div>
+                </NavLink>
+                <NavLink to="/admin/import" className={navLinkClass} onClick={() => setMenuOpen(false)}>
+                  <div className="py-2">Import</div>
                 </NavLink>
                 <NavLink to="/admin/orders" className={navLinkClass} onClick={() => setMenuOpen(false)}>
                   <div className="py-2">Manage Orders</div>

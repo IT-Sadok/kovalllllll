@@ -225,6 +225,14 @@ const AdminProductsPage: React.FC = () => {
                     <tr key={product.id} className="hover:bg-white/2 transition-colors" id={`admin-product-row-${product.id}`}>
                       <td className="px-4 py-3">
                         <span className="text-sm font-medium text-white">{product.name}</span>
+                        {product.needsReview && (
+                          <span
+                            title="Imported without a component spec"
+                            className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 uppercase tracking-wide"
+                          >
+                            Review
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs px-2 py-1 rounded-full bg-slate-700/50 text-slate-300">

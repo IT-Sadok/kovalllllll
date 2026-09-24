@@ -166,6 +166,17 @@ const ProductPage: React.FC = () => {
                 </span>
               )}
               <h1 className="text-3xl font-bold text-white font-orbitron">{product?.name}</h1>
+              {product?.sourceUrl && (
+                <a
+                  href={product.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  id="product-source-link"
+                  className="inline-block text-xs text-slate-500 hover:text-cyan-400 transition-colors"
+                >
+                  Product data: RaceDayQuads ↗
+                </a>
+              )}
               <div className="flex items-center gap-3">
                 <div className="text-4xl font-black text-cyan-400 font-orbitron">
                   ${product?.price.toLocaleString()}

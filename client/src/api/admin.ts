@@ -8,6 +8,7 @@ import type {
   ApiResponse,
   ComponentSpec,
   ProductAttribute,
+  ImportRun,
   CreateProductRequest,
   UpdateProductRequest,
 } from '../types';
@@ -86,3 +87,10 @@ export const getProductImages = (productId: string) =>
 // GET /images/{imageId}
 export const getImage = (imageId: string) =>
   api.get<ApiResponse<Image>>(`/images/${imageId}`).then(unwrap);
+
+// ─── Imports ─────────────────────────────────────────────────────────────────
+export const startRaceDayQuadsImport = () =>
+  api.post<ApiResponse<ImportRun>>('/imports/racedayquads').then(unwrap);
+
+export const getImportRuns = () =>
+  api.get<ApiResponse<ImportRun[]>>('/imports').then(unwrap);

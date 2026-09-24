@@ -13,7 +13,7 @@ import {
 export type SpecField =
   | { key: string; label: string; kind: 'number'; unit?: string; step?: number; optional?: boolean }
   | { key: string; label: string; kind: 'text'; placeholder?: string }
-  | { key: string; label: string; kind: 'enum'; options: readonly string[] }
+  | { key: string; label: string; kind: 'enum'; options: readonly string[]; optional?: boolean }
   | { key: string; label: string; kind: 'enumList'; options: readonly string[] };
 
 export const CATEGORY_LABELS: Record<ProductCategory, string> = {
@@ -53,25 +53,32 @@ const OPTION_LABELS: Record<string, string> = {
   Xt30: 'XT30',
   Xt60: 'XT60',
   Xt90: 'XT90',
+  Xt150: 'XT150',
+  Ec5: 'EC5',
+  Bt20: 'BT2.0',
+  Ph20: 'PH2.0',
   Ufl: 'U.FL',
   Mmcx: 'MMCX',
   Sma: 'SMA',
   RpSma: 'RP-SMA',
+  Ipex4: 'IPEX 4 (MHF4)',
+  Mcx: 'MCX',
   ExpressLrs: 'ExpressLRS',
   FrSky: 'FrSky',
 };
 
 export const optionLabel = (option: string) => OPTION_LABELS[option] ?? option;
 
-const mount = (key: string, label: string): SpecField => ({ key, label, kind: 'enum', options: MOUNT_PATTERNS });
+const mount = (key: string, label: string, optional = false): SpecField =>
+  ({ key, label, kind: 'enum', options: MOUNT_PATTERNS, optional });
 const cells = (key: string, label: string): SpecField => ({ key, label, kind: 'number', unit: 'S' });
 
 const escFields: SpecField[] = [
   mount('mountPattern', 'Mounting'),
   cells('minCells', 'Min cells'),
   cells('maxCells', 'Max cells'),
-  { key: 'continuousCurrentA', label: 'Continuous current', kind: 'number', unit: 'A', step: 0.1 },
-  { key: 'batteryConnector', label: 'Battery connector', kind: 'enum', options: BATTERY_CONNECTORS },
+  { key: 'continuousCurrentA', label: 'Continuous current', kind: 'number', unit: 'A', step: 0.1, optional: true },
+  { key: 'batteryConnector', label: 'Battery connector', kind: 'enum', options: BATTERY_CONNECTORS, optional: true },
 ];
 
 export const SPEC_FIELDS: Record<ComponentType, SpecField[]> = {
@@ -79,7 +86,7 @@ export const SPEC_FIELDS: Record<ComponentType, SpecField[]> = {
     { key: 'maxPropSizeInch', label: 'Max prop size', kind: 'number', unit: '"', step: 0.1 },
     { key: 'fcMountPatterns', label: 'FC/ESC mounting', kind: 'enumList', options: MOUNT_PATTERNS },
     { key: 'motorMountPatterns', label: 'Motor mounting', kind: 'enumList', options: MOUNT_PATTERNS },
-    { key: 'cameraWidthMm', label: 'Camera width', kind: 'number', unit: 'mm' },
+    { key: 'cameraWidthMm', label: 'Camera width', kind: 'number', unit: 'mm', optional: true },
   ],
   Motor: [
     { key: 'statorSize', label: 'Stator size', kind: 'text', placeholder: '2207' },
@@ -87,15 +94,15 @@ export const SPEC_FIELDS: Record<ComponentType, SpecField[]> = {
     mount('mountPattern', 'Mounting'),
     cells('minCells', 'Min cells'),
     cells('maxCells', 'Max cells'),
-    { key: 'maxCurrentA', label: 'Max current', kind: 'number', unit: 'A', step: 0.1 },
-    { key: 'shaftMm', label: 'Shaft', kind: 'number', unit: 'mm', step: 0.1 },
+    { key: 'maxCurrentA', label: 'Max current', kind: 'number', unit: 'A', step: 0.1, optional: true },
+    { key: 'shaftMm', label: 'Shaft', kind: 'number', unit: 'mm', step: 0.1, optional: true },
     { key: 'maxThrustGrams', label: 'Max thrust', kind: 'number', unit: 'g', optional: true },
   ],
   Propeller: [
     { key: 'diameterInch', label: 'Diameter', kind: 'number', unit: '"', step: 0.1 },
-    { key: 'pitchInch', label: 'Pitch', kind: 'number', unit: '"', step: 0.1 },
-    { key: 'bladeCount', label: 'Blades', kind: 'number' },
-    { key: 'hubMm', label: 'Hub', kind: 'number', unit: 'mm', step: 0.1 },
+    { key: 'pitchInch', label: 'Pitch', kind: 'number', unit: '"', step: 0.1, optional: true },
+    { key: 'bladeCount', label: 'Blades', kind: 'number', optional: true },
+    { key: 'hubMm', label: 'Hub', kind: 'number', unit: 'mm', step: 0.1, optional: true },
   ],
   FlightController: [
     mount('mountPattern', 'Mounting'),
@@ -107,17 +114,17 @@ export const SPEC_FIELDS: Record<ComponentType, SpecField[]> = {
   Battery: [
     cells('cells', 'Cells'),
     { key: 'capacityMah', label: 'Capacity', kind: 'number', unit: 'mAh' },
-    { key: 'cRating', label: 'C rating', kind: 'number', unit: 'C' },
+    { key: 'cRating', label: 'C rating', kind: 'number', unit: 'C', optional: true },
     { key: 'connector', label: 'Connector', kind: 'enum', options: BATTERY_CONNECTORS },
   ],
   VideoTransmitter: [
     { key: 'videoSystem', label: 'Video system', kind: 'enum', options: VIDEO_SYSTEMS },
-    { key: 'antennaConnector', label: 'Antenna connector', kind: 'enum', options: RF_CONNECTORS },
-    mount('mountPattern', 'Mounting'),
+    { key: 'antennaConnector', label: 'Antenna connector', kind: 'enum', options: RF_CONNECTORS, optional: true },
+    mount('mountPattern', 'Mounting', true),
   ],
   Camera: [
     { key: 'videoSystem', label: 'Video system', kind: 'enum', options: VIDEO_SYSTEMS },
-    { key: 'widthMm', label: 'Width', kind: 'number', unit: 'mm' },
+    { key: 'widthMm', label: 'Width', kind: 'number', unit: 'mm', optional: true },
   ],
   Receiver: [
     { key: 'protocol', label: 'Protocol', kind: 'enum', options: RADIO_PROTOCOLS },
@@ -133,7 +140,7 @@ export const emptySpec = (type: ComponentType): ComponentSpec => {
     spec[field.key] =
       field.kind === 'number' ? (field.optional ? null : 0)
         : field.kind === 'text' ? ''
-          : field.kind === 'enum' ? field.options[0]
+          : field.kind === 'enum' ? (field.optional ? null : field.options[0])
             : [];
   }
   return spec as ComponentSpec;

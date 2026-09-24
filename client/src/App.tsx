@@ -20,6 +20,7 @@ import AdminImagesPage from './pages/admin/AdminImagesPage';
 import AdminWarehousePage from './pages/admin/AdminWarehousePage';
 import AdminProductAttributesPage from './pages/admin/AdminProductAttributesPage';
 import AdminProductSpecPage from './pages/admin/AdminProductSpecPage';
+import AdminImportPage from './pages/admin/AdminImportPage';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 
 const queryClient = new QueryClient({
@@ -93,6 +94,9 @@ function App() {
             } />
             <Route path="/admin/products/:id/spec" element={
               <PrivateRoute requireAdmin><AdminProductSpecPage /></PrivateRoute>
+            } />
+            <Route path="/admin/import" element={
+              <PrivateRoute requireAdmin><AdminImportPage /></PrivateRoute>
             } />
             <Route path="/admin/warehouse" element={
               <PrivateRoute requireAdmin><AdminWarehousePage /></PrivateRoute>

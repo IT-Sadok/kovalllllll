@@ -12,7 +12,8 @@ public static class EndpointExtension
             .MapCartEndpoints()
             .MapWarehouseEndpoints()
             .MapOrderEndpoints()
-            .MapPaymentEndpoints();
+            .MapPaymentEndpoints()
+            .MapImportEndpoints();
 
         return app;
     }

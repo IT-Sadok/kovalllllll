@@ -35,6 +35,10 @@ export interface Product {
   category: ProductCategory;
   manufacturer?: string | null;
   weightGrams?: number | null;
+  groupId?: string | null;
+  variantName?: string | null;
+  sourceUrl?: string | null;
+  needsReview?: boolean;
   stockQuantity: number;
   attributes: ProductAttribute[];
   images?: Image[];
@@ -58,27 +62,27 @@ export type MountPattern = typeof MOUNT_PATTERNS[number];
 export const VIDEO_SYSTEMS = ['Analog', 'DjiO3', 'DjiO4', 'Walksnail', 'HdZero'] as const;
 export type VideoSystem = typeof VIDEO_SYSTEMS[number];
 
-export const BATTERY_CONNECTORS = ['Xt30', 'Xt60', 'Xt90'] as const;
+export const BATTERY_CONNECTORS = ['Xt30', 'Xt60', 'Xt90', 'Xt150', 'Ec5', 'Bt20', 'Ph20'] as const;
 export type BatteryConnector = typeof BATTERY_CONNECTORS[number];
 
-export const RF_CONNECTORS = ['Ufl', 'Mmcx', 'Sma', 'RpSma'] as const;
+export const RF_CONNECTORS = ['Ufl', 'Mmcx', 'Sma', 'RpSma', 'Ipex4', 'Mcx'] as const;
 export type RfConnector = typeof RF_CONNECTORS[number];
 
 export const RADIO_PROTOCOLS = ['ExpressLrs', 'Crossfire', 'Tracer', 'Ghost', 'FrSky'] as const;
 export type RadioProtocol = typeof RADIO_PROTOCOLS[number];
 
 export type ComponentSpec =
-  | { type: 'Frame'; maxPropSizeInch: number; fcMountPatterns: MountPattern[]; motorMountPatterns: MountPattern[]; cameraWidthMm: number }
-  | { type: 'Motor'; statorSize: string; kv: number; mountPattern: MountPattern; minCells: number; maxCells: number; maxCurrentA: number; shaftMm: number; maxThrustGrams?: number | null }
-  | { type: 'Propeller'; diameterInch: number; pitchInch: number; bladeCount: number; hubMm: number }
+  | { type: 'Frame'; maxPropSizeInch: number; fcMountPatterns: MountPattern[]; motorMountPatterns: MountPattern[]; cameraWidthMm: number | null }
+  | { type: 'Motor'; statorSize: string; kv: number; mountPattern: MountPattern; minCells: number; maxCells: number; maxCurrentA: number | null; shaftMm: number | null; maxThrustGrams?: number | null }
+  | { type: 'Propeller'; diameterInch: number; pitchInch: number | null; bladeCount: number | null; hubMm: number | null }
   | { type: 'FlightController'; mountPattern: MountPattern; minCells: number; maxCells: number }
-  | { type: 'Esc'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number; batteryConnector: BatteryConnector }
-  | { type: 'Battery'; cells: number; capacityMah: number; cRating: number; connector: BatteryConnector }
-  | { type: 'VideoTransmitter'; videoSystem: VideoSystem; antennaConnector: RfConnector; mountPattern: MountPattern }
-  | { type: 'Camera'; videoSystem: VideoSystem; widthMm: number }
+  | { type: 'Esc'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number | null; batteryConnector: BatteryConnector | null }
+  | { type: 'Battery'; cells: number; capacityMah: number; cRating: number | null; connector: BatteryConnector }
+  | { type: 'VideoTransmitter'; videoSystem: VideoSystem; antennaConnector: RfConnector | null; mountPattern: MountPattern | null }
+  | { type: 'Camera'; videoSystem: VideoSystem; widthMm: number | null }
   | { type: 'Receiver'; protocol: RadioProtocol }
   | { type: 'Antenna'; connector: RfConnector }
-  | { type: 'Stack'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number; batteryConnector: BatteryConnector };
+  | { type: 'Stack'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number | null; batteryConnector: BatteryConnector | null };
 
 export interface PagedResult<T> {
   items: T[];
@@ -231,4 +235,22 @@ export interface AddQuantityRequest {
 
 export interface RemoveQuantityRequest {
   quantityToRemove: number;
+}
+
+// ─── Imports ──────────────────────────────────────────────────────────────────
+export type ImportRunStatus = 'Queued' | 'Running' | 'Succeeded' | 'Failed';
+
+export interface ImportRun {
+  id: string;
+  source: string;
+  status: ImportRunStatus;
+  createdAt: string;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  added: number;
+  updated: number;
+  skipped: number;
+  needsReview: number;
+  failed: number;
+  error?: string | null;
 }
