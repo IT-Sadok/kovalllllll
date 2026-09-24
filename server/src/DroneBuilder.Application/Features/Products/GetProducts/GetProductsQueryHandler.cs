@@ -35,6 +35,21 @@ public class GetProductsQueryHandler(
             }
         }
 
+        List<Guid> groupIds = mappedItems.Where(i => i.GroupId.HasValue).Select(i => i.GroupId!.Value).Distinct().ToList();
+        if (groupIds.Count > 0)
+        {
+            Dictionary<Guid, ProductGroupSummary> groups =
+                (await productRepository.GetGroupSummariesAsync(groupIds, cancellationToken)).ToDictionary(g => g.Id);
+
+            foreach (ProductModel item in mappedItems.Where(i => i.GroupId.HasValue))
+            {
+                if (groups.TryGetValue(item.GroupId!.Value, out ProductGroupSummary? group))
+                {
+                    item.Group = group.ToModel();
+                }
+            }
+        }
+
         return Result.Ok(new PagedResult<ProductModel>
         {
             Items = mappedItems,

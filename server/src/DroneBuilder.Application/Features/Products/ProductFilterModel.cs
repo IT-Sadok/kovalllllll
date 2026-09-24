@@ -8,4 +8,5 @@ public class ProductFilterModel
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
     public ProductCategory? Category { get; set; }
+    public bool? CollapseVariants { get; set; }
 }
