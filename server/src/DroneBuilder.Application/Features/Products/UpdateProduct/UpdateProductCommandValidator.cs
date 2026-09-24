@@ -27,6 +27,13 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
                 .NotEmpty().WithMessage("Category must not be empty.")
                 .MaximumLength(100).WithMessage("Category must not exceed 100 characters.")
                 .When(x => x.Model.Category != null);
+
+            RuleFor(x => x.Model.Manufacturer)
+                .MaximumLength(100).WithMessage("Manufacturer must not exceed 100 characters.");
+
+            RuleFor(x => x.Model.WeightGrams)
+                .InclusiveBetween(0m, 100000m).WithMessage("Weight must be between 0 and 100000 grams.")
+                .When(x => x.Model.WeightGrams.HasValue);
         });
     }
 }

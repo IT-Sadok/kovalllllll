@@ -22,6 +22,14 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired()
             .HasMaxLength(100);
 
+        builder.Property(p => p.Manufacturer)
+            .HasMaxLength(100);
+
+        builder.Property(p => p.WeightGrams)
+            .HasPrecision(7, 1);
+
+        builder.HasIndex(p => p.Manufacturer);
+
         builder.HasMany(p => p.Images)
             .WithOne(i => i.Product)
             .HasForeignKey(i => i.ProductId)

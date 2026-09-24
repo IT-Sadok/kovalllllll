@@ -9,9 +9,6 @@ public interface IProductRepository
     Task AddProductAsync(Product product, CancellationToken cancellationToken = default);
     Task<Product?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<Product?> GetPropertiesByProductIdAsync(Guid productId,
-        CancellationToken cancellationToken = default);
-
     Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
         ProductFilterModel filter,
         CancellationToken cancellationToken = default);

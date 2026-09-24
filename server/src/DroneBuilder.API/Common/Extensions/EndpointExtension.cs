@@ -8,8 +8,6 @@ public static class EndpointExtension
     {
         app.MapUserEndpoints()
             .MapProductEndpoints()
-            .MapPropertyEndpoints()
-            .MapValueEndpoints()
             .MapImageEndpoints()
             .MapCartEndpoints()
             .MapWarehouseEndpoints()

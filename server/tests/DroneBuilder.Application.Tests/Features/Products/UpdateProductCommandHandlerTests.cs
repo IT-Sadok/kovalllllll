@@ -180,6 +180,66 @@ public class UpdateProductCommandHandlerTests
     }
 
     [Fact]
+    public async Task ExecuteCommandAsync_WhenManufacturerAndWeightProvided_ShouldSetThem()
+    {
+        // Arrange
+        var existingProduct = new Product { Id = ProductId, Name = OriginalName };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(existingProduct);
+
+        var command = new UpdateProductCommand(ProductId,
+            new UpdateProductRequestModel { Manufacturer = " T-Motor ", WeightGrams = 32.9m });
+
+        // Act
+        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.Equal("T-Motor", existingProduct.Manufacturer);
+        Assert.Equal(32.9m, existingProduct.WeightGrams);
+        Assert.Equal(OriginalName, existingProduct.Name);
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenManufacturerEmptyAndWeightZero_ShouldClearThem()
+    {
+        // Arrange
+        var existingProduct = new Product { Id = ProductId, Manufacturer = "T-Motor", WeightGrams = 32.9m };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(existingProduct);
+
+        var command = new UpdateProductCommand(ProductId,
+            new UpdateProductRequestModel { Manufacturer = "", WeightGrams = 0 });
+
+        // Act
+        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.Null(existingProduct.Manufacturer);
+        Assert.Null(existingProduct.WeightGrams);
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenManufacturerAndWeightOmitted_ShouldKeepThem()
+    {
+        // Arrange
+        var existingProduct = new Product { Id = ProductId, Manufacturer = "T-Motor", WeightGrams = 32.9m };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(existingProduct);
+
+        var command = new UpdateProductCommand(ProductId, new UpdateProductRequestModel { Name = UpdatedName });
+
+        // Act
+        await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.Equal("T-Motor", existingProduct.Manufacturer);
+        Assert.Equal(32.9m, existingProduct.WeightGrams);
+    }
+
+    [Fact]
     public async Task ExecuteCommandAsync_WhenPartialUpdate_ShouldReturnUpdatedModel()
     {
         // Arrange

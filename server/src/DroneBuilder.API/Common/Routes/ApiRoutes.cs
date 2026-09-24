@@ -24,36 +24,11 @@ public abstract class ApiRoutes
         public const string Update = BaseRoute + "/{productId}";
         public const string Delete = BaseRoute + "/{productId}";
         public const string GetCategories = BaseRoute + "/categories";
-        public const string GetPropertiesByProductId = BaseRoute + "/{productId}/properties";
-        public const string AssignValueToProductProperty = BaseRoute + "/{productId}/properties/{propertyId}/values/{valueId}";
-        public const string RemoveValueFromProductProperty = BaseRoute + "/{productId}/properties/{propertyId}/values/{valueId}";
-        public const string RemovePropertyFromProduct = BaseRoute + "/{productId}/properties/{propertyId}";
         public const string GetDelisted = BaseRoute + "/delisted";
         public const string Restore = BaseRoute + "/{productId}/restore";
         public const string SetSpec = BaseRoute + "/{productId}/spec";
         public const string RemoveSpec = BaseRoute + "/{productId}/spec";
-    }
-
-    public static class Properties
-    {
-        private const string BaseRoute = Base + "/properties";
-        public const string Create = BaseRoute;
-        public const string Update = BaseRoute + "/{propertyId}";
-        public const string Delete = BaseRoute + "/{propertyId}";
-        public const string GetAll = BaseRoute;
-        public const string GetValuesByPropertyId = BaseRoute + "/{propertyId}/values";
-        public const string AssignValueToProperty = BaseRoute + "/{propertyId}/values/{valueId}";
-        public const string RemoveValueFromProperty = BaseRoute + "/{propertyId}/values/{valueId}";
-    }
-
-    public static class Values
-    {
-        private const string BaseRoute = Base + "/values";
-        public const string Create = BaseRoute;
-        public const string Update = BaseRoute + "/{valueId}";
-        public const string Delete = BaseRoute + "/{valueId}";
-        public const string GetAll = BaseRoute;
-        public const string GetById = BaseRoute + "/{valueId}";
+        public const string SetAttributes = BaseRoute + "/{productId}/attributes";
     }
 
     public static class Images

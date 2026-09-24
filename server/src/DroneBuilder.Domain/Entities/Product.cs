@@ -8,9 +8,11 @@ public class Product
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public string Category { get; set; } = string.Empty;
+    public string? Manufacturer { get; set; }
+    public decimal? WeightGrams { get; set; }
     public bool IsDeleted { get; set; }
 
     public ICollection<Image> Images { get; set; } = [];
-    public ICollection<ProductPropertyValue> ProductPropertyValues { get; set; } = [];
+    public ICollection<ProductAttribute> Attributes { get; set; } = [];
     public ComponentSpec? Spec { get; set; }
 }

@@ -28,6 +28,7 @@ public class MotorSpecModelValidator : AbstractValidator<MotorSpecModel>
         RuleFor(x => x.MaxCells).InclusiveBetween(1, 12).GreaterThanOrEqualTo(x => x.MinCells);
         RuleFor(x => x.MaxCurrentA).GreaterThan(0);
         RuleFor(x => x.ShaftMm).GreaterThan(0);
+        RuleFor(x => x.MaxThrustGrams).InclusiveBetween(1, 50000).When(x => x.MaxThrustGrams.HasValue);
     }
 }
 
@@ -107,5 +108,17 @@ public class AntennaSpecModelValidator : AbstractValidator<AntennaSpecModel>
     public AntennaSpecModelValidator()
     {
         RuleFor(x => x.Connector).IsInEnum();
+    }
+}
+
+public class StackSpecModelValidator : AbstractValidator<StackSpecModel>
+{
+    public StackSpecModelValidator()
+    {
+        RuleFor(x => x.MountPattern).IsInEnum();
+        RuleFor(x => x.MinCells).InclusiveBetween(1, 12);
+        RuleFor(x => x.MaxCells).InclusiveBetween(1, 12).GreaterThanOrEqualTo(x => x.MinCells);
+        RuleFor(x => x.ContinuousCurrentA).GreaterThan(0);
+        RuleFor(x => x.BatteryConnector).IsInEnum();
     }
 }
