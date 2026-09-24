@@ -16,8 +16,8 @@ public class ProductVariantQueriesTests
 
     private static readonly Guid GroupId = Guid.NewGuid();
 
-    private static Product Variant(string name, decimal price) =>
-        new() { Name = $"RDQ Badass 2 - {name}", VariantName = name, Price = price, GroupId = GroupId };
+    private static Product Variant(string name, decimal price)
+        => new() { Name = $"RDQ Badass 2 - {name}", VariantName = name, Price = price, GroupId = GroupId };
 
     [Fact]
     public async Task GetProductById_WhenProductIsInGroup_ShouldListSiblingVariantsInNaturalOrder()
