@@ -42,7 +42,42 @@ export interface Product {
   stockQuantity: number;
   properties: Property[];
   images?: Image[];
+  spec?: ComponentSpec | null;
 }
+
+// ─── Component specs ──────────────────────────────────────────────────────────
+export const COMPONENT_TYPES = [
+  'Frame', 'Motor', 'Propeller', 'FlightController', 'Esc',
+  'Battery', 'VideoTransmitter', 'Camera', 'Receiver', 'Antenna',
+] as const;
+export type ComponentType = typeof COMPONENT_TYPES[number];
+
+export const MOUNT_PATTERNS = ['M9x9', 'M12x12', 'M16x16', 'M19x19', 'M20x20', 'M25_5x25_5', 'M30_5x30_5'] as const;
+export type MountPattern = typeof MOUNT_PATTERNS[number];
+
+export const VIDEO_SYSTEMS = ['Analog', 'DjiO3', 'DjiO4', 'Walksnail', 'HdZero'] as const;
+export type VideoSystem = typeof VIDEO_SYSTEMS[number];
+
+export const BATTERY_CONNECTORS = ['Xt30', 'Xt60', 'Xt90'] as const;
+export type BatteryConnector = typeof BATTERY_CONNECTORS[number];
+
+export const RF_CONNECTORS = ['Ufl', 'Mmcx', 'Sma', 'RpSma'] as const;
+export type RfConnector = typeof RF_CONNECTORS[number];
+
+export const RADIO_PROTOCOLS = ['ExpressLrs', 'Crossfire', 'Tracer', 'Ghost', 'FrSky'] as const;
+export type RadioProtocol = typeof RADIO_PROTOCOLS[number];
+
+export type ComponentSpec =
+  | { type: 'Frame'; maxPropSizeInch: number; fcMountPatterns: MountPattern[]; motorMountPatterns: MountPattern[]; cameraWidthMm: number }
+  | { type: 'Motor'; statorSize: string; kv: number; mountPattern: MountPattern; minCells: number; maxCells: number; maxCurrentA: number; shaftMm: number }
+  | { type: 'Propeller'; diameterInch: number; pitchInch: number; bladeCount: number; hubMm: number }
+  | { type: 'FlightController'; mountPattern: MountPattern; minCells: number; maxCells: number }
+  | { type: 'Esc'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number; batteryConnector: BatteryConnector }
+  | { type: 'Battery'; cells: number; capacityMah: number; cRating: number; connector: BatteryConnector }
+  | { type: 'VideoTransmitter'; videoSystem: VideoSystem; antennaConnector: RfConnector; mountPattern: MountPattern }
+  | { type: 'Camera'; videoSystem: VideoSystem; widthMm: number }
+  | { type: 'Receiver'; protocol: RadioProtocol }
+  | { type: 'Antenna'; connector: RfConnector };
 
 export interface ProductPropertiesResponse {
   id: string;
@@ -87,6 +122,7 @@ export interface ProductFilters {
   minPrice?: number | '';
   maxPrice?: number | '';
   category?: string;
+  componentType?: ComponentType;
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────

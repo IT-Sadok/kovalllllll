@@ -7,6 +7,7 @@ import { useAddToCart } from '../hooks/useAddToCart';
 import { useAuthStore } from '../store/authStore';
 import Skeleton from '../components/ui/Skeleton';
 import Button from '../components/ui/Button';
+import { COMPONENT_TYPE_LABELS, SPEC_FIELDS, formatSpecValue } from '../utils/componentSpecs';
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,6 +48,7 @@ const ProductPage: React.FC = () => {
     );
   }
 
+  const spec = product?.spec;
   const sortedImages = [...(product?.images ?? [])].sort((a, b) => (a.isPrimary === b.isPrimary ? 0 : a.isPrimary ? -1 : 1));
 
   const nextImage = () => {
@@ -230,6 +232,22 @@ const ProductPage: React.FC = () => {
               </svg>
               Specifications
             </h2>
+            {spec && (
+              <div className="divide-y divide-white/5 mb-2">
+                <div className="flex justify-between py-2.5 text-sm">
+                  <span className="text-slate-400">Component</span>
+                  <span className="text-cyan-400 font-medium">{COMPONENT_TYPE_LABELS[spec.type]}</span>
+                </div>
+                {SPEC_FIELDS[spec.type].map((field) => (
+                  <div key={field.key} className="flex justify-between py-2.5 text-sm">
+                    <span className="text-slate-400">{field.label}</span>
+                    <span className="text-white text-right max-w-[60%]">
+                      {formatSpecValue(field, (spec as Record<string, unknown>)[field.key])}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
             {loadingProps ? (
               <div className="space-y-2">
                 <Skeleton className="h-4 w-full" count={4} />
@@ -245,7 +263,7 @@ const ProductPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : !spec && (
               <p className="text-slate-500 text-sm">No specifications available.</p>
             )}
           </div>
