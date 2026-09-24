@@ -21,7 +21,5 @@ public interface IProductRepository
     Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default);
-
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

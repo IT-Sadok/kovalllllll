@@ -23,7 +23,7 @@ public class CreateProductCommandHandlerTests
     private static readonly Guid ProductId = Guid.NewGuid();
     private const string ProductName = "Test Drone";
     private const decimal ProductPrice = 999.99m;
-    private const string ProductCategory = "Quadcopter";
+    private const ProductCategory DroneCategory = ProductCategory.ReadyToFly;
 
     public CreateProductCommandHandlerTests()
     {
@@ -52,7 +52,7 @@ public class CreateProductCommandHandlerTests
         {
             Name = ProductName,
             Price = ProductPrice,
-            Category = ProductCategory
+            Category = DroneCategory
         };
         var command = new CreateProductCommand(createProductModel);
 
@@ -63,7 +63,7 @@ public class CreateProductCommandHandlerTests
             Id = ProductId,
             Name = ProductName,
             Price = ProductPrice,
-            Category = ProductCategory
+            Category = DroneCategory
         };
 
         var createdProduct = new Product
@@ -71,7 +71,7 @@ public class CreateProductCommandHandlerTests
             Id = ProductId,
             Name = ProductName,
             Price = ProductPrice,
-            Category = ProductCategory
+            Category = DroneCategory
         };
 
         var expectedProductModel = new ProductModel
@@ -79,7 +79,7 @@ public class CreateProductCommandHandlerTests
             Id = ProductId,
             Name = ProductName,
             Price = ProductPrice,
-            Category = ProductCategory
+            Category = DroneCategory
         };
 
         _warehouseRepository.GetWarehouseAsync(Arg.Any<CancellationToken>())
@@ -131,7 +131,8 @@ public class CreateProductCommandHandlerTests
         var createProductModel = new CreateProductModel
         {
             Name = ProductName,
-            Price = ProductPrice
+            Price = ProductPrice,
+            Category = DroneCategory
         };
         var command = new CreateProductCommand(createProductModel);
 
@@ -169,7 +170,8 @@ public class CreateProductCommandHandlerTests
         var createProductModel = new CreateProductModel
         {
             Name = ProductName,
-            Price = ProductPrice
+            Price = ProductPrice,
+            Category = DroneCategory
         };
         var command = new CreateProductCommand(createProductModel);
 
@@ -208,7 +210,8 @@ public class CreateProductCommandHandlerTests
         var createProductModel = new CreateProductModel
         {
             Name = ProductName,
-            Price = ProductPrice
+            Price = ProductPrice,
+            Category = DroneCategory
         };
         var command = new CreateProductCommand(createProductModel);
 

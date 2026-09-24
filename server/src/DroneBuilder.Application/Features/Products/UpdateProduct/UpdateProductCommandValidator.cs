@@ -24,9 +24,8 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
                 .When(x => x.Model.Price.HasValue);
 
             RuleFor(x => x.Model.Category)
-                .NotEmpty().WithMessage("Category must not be empty.")
-                .MaximumLength(100).WithMessage("Category must not exceed 100 characters.")
-                .When(x => x.Model.Category != null);
+                .IsInEnum().WithMessage("Unknown category.")
+                .When(x => x.Model.Category.HasValue);
 
             RuleFor(x => x.Model.Manufacturer)
                 .MaximumLength(100).WithMessage("Manufacturer must not exceed 100 characters.");

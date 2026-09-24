@@ -23,7 +23,6 @@ public abstract class ApiRoutes
         public const string Create = BaseRoute;
         public const string Update = BaseRoute + "/{productId}";
         public const string Delete = BaseRoute + "/{productId}";
-        public const string GetCategories = BaseRoute + "/categories";
         public const string GetDelisted = BaseRoute + "/delisted";
         public const string Restore = BaseRoute + "/{productId}/restore";
         public const string SetSpec = BaseRoute + "/{productId}/spec";

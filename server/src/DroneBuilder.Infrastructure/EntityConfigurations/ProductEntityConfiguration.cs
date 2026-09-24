@@ -19,8 +19,9 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
             .HasColumnType("decimal(18,2)");
 
         builder.Property(p => p.Category)
-            .IsRequired()
-            .HasMaxLength(100);
+            .IsRequired();
+
+        builder.HasIndex(p => p.Category);
 
         builder.Property(p => p.Manufacturer)
             .HasMaxLength(100);

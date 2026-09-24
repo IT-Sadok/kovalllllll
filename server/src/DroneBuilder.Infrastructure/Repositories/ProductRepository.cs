@@ -60,15 +60,9 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             query = query.Where(p => p.Price <= filter.MaxPrice.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.Category))
+        if (filter.Category.HasValue)
         {
-            string category = filter.Category.Trim().ToLower();
-            query = query.Where(p => p.Category.ToLower() == category);
-        }
-
-        if (filter.ComponentType.HasValue)
-        {
-            query = query.Where(p => p.Spec != null && p.Spec.Type == filter.ComponentType.Value);
+            query = query.Where(p => p.Category == filter.Category.Value);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -127,15 +121,6 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         return await dbContext.Products
             .AsNoTracking()
             .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Products
-            .Where(p => !p.IsDeleted)
-            .Select(p => p.Category)
-            .Distinct()
             .ToListAsync(cancellationToken);
     }
 

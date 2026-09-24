@@ -3,6 +3,7 @@ using DroneBuilder.Application.Common.Errors;
 using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities.Components;
 using FluentResults;
 
 namespace DroneBuilder.Application.Features.Products.SetProductSpec;
@@ -21,13 +22,20 @@ public class SetProductSpecCommandHandler(IProductRepository productRepository, 
             return Result.Fail<ProductModel>(new NotFoundError($"Product with id {command.ProductId} not found."));
         }
 
+        ComponentSpec spec = command.Spec.ToEntity(product.Id);
+        if (product.Category.ToComponentType() != spec.Type)
+        {
+            return Result.Fail<ProductModel>(new BadRequestError(
+                $"A {spec.Type} spec cannot be set on a product in the {product.Category} category."));
+        }
+
         if (product.Spec is not null)
         {
             product.Spec = null;
             await productRepository.SaveChangesAsync(cancellationToken);
         }
 
-        product.Spec = command.Spec.ToEntity(product.Id);
+        product.Spec = spec;
 
         await productRepository.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);

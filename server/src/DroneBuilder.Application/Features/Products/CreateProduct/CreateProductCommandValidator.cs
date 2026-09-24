@@ -19,8 +19,8 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
                 .GreaterThan(0).WithMessage("Price must be greater than 0.");
 
             RuleFor(x => x.Model.Category)
-                .NotEmpty().WithMessage("Category is required.")
-                .MaximumLength(100).WithMessage("Category must not exceed 100 characters.");
+                .NotNull().WithMessage("Category is required.")
+                .IsInEnum().WithMessage("Unknown category.");
 
             RuleFor(x => x.Model.Manufacturer)
                 .MaximumLength(100).WithMessage("Manufacturer must not exceed 100 characters.");

@@ -3,6 +3,7 @@ using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Application.Features.Products.UpdateProduct;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities.Components;
 using FluentResults;
 using NSubstitute;
 
@@ -18,8 +19,8 @@ public class UpdateProductCommandHandlerTests
     private const string UpdatedName = "Updated Product";
     private const decimal OriginalPrice = 100m;
     private const decimal UpdatedPrice = 150m;
-    private const string OriginalCategory = "Old Category";
-    private const string UpdatedCategory = "New Category";
+    private const ProductCategory OriginalCategory = ProductCategory.Frame;
+    private const ProductCategory UpdatedCategory = ProductCategory.Accessory;
 
     public UpdateProductCommandHandlerTests()
     {
@@ -177,6 +178,57 @@ public class UpdateProductCommandHandlerTests
         Assert.Equal(OriginalCategory, existingProduct.Category);
 
         await _productRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenCategoryChangeConflictsWithSpec_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var existingProduct = new Product
+        {
+            Id = ProductId,
+            Category = ProductCategory.Motor,
+            Spec = new MotorSpec { ProductId = ProductId }
+        };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(existingProduct);
+
+        var command = new UpdateProductCommand(ProductId,
+            new UpdateProductRequestModel { Category = ProductCategory.Battery });
+
+        // Act
+        Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.HasError<BadRequestError>());
+        Assert.Equal(ProductCategory.Motor, existingProduct.Category);
+        await _productRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenCategoryMatchesExistingSpec_ShouldUpdate()
+    {
+        // Arrange
+        var existingProduct = new Product
+        {
+            Id = ProductId,
+            Category = ProductCategory.Motor,
+            Spec = new MotorSpec { ProductId = ProductId }
+        };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(existingProduct);
+
+        var command = new UpdateProductCommand(ProductId,
+            new UpdateProductRequestModel { Category = ProductCategory.Motor, Name = UpdatedName });
+
+        // Act
+        Result<ProductModel> result = await _handler.ExecuteCommandAsync(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(UpdatedName, existingProduct.Name);
     }
 
     [Fact]

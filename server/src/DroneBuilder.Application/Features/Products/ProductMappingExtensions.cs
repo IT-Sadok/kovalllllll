@@ -41,7 +41,7 @@ public static class ProductMappingExtensions
         {
             Name = model.Name,
             Price = model.Price,
-            Category = model.Category,
+            Category = model.Category!.Value,
             Manufacturer = string.IsNullOrWhiteSpace(model.Manufacturer) ? null : model.Manufacturer.Trim(),
             WeightGrams = model.WeightGrams
         };
@@ -64,9 +64,9 @@ public static class ProductMappingExtensions
             entity.Price = model.Price.Value;
         }
 
-        if (model.Category != null)
+        if (model.Category.HasValue)
         {
-            entity.Category = model.Category;
+            entity.Category = model.Category.Value;
         }
 
         if (model.Manufacturer != null)

@@ -6,7 +6,6 @@ using DroneBuilder.Application.Common.Pagination;
 using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Application.Features.Products.CreateProduct;
 using DroneBuilder.Application.Features.Products.DeleteProduct;
-using DroneBuilder.Application.Features.Products.GetCategories;
 using DroneBuilder.Application.Features.Products.GetDelistedProducts;
 using DroneBuilder.Application.Features.Products.GetProductById;
 using DroneBuilder.Application.Features.Products.GetProducts;
@@ -82,15 +81,6 @@ public static class ProductEndpointsExtensions
                     var query = new GetProductsQuery(pagination, filter);
                     Result<PagedResult<ProductModel>> result = await mediator.ExecuteQueryAsync<GetProductsQuery, PagedResult<ProductModel>>(
                         query,
-                        cancellationToken);
-                    return result.ToHttpResult();
-                }).WithTags("Products");
-
-        app.MapGet(ApiRoutes.Products.GetCategories,
-                async (IMediator mediator, CancellationToken cancellationToken) =>
-                {
-                    Result<IEnumerable<string>> result = await mediator.ExecuteQueryAsync<GetCategoriesQuery, IEnumerable<string>>(
-                        new GetCategoriesQuery(),
                         cancellationToken);
                     return result.ToHttpResult();
                 }).WithTags("Products");

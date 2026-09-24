@@ -36,7 +36,7 @@ public class SetProductSpecCommandHandlerTests
     public async Task ExecuteCommandAsync_WhenProductExists_ShouldSetSpecAndSave()
     {
         // Arrange
-        var product = new Product { Id = ProductId, Name = "Motor", Price = 25m, Category = "Motors" };
+        var product = new Product { Id = ProductId, Name = "Motor", Price = 25m, Category = ProductCategory.Motor };
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
             .Returns(product);
@@ -63,7 +63,8 @@ public class SetProductSpecCommandHandlerTests
         var product = new Product
         {
             Id = ProductId,
-            Spec = new BatterySpec { ProductId = ProductId, Cells = 6 }
+            Category = ProductCategory.Motor,
+            Spec = new MotorSpec { ProductId = ProductId, Kv = 2450 }
         };
 
         _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
@@ -75,9 +76,46 @@ public class SetProductSpecCommandHandlerTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.IsType<MotorSpec>(product.Spec);
+        Assert.Equal(1950, Assert.IsType<MotorSpec>(product.Spec).Kv);
         await _productRepository.Received(2).SaveChangesAsync(Arg.Any<CancellationToken>());
         await _transaction.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenSpecTypeDoesNotMatchCategory_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var product = new Product { Id = ProductId, Category = ProductCategory.Battery };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(product);
+
+        // Act
+        Result<ProductModel> result =
+            await _handler.ExecuteCommandAsync(new SetProductSpecCommand(ProductId, MotorSpec), CancellationToken.None);
+
+        // Assert
+        Assert.True(result.HasError<BadRequestError>());
+        Assert.Null(product.Spec);
+        await _productRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteCommandAsync_WhenCategoryIsNotAComponent_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var product = new Product { Id = ProductId, Category = ProductCategory.Goggles };
+
+        _productRepository.GetProductByIdAsync(ProductId, Arg.Any<CancellationToken>())
+            .Returns(product);
+
+        // Act
+        Result<ProductModel> result =
+            await _handler.ExecuteCommandAsync(new SetProductSpecCommand(ProductId, MotorSpec), CancellationToken.None);
+
+        // Assert
+        Assert.True(result.HasError<BadRequestError>());
     }
 
     [Fact]
