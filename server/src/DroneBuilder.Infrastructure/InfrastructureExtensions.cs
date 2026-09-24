@@ -5,6 +5,7 @@ using DroneBuilder.Application.Common.Abstractions;
 using DroneBuilder.Application.Common.Options;
 using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Application.Common.Validation.Options;
+using DroneBuilder.Infrastructure.Imports;
 using DroneBuilder.Infrastructure.MessageBroker.Configuration;
 using DroneBuilder.Infrastructure.MessageBroker.Services;
 using DroneBuilder.Infrastructure.Options;
@@ -59,8 +60,15 @@ public static class InfrastructureExtensions
             .ValidateOnStart();
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<MessageQueuesConfiguration>>().Value);
 
+        services.AddOptions<RaceDayQuadsImportOptions>()
+            .Bind(configuration.GetSection("RaceDayQuadsImport"))
+            .ValidateFluentValidation()
+            .ValidateOnStart();
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<RaceDayQuadsImportOptions>>().Value);
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IImportRunRepository, ImportRunRepository>();
         services.AddScoped<IImageRepository, ImageRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
@@ -92,6 +100,16 @@ public static class InfrastructureExtensions
         services.AddHostedService<OutboxProcessorHostedService>();
         services.AddHostedService<EventConsumerHostedService>();
         services.AddHostedService<ExpiredCartReservationsHostedService>();
+
+        services.AddSingleton<ImportQueue>();
+        services.AddSingleton<IImportQueue>(sp => sp.GetRequiredService<ImportQueue>());
+        services.AddHttpClient<IRaceDayQuadsClient, RaceDayQuadsClient>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(sp.GetRequiredService<RaceDayQuadsImportOptions>().BaseUrl);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("DroneBuilderCatalogImporter/1.0");
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+        services.AddHostedService<ImportWorkerHostedService>();
 
         return services;
     }

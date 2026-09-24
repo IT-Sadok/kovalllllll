@@ -26,6 +26,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Product> Products { get; set; }
     public DbSet<Image> Images { get; set; }
     public DbSet<ProductAttribute> ProductAttributes { get; set; }
+    public DbSet<ProductGroup> ProductGroups { get; set; }
+    public DbSet<ImportRun> ImportRuns { get; set; }
     public DbSet<ComponentSpec> ComponentSpecs { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<Order> Orders { get; set; }

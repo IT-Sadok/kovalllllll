@@ -5,5 +5,5 @@ public class CameraSpec : ComponentSpec
     public CameraSpec() => Type = ComponentType.Camera;
 
     public VideoSystem VideoSystem { get; set; }
-    public int WidthMm { get; set; }
+    public int? WidthMm { get; set; }
 }

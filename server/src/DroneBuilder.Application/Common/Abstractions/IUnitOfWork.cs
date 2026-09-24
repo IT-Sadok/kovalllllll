@@ -3,6 +3,7 @@ namespace DroneBuilder.Application.Common.Abstractions;
 public interface IUnitOfWork
 {
     Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+    void ClearChanges();
 }
 
 public interface ITransaction : IAsyncDisposable

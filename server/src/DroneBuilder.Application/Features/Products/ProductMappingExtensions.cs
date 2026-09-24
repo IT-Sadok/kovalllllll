@@ -21,6 +21,10 @@ public static class ProductMappingExtensions
             Category = product.Category,
             Manufacturer = product.Manufacturer,
             WeightGrams = product.WeightGrams,
+            GroupId = product.GroupId,
+            VariantName = product.VariantName,
+            SourceUrl = product.SourceUrl,
+            NeedsReview = product.NeedsReview,
             Attributes = product.Attributes?
                 .OrderBy(a => a.SortOrder)
                 .Select(a => new ProductAttributeModel(a.Name, a.Value))

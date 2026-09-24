@@ -9,7 +9,6 @@ public class FrameSpecModelValidator : AbstractValidator<FrameSpecModel>
         RuleFor(x => x.MaxPropSizeInch).InclusiveBetween(1, 13);
         RuleFor(x => x.FcMountPatterns).NotEmpty();
         RuleForEach(x => x.FcMountPatterns).IsInEnum();
-        RuleFor(x => x.MotorMountPatterns).NotEmpty();
         RuleForEach(x => x.MotorMountPatterns).IsInEnum();
         RuleFor(x => x.CameraWidthMm).InclusiveBetween(10, 30);
     }
@@ -21,7 +20,7 @@ public class MotorSpecModelValidator : AbstractValidator<MotorSpecModel>
     {
         RuleFor(x => x.StatorSize)
             .NotEmpty()
-            .Matches(@"^\d{4}$").WithMessage("Stator size must be 4 digits, e.g. 2207.");
+            .Matches(@"^\d{4}(\.\d)?$").WithMessage("Stator size must be 4 digits, e.g. 2207 or 2207.5.");
         RuleFor(x => x.Kv).InclusiveBetween(100, 60000);
         RuleFor(x => x.MountPattern).IsInEnum();
         RuleFor(x => x.MinCells).InclusiveBetween(1, 12);

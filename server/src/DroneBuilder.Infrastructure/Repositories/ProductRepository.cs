@@ -124,6 +124,29 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<ICollection<Product>> GetByExternalIdsAsync(string source, ICollection<string> externalIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .Include(p => p.Images)
+            .Include(p => p.Spec)
+            .Include(p => p.Attributes)
+            .Where(p => p.ExternalSource == source && p.ExternalId != null && externalIds.Contains(p.ExternalId))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ProductGroup?> GetGroupByExternalIdAsync(string source, string externalId,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ProductGroups
+            .FirstOrDefaultAsync(g => g.ExternalSource == source && g.ExternalId == externalId, cancellationToken);
+    }
+
+    public async Task AddGroupAsync(ProductGroup group, CancellationToken cancellationToken = default)
+    {
+        await dbContext.ProductGroups.AddAsync(group, cancellationToken);
+    }
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.SaveChangesAsync(cancellationToken);

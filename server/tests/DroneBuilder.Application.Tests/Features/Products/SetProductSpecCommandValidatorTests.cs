@@ -41,7 +41,7 @@ public class SetProductSpecCommandValidatorTests
     }
 
     [Fact]
-    public void Validate_WhenFrameHasNoMountPatterns_ShouldFail()
+    public void Validate_WhenFrameHasNoFcMountPatterns_ShouldFail()
     {
         // Arrange
         var command = new SetProductSpecCommand(ProductId, new FrameSpecModel(5m, [], [], 19));
@@ -51,7 +51,22 @@ public class SetProductSpecCommandValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Equal(2, result.Errors.Count);
+        Assert.Single(result.Errors);
+        Assert.Contains(nameof(FrameSpecModel.FcMountPatterns), result.Errors[0].PropertyName);
+    }
+
+    [Fact]
+    public void Validate_WhenSecondaryFieldsAreUnknown_ShouldPass()
+    {
+        // Arrange
+        var command = new SetProductSpecCommand(ProductId,
+            new FrameSpecModel(5m, [MountPattern.M30_5x30_5], [], null));
+
+        // Act
+        ValidationResult result = _validator.Validate(command);
+
+        // Assert
+        Assert.True(result.IsValid);
     }
 
     [Fact]

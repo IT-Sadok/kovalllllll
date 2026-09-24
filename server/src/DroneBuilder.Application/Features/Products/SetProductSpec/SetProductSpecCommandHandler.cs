@@ -36,6 +36,7 @@ public class SetProductSpecCommandHandler(IProductRepository productRepository, 
         }
 
         product.Spec = spec;
+        product.NeedsReview = false;
 
         await productRepository.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);

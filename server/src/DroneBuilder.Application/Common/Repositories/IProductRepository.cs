@@ -21,5 +21,13 @@ public interface IProductRepository
     Task<ICollection<Product>> GetProductsByIdsAsync(ICollection<Guid> productIds,
         CancellationToken cancellationToken = default);
 
+    Task<ICollection<Product>> GetByExternalIdsAsync(string source, ICollection<string> externalIds,
+        CancellationToken cancellationToken = default);
+
+    Task<ProductGroup?> GetGroupByExternalIdAsync(string source, string externalId,
+        CancellationToken cancellationToken = default);
+
+    Task AddGroupAsync(ProductGroup group, CancellationToken cancellationToken = default);
+
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

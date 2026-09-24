@@ -54,7 +54,13 @@ public class AzureStorageService(
     public async Task DeleteFileAsync(string blobUrl, CancellationToken cancellationToken = default)
     {
         BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-        string blobName = new Uri(blobUrl).Segments.Last();
+        var uri = new Uri(blobUrl);
+        if (!string.Equals(uri.Host, containerClient.Uri.Host, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        string blobName = uri.Segments.Last();
         BlobClient blobClient = containerClient.GetBlobClient(blobName);
         await blobClient.DeleteIfExistsAsync(cancellationToken: cancellationToken);
     }

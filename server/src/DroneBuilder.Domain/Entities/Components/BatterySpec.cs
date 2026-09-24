@@ -6,6 +6,6 @@ public class BatterySpec : ComponentSpec
 
     public int Cells { get; set; }
     public int CapacityMah { get; set; }
-    public int CRating { get; set; }
+    public int? CRating { get; set; }
     public BatteryConnector Connector { get; set; }
 }

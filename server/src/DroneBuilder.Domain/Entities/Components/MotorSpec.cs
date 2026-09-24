@@ -9,7 +9,7 @@ public class MotorSpec : ComponentSpec
     public MountPattern MountPattern { get; set; }
     public int MinCells { get; set; }
     public int MaxCells { get; set; }
-    public decimal MaxCurrentA { get; set; }
-    public decimal ShaftMm { get; set; }
+    public decimal? MaxCurrentA { get; set; }
+    public decimal? ShaftMm { get; set; }
     public int? MaxThrustGrams { get; set; }
 }

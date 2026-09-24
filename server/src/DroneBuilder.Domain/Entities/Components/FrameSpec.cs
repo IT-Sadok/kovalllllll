@@ -7,5 +7,5 @@ public class FrameSpec : ComponentSpec
     public decimal MaxPropSizeInch { get; set; }
     public List<MountPattern> FcMountPatterns { get; set; } = [];
     public List<MountPattern> MotorMountPatterns { get; set; } = [];
-    public int CameraWidthMm { get; set; }
+    public int? CameraWidthMm { get; set; }
 }
