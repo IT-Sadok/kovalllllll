@@ -2,7 +2,7 @@ name: CI - Format Check
 
 on:
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "dev", "develop" ]
 
 jobs:
   format:
