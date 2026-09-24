@@ -92,7 +92,13 @@ const AdminProductSpecPage: React.FC = () => {
 
     if (field.kind === 'enum') {
       return (
-        <select id={fieldId} value={value as string} onChange={(e) => setField(field.key, e.target.value)} className={inputClass}>
+        <select
+          id={fieldId}
+          value={(value as string | null) ?? ''}
+          onChange={(e) => setField(field.key, e.target.value === '' ? null : e.target.value)}
+          className={inputClass}
+        >
+          {field.optional && <option value="">Unknown</option>}
           {field.options.map((option) => (
             <option key={option} value={option}>{optionLabel(option)}</option>
           ))}
