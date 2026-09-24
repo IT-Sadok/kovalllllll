@@ -4,15 +4,12 @@ import type {
   Product,
   WarehouseItem,
   Warehouse,
-  Property,
-  Value,
   Image,
   ApiResponse,
   ComponentSpec,
+  ProductAttribute,
   CreateProductRequest,
   UpdateProductRequest,
-  CreatePropertyRequest,
-  UpdatePropertyRequest,
 } from '../types';
 
 // ─── Products (Admin) ─────────────────────────────────────────────────────────
@@ -32,20 +29,14 @@ export const adminGetDelistedProducts = (page = 1, pageSize = 15) =>
 export const adminRestoreProduct = (id: string) =>
   api.post(`/products/${id}/restore`);
 
-export const assignValueToProductProperty = (productId: string, propertyId: string, valueId: string) =>
-  api.post(`/products/${productId}/properties/${propertyId}/values/${valueId}`);
-
-export const removeValueFromProductProperty = (productId: string, propertyId: string, valueId: string) =>
-  api.delete(`/products/${productId}/properties/${propertyId}/values/${valueId}`);
-
-export const removePropertyFromProduct = (productId: string, propertyId: string) =>
-  api.delete(`/products/${productId}/properties/${propertyId}`);
-
 export const setProductSpec = (productId: string, spec: ComponentSpec) =>
   api.put<ApiResponse<Product>>(`/products/${productId}/spec`, spec).then(unwrap);
 
 export const removeProductSpec = (productId: string) =>
   api.delete(`/products/${productId}/spec`);
+
+export const setProductAttributes = (productId: string, attributes: ProductAttribute[]) =>
+  api.put<ApiResponse<Product>>(`/products/${productId}/attributes`, attributes).then(unwrap);
 
 // ─── Warehouse ────────────────────────────────────────────────────────────────
 // GET /warehouse → Warehouse (summary: name, createdAt)
@@ -95,53 +86,3 @@ export const getProductImages = (productId: string) =>
 // GET /images/{imageId}
 export const getImage = (imageId: string) =>
   api.get<ApiResponse<Image>>(`/images/${imageId}`).then(unwrap);
-
-// ─── Properties ──────────────────────────────────────────────────────────────
-// GET /properties — public
-export const getProperties = () =>
-  api.get<ApiResponse<Property[]>>('/properties').then(unwrap);
-
-// POST /properties [Admin] body: { name, values: { text }[] }
-export const createProperty = (data: CreatePropertyRequest) =>
-  api.post<ApiResponse<Property>>('/properties', data).then(unwrap);
-
-// PATCH /properties/{propertyId} [Admin] body: { name? }
-export const updateProperty = (id: string, data: UpdatePropertyRequest) =>
-  api.patch<ApiResponse<Property>>(`/properties/${id}`, data).then(unwrap);
-
-// DELETE /properties/{propertyId} [Admin]
-export const deleteProperty = (id: string) =>
-  api.delete(`/properties/${id}`);
-
-// GET /properties/{propertyId}/values → returns Property (with values)
-export const getPropertyWithValues = (propertyId: string) =>
-  api.get<ApiResponse<Property>>(`/properties/${propertyId}/values`).then(unwrap);
-
-// POST /properties/{propertyId}/values/{valueId} [Admin]
-export const assignValueToProperty = (propertyId: string, valueId: string) =>
-  api.post(`/properties/${propertyId}/values/${valueId}`);
-
-// DELETE /properties/{propertyId}/values/{valueId} [Admin]
-export const removeValueFromProperty = (propertyId: string, valueId: string) =>
-  api.delete(`/properties/${propertyId}/values/${valueId}`);
-
-// ─── Values ──────────────────────────────────────────────────────────────────
-// GET /values — public
-export const getValues = () =>
-  api.get<ApiResponse<Value[]>>('/values').then(unwrap);
-
-// POST /values [Admin] body: { text, propertyId }
-export const createValue = (text: string, propertyId: string) =>
-  api.post<ApiResponse<Value>>('/values', { text, propertyId }).then(unwrap);
-
-// PATCH /values/{valueId} [Admin] body: { text? }
-export const updateValue = (id: string, text: string) =>
-  api.patch<ApiResponse<Value>>(`/values/${id}`, { text }).then(unwrap);
-
-// DELETE /values/{valueId} [Admin]
-export const deleteValue = (id: string) =>
-  api.delete(`/values/${id}`);
-
-// GET /values/{valueId} [Admin]
-export const getValue = (id: string) =>
-  api.get<ApiResponse<Value>>(`/values/${id}`).then(unwrap);

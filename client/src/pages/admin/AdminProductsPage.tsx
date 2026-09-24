@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../api/errors';
-import { getProducts, getCategories } from '../../api/products';
+import { getProducts } from '../../api/products';
 import {
   adminCreateProduct,
   adminUpdateProduct,
@@ -14,29 +14,32 @@ import {
   adminGetDelistedProducts,
   adminRestoreProduct,
 } from '../../api/admin';
-import type { Product, CreateProductRequest, UpdateProductRequest } from '../../types';
+import { PRODUCT_CATEGORIES, type Product, type CreateProductRequest, type UpdateProductRequest } from '../../types';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
 import Pagination from '../../components/ui/Pagination';
 import EmptyState from '../../components/ui/EmptyState';
 import { TableRowSkeleton } from '../../components/ui/Skeleton';
-import { COMPONENT_TYPE_LABELS } from '../../utils/componentSpecs';
-
-const DEFAULT_CATEGORIES = ['Racing', 'Photography', 'Industrial', 'Military', 'Consumer', 'FPV'];
+import CategoryOptions from '../../components/CategoryOptions';
+import { CATEGORY_LABELS, toComponentType } from '../../utils/componentSpecs';
 
 // Create schema — matches CreateProductRequest (no description field)
 const createSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   price: z.coerce.number().positive('Price must be positive'),
-  category: z.string().min(1, 'Category is required'),
+  category: z.enum(PRODUCT_CATEGORIES, 'Category is required'),
+  manufacturer: z.string().max(100, 'Max 100 characters').optional(),
+  weightGrams: z.coerce.number().min(0, 'Weight cannot be negative').optional(),
 });
 
 // Update schema — all fields optional
 const updateSchema = z.object({
   name: z.string().min(2, 'Name is required').optional(),
   price: z.coerce.number().positive('Price must be positive').optional(),
-  category: z.string().min(1, 'Category is required').optional(),
+  category: z.enum(PRODUCT_CATEGORIES).optional(),
+  manufacturer: z.string().max(100, 'Max 100 characters').optional(),
+  weightGrams: z.coerce.number().min(0, 'Weight cannot be negative').optional(),
 });
 
 type CreateFormInput = z.input<typeof createSchema>;
@@ -52,22 +55,11 @@ const AdminProductsPage: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [showDelisted, setShowDelisted] = useState(false);
   const [search, setSearch] = useState('');
-  
-  // Custom category toggle
-  const [isCustomCategory, setIsCustomCategory] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-products', page, search],
     queryFn: () => getProducts({ page, pageSize: 15, name: search || undefined }),
   });
-
-  const { data: serverCategories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: getCategories,
-  });
-
-  // Combine and deduplicate default and server categories
-  const categoriesList = Array.from(new Set([...DEFAULT_CATEGORIES, ...(serverCategories || [])]));
 
   const createForm = useForm<CreateFormInput, unknown, CreateFormData>({
     resolver: zodResolver(createSchema),
@@ -83,6 +75,8 @@ const AdminProductsPage: React.FC = () => {
         name: data.name,
         price: data.price,
         category: data.category,
+        manufacturer: data.manufacturer || undefined,
+        weightGrams: data.weightGrams || undefined,
       };
       return adminCreateProduct(payload);
     },
@@ -137,19 +131,18 @@ const AdminProductsPage: React.FC = () => {
   });
 
   const openCreate = () => {
-    createForm.reset({ name: '', price: 0, category: '' });
-    setIsCustomCategory(false);
+    createForm.reset({ name: '', price: 0, manufacturer: '', weightGrams: '' });
     setEditTarget(null);
     setModalType('create');
   };
 
   const openEdit = (product: Product) => {
-    const isStandard = categoriesList.includes(product.category);
-    setIsCustomCategory(!isStandard);
     updateForm.reset({
       name: product.name,
       price: product.price,
       category: product.category,
+      manufacturer: product.manufacturer ?? '',
+      weightGrams: product.weightGrams ?? '',
     });
     setEditTarget(product);
     setModalType('edit');
@@ -235,7 +228,7 @@ const AdminProductsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs px-2 py-1 rounded-full bg-slate-700/50 text-slate-300">
-                          {product.category}
+                          {CATEGORY_LABELS[product.category]}
                         </span>
                       </td>
                       <td className="px-4 py-3 font-orbitron text-cyan-400 font-bold text-sm">
@@ -244,19 +237,21 @@ const AdminProductsPage: React.FC = () => {
                           <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <Link
-                            to={`/admin/products/${product.id}/properties`}
-                            id={`admin-props-${product.id}`}
+                            to={`/admin/products/${product.id}/attributes`}
+                            id={`admin-attributes-${product.id}`}
                             className="text-xs px-2.5 py-1 rounded-lg border border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/10 transition-all"
                           >
-                            Props
+                            Attributes
                           </Link>
-                          <Link
-                            to={`/admin/products/${product.id}/spec`}
-                            id={`admin-spec-${product.id}`}
-                            className="text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-all"
-                          >
-                            {product.spec ? COMPONENT_TYPE_LABELS[product.spec.type] : 'Spec'}
-                          </Link>
+                          {toComponentType(product.category) && (
+                            <Link
+                              to={`/admin/products/${product.id}/spec`}
+                              id={`admin-spec-${product.id}`}
+                              className="text-xs px-2.5 py-1 rounded-lg border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                            >
+                              {product.spec ? 'Spec ✓' : 'Spec'}
+                            </Link>
+                          )}
                           <Link
                             to={`/admin/products/${product.id}/images`}
                             id={`admin-images-${product.id}`}
@@ -312,46 +307,43 @@ const AdminProductsPage: React.FC = () => {
             label="Price ($)"
             id="product-form-price"
             type="number"
+            step="0.01"
             placeholder="999"
             {...createForm.register('price')}
             error={createForm.formState.errors.price?.message}
           />
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-medium text-slate-300">Category</label>
-              <button 
-                type="button" 
-                onClick={() => {
-                  setIsCustomCategory(!isCustomCategory);
-                  createForm.setValue('category', ''); // Reset on toggle
-                }}
-                className="text-xs text-cyan-400 hover:text-cyan-300"
-              >
-                {isCustomCategory ? 'Use existing category' : '+ Add new category'}
-              </button>
-            </div>
-            
-            {isCustomCategory ? (
-              <input
-                id="product-form-category-custom"
-                placeholder="Type new category..."
-                {...createForm.register('category')}
-                className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
-              />
-            ) : (
-              <select
-                id="product-form-category"
-                {...createForm.register('category')}
-                className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
-              >
-                <option value="" disabled>Select a category</option>
-                {categoriesList.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            )}
-            
+            <label htmlFor="product-form-category" className="text-sm font-medium text-slate-300">Category</label>
+            <select
+              id="product-form-category"
+              defaultValue=""
+              {...createForm.register('category')}
+              className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+            >
+              <option value="" disabled>Select a category</option>
+              <CategoryOptions />
+            </select>
             {createForm.formState.errors.category && (
               <p className="text-xs text-red-400">{createForm.formState.errors.category.message}</p>
             )}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Manufacturer"
+              id="product-form-manufacturer"
+              placeholder="T-Motor"
+              {...createForm.register('manufacturer')}
+              error={createForm.formState.errors.manufacturer?.message}
+            />
+            <Input
+              label="Weight (g)"
+              id="product-form-weight"
+              type="number"
+              step="0.1"
+              placeholder="32.9"
+              {...createForm.register('weightGrams')}
+              error={createForm.formState.errors.weightGrams?.message}
+            />
           </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="ghost" onClick={() => setModalType(null)} id="product-form-cancel">
@@ -387,46 +379,42 @@ const AdminProductsPage: React.FC = () => {
             label="Price ($)"
             id="product-edit-price"
             type="number"
+            step="0.01"
             placeholder="999"
             {...updateForm.register('price')}
             error={updateForm.formState.errors.price?.message}
           />
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-medium text-slate-300">Category</label>
-              <button 
-                type="button" 
-                onClick={() => {
-                  setIsCustomCategory(!isCustomCategory);
-                  if(!isCustomCategory) updateForm.setValue('category', ''); 
-                }}
-                className="text-xs text-cyan-400 hover:text-cyan-300"
-              >
-                {isCustomCategory ? 'Use existing category' : '+ Add new category'}
-              </button>
-            </div>
-            
-            {isCustomCategory ? (
-              <input
-                id="product-form-category-update-custom"
-                placeholder="Type new category..."
-                {...updateForm.register('category')}
-                className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
-              />
-            ) : (
-              <select
-                id="product-form-category-update"
-                {...updateForm.register('category')}
-                className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
-              >
-                <option value="" disabled>Select a category</option>
-                {categoriesList.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            )}
-            
+            <label htmlFor="product-form-category-update" className="text-sm font-medium text-slate-300">Category</label>
+            <select
+              id="product-form-category-update"
+              {...updateForm.register('category')}
+              className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+            >
+              <option value="" disabled>Select a category</option>
+              <CategoryOptions />
+            </select>
             {updateForm.formState.errors.category && (
               <p className="text-xs text-red-400">{updateForm.formState.errors.category.message}</p>
             )}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Manufacturer"
+              id="product-edit-manufacturer"
+              placeholder="T-Motor"
+              {...updateForm.register('manufacturer')}
+              error={updateForm.formState.errors.manufacturer?.message}
+            />
+            <Input
+              label="Weight (g)"
+              id="product-edit-weight"
+              type="number"
+              step="0.1"
+              placeholder="32.9"
+              {...updateForm.register('weightGrams')}
+              error={updateForm.formState.errors.weightGrams?.message}
+            />
           </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="ghost" onClick={() => { setModalType(null); setEditTarget(null); }} id="product-edit-cancel">
@@ -483,7 +471,7 @@ const AdminProductsPage: React.FC = () => {
                 <li key={product.id} className="flex items-center justify-between gap-4 py-3">
                   <div className="min-w-0">
                     <p className="text-white truncate">{product.name}</p>
-                    <p className="text-xs text-slate-500">{product.category}</p>
+                    <p className="text-xs text-slate-500">{CATEGORY_LABELS[product.category]}</p>
                   </div>
                   <Button
                     variant="secondary"

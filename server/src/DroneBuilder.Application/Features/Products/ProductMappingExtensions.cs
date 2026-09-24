@@ -1,9 +1,6 @@
 using DroneBuilder.Application.Features.Images;
 using DroneBuilder.Application.Features.Products.CreateProduct;
-using DroneBuilder.Application.Features.Products.GetPropertiesByProductId;
 using DroneBuilder.Application.Features.Products.UpdateProduct;
-using DroneBuilder.Application.Features.Properties;
-using DroneBuilder.Application.Features.Values;
 using DroneBuilder.Domain.Entities;
 namespace DroneBuilder.Application.Features.Products;
 
@@ -22,47 +19,14 @@ public static class ProductMappingExtensions
             Name = product.Name,
             Price = product.Price,
             Category = product.Category,
-            Properties = product.ProductPropertyValues?
-                .GroupBy(ppv => ppv.Property.Id)
-                .Select(g => new PropertyModel
-                {
-                    Id = g.Key,
-                    Name = g.First().Property.Name,
-                    Values = g.Select(ppv => new ValueModel
-                    {
-                        Id = ppv.Value.Id,
-                        Text = ppv.Value.Text
-                    }).ToList()
-                }).ToList() ?? new List<PropertyModel>(),
+            Manufacturer = product.Manufacturer,
+            WeightGrams = product.WeightGrams,
+            Attributes = product.Attributes?
+                .OrderBy(a => a.SortOrder)
+                .Select(a => new ProductAttributeModel(a.Name, a.Value))
+                .ToList() ?? new List<ProductAttributeModel>(),
             Spec = product.Spec?.ToModel(),
             Images = product.Images != null ? product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ToModel()).ToList() : new List<ImageModel>()
-        };
-    }
-
-    public static ProductPropertiesResponseModel ToPropertiesResponseModel(this Product product)
-    {
-        if (product == null)
-        {
-            return null!;
-        }
-
-        return new ProductPropertiesResponseModel
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Properties = product.ProductPropertyValues?
-                .GroupBy(ppv => ppv.Property.Id)
-                .Select(g => new PropertyModel
-                {
-                    Id = g.Key,
-                    Name = g.First().Property.Name,
-                    Values = g.Select(ppv => new ValueModel
-                    {
-                        Id = ppv.Value.Id,
-                        Text = ppv.Value.Text
-                    }).ToList()
-                }).ToList() ?? new List<PropertyModel>(),
-            Images = product.Images?.Select(i => i.ToModel()).ToList() ?? new List<ImageModel>()
         };
     }
 
@@ -77,7 +41,9 @@ public static class ProductMappingExtensions
         {
             Name = model.Name,
             Price = model.Price,
-            Category = model.Category
+            Category = model.Category!.Value,
+            Manufacturer = string.IsNullOrWhiteSpace(model.Manufacturer) ? null : model.Manufacturer.Trim(),
+            WeightGrams = model.WeightGrams
         };
     }
 
@@ -98,9 +64,19 @@ public static class ProductMappingExtensions
             entity.Price = model.Price.Value;
         }
 
-        if (model.Category != null)
+        if (model.Category.HasValue)
         {
-            entity.Category = model.Category;
+            entity.Category = model.Category.Value;
+        }
+
+        if (model.Manufacturer != null)
+        {
+            entity.Manufacturer = string.IsNullOrWhiteSpace(model.Manufacturer) ? null : model.Manufacturer.Trim();
+        }
+
+        if (model.WeightGrams.HasValue)
+        {
+            entity.WeightGrams = model.WeightGrams.Value > 0 ? model.WeightGrams.Value : null;
         }
     }
 }

@@ -11,7 +11,7 @@ public class EscSpecEntityConfiguration : IEntityTypeConfiguration<EscSpec>
         builder.Property(s => s.MountPattern).HasColumnName(nameof(EscSpec.MountPattern));
         builder.Property(s => s.MinCells).HasColumnName(nameof(EscSpec.MinCells));
         builder.Property(s => s.MaxCells).HasColumnName(nameof(EscSpec.MaxCells));
-        builder.Property(s => s.ContinuousCurrentA).HasPrecision(5, 1);
+        builder.Property(s => s.ContinuousCurrentA).HasColumnName(nameof(EscSpec.ContinuousCurrentA)).HasPrecision(5, 1);
         builder.Property(s => s.BatteryConnector).HasColumnName(nameof(EscSpec.BatteryConnector));
     }
 }

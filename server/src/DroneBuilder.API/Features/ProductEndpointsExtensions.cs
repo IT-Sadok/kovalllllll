@@ -4,18 +4,14 @@ using DroneBuilder.API.Common.Routes;
 using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Common.Pagination;
 using DroneBuilder.Application.Features.Products;
-using DroneBuilder.Application.Features.Products.AddValueToProductProperty;
 using DroneBuilder.Application.Features.Products.CreateProduct;
 using DroneBuilder.Application.Features.Products.DeleteProduct;
-using DroneBuilder.Application.Features.Products.GetCategories;
 using DroneBuilder.Application.Features.Products.GetDelistedProducts;
 using DroneBuilder.Application.Features.Products.GetProductById;
 using DroneBuilder.Application.Features.Products.GetProducts;
-using DroneBuilder.Application.Features.Products.GetPropertiesByProductId;
 using DroneBuilder.Application.Features.Products.RemoveProductSpec;
-using DroneBuilder.Application.Features.Products.RemovePropertyFromProduct;
-using DroneBuilder.Application.Features.Products.RemoveValueFromProductProperty;
 using DroneBuilder.Application.Features.Products.RestoreProduct;
+using DroneBuilder.Application.Features.Products.SetProductAttributes;
 using DroneBuilder.Application.Features.Products.SetProductSpec;
 using DroneBuilder.Application.Features.Products.UpdateProduct;
 using FluentResults;
@@ -89,15 +85,6 @@ public static class ProductEndpointsExtensions
                     return result.ToHttpResult();
                 }).WithTags("Products");
 
-        app.MapGet(ApiRoutes.Products.GetCategories,
-                async (IMediator mediator, CancellationToken cancellationToken) =>
-                {
-                    Result<IEnumerable<string>> result = await mediator.ExecuteQueryAsync<GetCategoriesQuery, IEnumerable<string>>(
-                        new GetCategoriesQuery(),
-                        cancellationToken);
-                    return result.ToHttpResult();
-                }).WithTags("Products");
-
         app.MapGet(ApiRoutes.Products.GetById,
                 async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
                 {
@@ -106,43 +93,6 @@ public static class ProductEndpointsExtensions
                         cancellationToken);
                     return result.ToHttpResult();
                 }).WithTags("Products");
-
-        app.MapGet(ApiRoutes.Products.GetPropertiesByProductId,
-                async (IMediator mediator, Guid productId, CancellationToken cancellationToken) =>
-                {
-                    Result<ProductPropertiesResponseModel> result =
-                        await mediator.ExecuteQueryAsync<GetPropertiesByProductIdQuery, ProductPropertiesResponseModel>(
-                            new GetPropertiesByProductIdQuery(productId),
-                            cancellationToken);
-                    return result.ToHttpResult();
-                }).WithTags("Products");
-
-        app.MapPost(ApiRoutes.Products.AssignValueToProductProperty, async (IMediator mediator, Guid productId, Guid propertyId, Guid valueId,
-                CancellationToken cancellationToken) =>
-            {
-                Result result = await mediator.ExecuteCommandAsync(new AddValueToProductPropertyCommand(productId, propertyId, valueId),
-                    cancellationToken);
-                return result.ToHttpResult();
-            }).WithTags("Products")
-            .RequireAuthorization(PolicyNames.Admin);
-
-        app.MapDelete(ApiRoutes.Products.RemoveValueFromProductProperty, async (IMediator mediator, Guid productId, Guid propertyId, Guid valueId,
-                CancellationToken cancellationToken) =>
-            {
-                Result result = await mediator.ExecuteCommandAsync(new RemoveValueFromProductPropertyCommand(productId, propertyId, valueId),
-                    cancellationToken);
-                return result.ToHttpResult();
-            }).WithTags("Products")
-            .RequireAuthorization(PolicyNames.Admin);
-
-        app.MapDelete(ApiRoutes.Products.RemovePropertyFromProduct, async (IMediator mediator, Guid productId, Guid propertyId,
-                CancellationToken cancellationToken) =>
-            {
-                Result result = await mediator.ExecuteCommandAsync(new RemovePropertyFromProductCommand(productId, propertyId),
-                    cancellationToken);
-                return result.ToHttpResult();
-            }).WithTags("Products")
-            .RequireAuthorization(PolicyNames.Admin);
 
         app.MapPut(ApiRoutes.Products.SetSpec,
                 async (Guid productId, ComponentSpecModel spec, IMediator mediator, CancellationToken cancellationToken) =>
@@ -161,6 +111,18 @@ public static class ProductEndpointsExtensions
                     cancellationToken);
                 return result.ToHttpResult();
             }).WithTags("Products")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapPut(ApiRoutes.Products.SetAttributes,
+                async (Guid productId, List<ProductAttributeModel> attributes, IMediator mediator,
+                    CancellationToken cancellationToken) =>
+                {
+                    Result<ProductModel> result =
+                        await mediator.ExecuteCommandAsync<SetProductAttributesCommand, ProductModel>(
+                            new SetProductAttributesCommand(productId, attributes),
+                            cancellationToken);
+                    return result.ToHttpResult();
+                }).WithTags("Products")
             .RequireAuthorization(PolicyNames.Admin);
 
         return app;

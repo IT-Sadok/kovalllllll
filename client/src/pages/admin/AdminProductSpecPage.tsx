@@ -7,8 +7,8 @@ import { getProduct } from '../../api/products';
 import { setProductSpec, removeProductSpec } from '../../api/admin';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
-import { COMPONENT_TYPES, type ComponentSpec, type ComponentType } from '../../types';
-import { COMPONENT_TYPE_LABELS, SPEC_FIELDS, emptySpec, optionLabel, type SpecField } from '../../utils/componentSpecs';
+import type { ComponentSpec } from '../../types';
+import { CATEGORY_LABELS, SPEC_FIELDS, emptySpec, optionLabel, toComponentType, type SpecField } from '../../utils/componentSpecs';
 
 const inputClass =
   'w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20';
@@ -25,8 +25,9 @@ const AdminProductSpecPage: React.FC = () => {
     enabled: !!id,
   });
 
-  const spec = draft ?? (product?.spec as Record<string, unknown> | null | undefined) ?? null;
-  const type = spec?.type as ComponentType | undefined;
+  const type = product ? toComponentType(product.category) : null;
+  const spec: Record<string, unknown> | null =
+    draft ?? (product?.spec as Record<string, unknown> | null | undefined) ?? (type ? { ...emptySpec(type) } : null);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['product', id] });
@@ -52,15 +53,6 @@ const AdminProductSpecPage: React.FC = () => {
     },
     onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to remove spec')),
   });
-
-  const changeType = (next: string) => {
-    if (!next) {
-      setDraft(null);
-      return;
-    }
-    const saved = product?.spec;
-    setDraft(saved?.type === next ? { ...saved } : { ...emptySpec(next as ComponentType) });
-  };
 
   const setField = (key: string, value: unknown) => setDraft({ ...(spec ?? {}), [key]: value });
 
@@ -126,8 +118,9 @@ const AdminProductSpecPage: React.FC = () => {
           id={fieldId}
           type="number"
           step={field.step ?? 1}
-          value={value as number}
-          onChange={(e) => setField(field.key, e.target.value === '' ? 0 : Number(e.target.value))}
+          value={(value as number | null) ?? ''}
+          placeholder={field.optional ? 'Optional' : undefined}
+          onChange={(e) => setField(field.key, e.target.value === '' ? (field.optional ? null : 0) : Number(e.target.value))}
           className={inputClass}
         />
         {field.unit && <span className="text-slate-500 text-sm w-10">{field.unit}</span>}
@@ -159,15 +152,13 @@ const AdminProductSpecPage: React.FC = () => {
         <Skeleton className="h-10 w-full" count={5} />
       ) : (
         <div className="glass-card p-6 space-y-5">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="spec-type" className="text-sm font-medium text-slate-300">Component type</label>
-            <select id="spec-type" value={type ?? ''} onChange={(e) => changeType(e.target.value)} className={inputClass}>
-              <option value="">Not a drone component</option>
-              {COMPONENT_TYPES.map((t) => (
-                <option key={t} value={t}>{COMPONENT_TYPE_LABELS[t]}</option>
-              ))}
-            </select>
-          </div>
+          <p className="text-sm text-slate-400">
+            Category: <span className="text-cyan-400 font-medium">{product && CATEGORY_LABELS[product.category]}</span>
+          </p>
+
+          {!type && (
+            <p className="text-slate-500 text-sm">Products in this category have no component spec.</p>
+          )}
 
           {type && SPEC_FIELDS[type].map((field) => (
             <div key={field.key} className="flex flex-col gap-1.5">
@@ -176,27 +167,29 @@ const AdminProductSpecPage: React.FC = () => {
             </div>
           ))}
 
-          <div className="flex justify-between pt-2">
-            <Button
-              variant="danger"
-              size="sm"
-              id="spec-remove-btn"
-              disabled={!product?.spec}
-              loading={removeMutation.isPending}
-              onClick={() => removeMutation.mutate()}
-            >
-              Remove spec
-            </Button>
-            <Button
-              size="sm"
-              id="spec-save-btn"
-              disabled={!spec || !draft}
-              loading={saveMutation.isPending}
-              onClick={() => spec && saveMutation.mutate(spec as ComponentSpec)}
-            >
-              Save
-            </Button>
-          </div>
+          {type && (
+            <div className="flex justify-between pt-2">
+              <Button
+                variant="danger"
+                size="sm"
+                id="spec-remove-btn"
+                disabled={!product?.spec}
+                loading={removeMutation.isPending}
+                onClick={() => removeMutation.mutate()}
+              >
+                Remove spec
+              </Button>
+              <Button
+                size="sm"
+                id="spec-save-btn"
+                disabled={!spec || !draft}
+                loading={saveMutation.isPending}
+                onClick={() => spec && saveMutation.mutate(spec as ComponentSpec)}
+              >
+                Save
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

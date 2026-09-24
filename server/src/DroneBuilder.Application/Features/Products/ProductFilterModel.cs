@@ -1,4 +1,4 @@
-using DroneBuilder.Domain.Entities.Components;
+using DroneBuilder.Domain.Entities;
 
 namespace DroneBuilder.Application.Features.Products;
 
@@ -7,6 +7,5 @@ public class ProductFilterModel
     public string? Name { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
-    public string? Category { get; set; }
-    public ComponentType? ComponentType { get; set; }
+    public ProductCategory? Category { get; set; }
 }

@@ -15,15 +15,9 @@ export interface AuthUser {
 }
 
 // ─── Products ─────────────────────────────────────────────────────────────────
-export interface Value {
-  id: string;
-  text: string;
-}
-
-export interface Property {
-  id: string;
+export interface ProductAttribute {
   name: string;
-  values: Value[];
+  value: string;
 }
 
 export interface Image {
@@ -38,19 +32,25 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  category: string;
+  category: ProductCategory;
+  manufacturer?: string | null;
+  weightGrams?: number | null;
   stockQuantity: number;
-  properties: Property[];
+  attributes: ProductAttribute[];
   images?: Image[];
   spec?: ComponentSpec | null;
 }
 
 // ─── Component specs ──────────────────────────────────────────────────────────
 export const COMPONENT_TYPES = [
-  'Frame', 'Motor', 'Propeller', 'FlightController', 'Esc',
+  'Frame', 'Motor', 'Propeller', 'FlightController', 'Esc', 'Stack',
   'Battery', 'VideoTransmitter', 'Camera', 'Receiver', 'Antenna',
 ] as const;
 export type ComponentType = typeof COMPONENT_TYPES[number];
+
+export const OTHER_CATEGORIES = ['Goggles', 'Radio', 'Charger', 'Tool', 'ReadyToFly', 'Accessory'] as const;
+export const PRODUCT_CATEGORIES = [...COMPONENT_TYPES, ...OTHER_CATEGORIES] as const;
+export type ProductCategory = typeof PRODUCT_CATEGORIES[number];
 
 export const MOUNT_PATTERNS = ['M9x9', 'M12x12', 'M16x16', 'M19x19', 'M20x20', 'M25_5x25_5', 'M30_5x30_5'] as const;
 export type MountPattern = typeof MOUNT_PATTERNS[number];
@@ -69,7 +69,7 @@ export type RadioProtocol = typeof RADIO_PROTOCOLS[number];
 
 export type ComponentSpec =
   | { type: 'Frame'; maxPropSizeInch: number; fcMountPatterns: MountPattern[]; motorMountPatterns: MountPattern[]; cameraWidthMm: number }
-  | { type: 'Motor'; statorSize: string; kv: number; mountPattern: MountPattern; minCells: number; maxCells: number; maxCurrentA: number; shaftMm: number }
+  | { type: 'Motor'; statorSize: string; kv: number; mountPattern: MountPattern; minCells: number; maxCells: number; maxCurrentA: number; shaftMm: number; maxThrustGrams?: number | null }
   | { type: 'Propeller'; diameterInch: number; pitchInch: number; bladeCount: number; hubMm: number }
   | { type: 'FlightController'; mountPattern: MountPattern; minCells: number; maxCells: number }
   | { type: 'Esc'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number; batteryConnector: BatteryConnector }
@@ -77,16 +77,8 @@ export type ComponentSpec =
   | { type: 'VideoTransmitter'; videoSystem: VideoSystem; antennaConnector: RfConnector; mountPattern: MountPattern }
   | { type: 'Camera'; videoSystem: VideoSystem; widthMm: number }
   | { type: 'Receiver'; protocol: RadioProtocol }
-  | { type: 'Antenna'; connector: RfConnector };
-
-export interface ProductPropertiesResponse {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  stockQuantity: number;
-  properties: Property[];
-}
+  | { type: 'Antenna'; connector: RfConnector }
+  | { type: 'Stack'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number; batteryConnector: BatteryConnector };
 
 export interface PagedResult<T> {
   items: T[];
@@ -121,8 +113,7 @@ export interface ProductFilters {
   name?: string;
   minPrice?: number | '';
   maxPrice?: number | '';
-  category?: string;
-  componentType?: ComponentType;
+  category?: ProductCategory;
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
@@ -221,30 +212,17 @@ export interface WarehouseItem {
 export interface CreateProductRequest {
   name: string;
   price: number;
-  category: string;
+  category: ProductCategory;
+  manufacturer?: string;
+  weightGrams?: number;
 }
 
 export interface UpdateProductRequest {
   name?: string;
   price?: number;
-  category?: string;
-}
-
-export interface CreatePropertyRequest {
-  name: string;
-  values: { text: string }[];
-}
-
-export interface UpdatePropertyRequest {
-  name?: string;
-}
-
-export interface CreateValueRequest {
-  text: string;
-}
-
-export interface UpdateValueRequest {
-  text?: string;
+  category?: ProductCategory;
+  manufacturer?: string;
+  weightGrams?: number;
 }
 
 export interface AddQuantityRequest {

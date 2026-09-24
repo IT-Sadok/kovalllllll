@@ -14,5 +14,6 @@ public enum ComponentType
     VideoTransmitter = 6,
     Camera = 7,
     Receiver = 8,
-    Antenna = 9
+    Antenna = 9,
+    Stack = 10
 }

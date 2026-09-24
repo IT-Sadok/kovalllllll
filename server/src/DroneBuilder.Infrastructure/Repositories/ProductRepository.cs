@@ -18,10 +18,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         return await dbContext.Products
             .Include(p => p.Images)
             .Include(p => p.Spec)
-            .Include(p => p.ProductPropertyValues)
-                .ThenInclude(ppv => ppv.Property)
-            .Include(p => p.ProductPropertyValues)
-                .ThenInclude(ppv => ppv.Value)
+            .Include(p => p.Attributes)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
     }
 
@@ -31,23 +28,8 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .AsNoTracking()
             .Where(p => !p.IsDeleted)
             .Include(p => p.Images)
-            .Include(p => p.ProductPropertyValues)
-                .ThenInclude(ppv => ppv.Property)
-            .Include(p => p.ProductPropertyValues)
-                .ThenInclude(ppv => ppv.Value)
+            .Include(p => p.Attributes)
             .ToListAsync(cancellationToken);
-    }
-
-    public async Task<Product?> GetPropertiesByProductIdAsync(Guid productId,
-        CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Products
-            .AsNoTracking()
-            .Include(p => p.ProductPropertyValues)
-                .ThenInclude(ppv => ppv.Property)
-            .Include(p => p.ProductPropertyValues)
-                .ThenInclude(ppv => ppv.Value)
-            .FirstOrDefaultAsync(p => p.Id == productId && !p.IsDeleted, cancellationToken);
     }
 
     public async Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
@@ -59,10 +41,7 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .Where(p => !p.IsDeleted)
             .Include(p => p.Images)
             .Include(p => p.Spec)
-            .Include(p => p.ProductPropertyValues)
-                .ThenInclude(ppv => ppv.Property)
-            .Include(p => p.ProductPropertyValues)
-                .ThenInclude(ppv => ppv.Value)
+            .Include(p => p.Attributes)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
@@ -81,15 +60,9 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             query = query.Where(p => p.Price <= filter.MaxPrice.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.Category))
+        if (filter.Category.HasValue)
         {
-            string category = filter.Category.Trim().ToLower();
-            query = query.Where(p => p.Category.ToLower() == category);
-        }
-
-        if (filter.ComponentType.HasValue)
-        {
-            query = query.Where(p => p.Spec != null && p.Spec.Type == filter.ComponentType.Value);
+            query = query.Where(p => p.Category == filter.Category.Value);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -148,15 +121,6 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
         return await dbContext.Products
             .AsNoTracking()
             .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Products
-            .Where(p => !p.IsDeleted)
-            .Select(p => p.Category)
-            .Distinct()
             .ToListAsync(cancellationToken);
     }
 

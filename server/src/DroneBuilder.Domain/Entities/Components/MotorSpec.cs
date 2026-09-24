@@ -11,4 +11,5 @@ public class MotorSpec : ComponentSpec
     public int MaxCells { get; set; }
     public decimal MaxCurrentA { get; set; }
     public decimal ShaftMm { get; set; }
+    public int? MaxThrustGrams { get; set; }
 }

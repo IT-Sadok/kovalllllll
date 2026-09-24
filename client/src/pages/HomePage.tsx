@@ -3,23 +3,23 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { getProducts, getCategories } from '../api/products';
+import { getProducts } from '../api/products';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { useAuthStore } from '../store/authStore';
-import type { Product, ProductFilters } from '../types';
+import type { Product, ProductCategory, ProductFilters } from '../types';
 import { ProductCardSkeleton } from '../components/ui/Skeleton';
 import Pagination from '../components/ui/Pagination';
 import EmptyState from '../components/ui/EmptyState';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-
-const DEFAULT_CATEGORIES = ['Racing', 'Photography', 'Industrial', 'Military', 'Consumer', 'FPV'];
+import CategoryOptions from '../components/CategoryOptions';
+import { CATEGORY_LABELS } from '../utils/componentSpecs';
 
 interface FilterForm {
   name: string;
   minPrice: string;
   maxPrice: string;
-  category: string;
+  category: ProductCategory | '';
 }
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
@@ -68,7 +68,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           {/* Category tag */}
           {product.category && (
             <span className="absolute top-2 left-2 text-xs px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-cyan-400 border border-cyan-500/20 font-medium">
-              {product.category}
+              {CATEGORY_LABELS[product.category]}
             </span>
           )}
           {/* Out of Stock Badge */}
@@ -135,14 +135,6 @@ const HomePage: React.FC = () => {
     queryKey: ['products', filters],
     queryFn: () => getProducts(filters),
   });
-
-  const { data: serverCategories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: getCategories,
-  });
-
-  // Combine and deduplicate default and server categories
-  const categoriesList = Array.from(new Set([...DEFAULT_CATEGORIES, ...(serverCategories || [])]));
 
   const onFilter = useCallback((form: FilterForm) => {
     setFilters((prev) => ({
@@ -218,9 +210,7 @@ const HomePage: React.FC = () => {
                   className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all appearance-none cursor-pointer"
                 >
                   <option value="">All categories</option>
-                  {categoriesList.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                  <CategoryOptions />
                 </select>
               </div>
               <Button type="submit" fullWidth size="sm" id="filter-submit">Apply Filters</Button>

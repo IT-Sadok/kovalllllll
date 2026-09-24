@@ -14,6 +14,7 @@ namespace DroneBuilder.Application.Features.Products;
 [JsonDerivedType(typeof(CameraSpecModel), nameof(ComponentType.Camera))]
 [JsonDerivedType(typeof(ReceiverSpecModel), nameof(ComponentType.Receiver))]
 [JsonDerivedType(typeof(AntennaSpecModel), nameof(ComponentType.Antenna))]
+[JsonDerivedType(typeof(StackSpecModel), nameof(ComponentType.Stack))]
 public abstract record ComponentSpecModel;
 
 public record FrameSpecModel(
@@ -29,7 +30,8 @@ public record MotorSpecModel(
     int MinCells,
     int MaxCells,
     decimal MaxCurrentA,
-    decimal ShaftMm) : ComponentSpecModel;
+    decimal ShaftMm,
+    int? MaxThrustGrams = null) : ComponentSpecModel;
 
 public record PropellerSpecModel(
     decimal DiameterInch,
@@ -69,3 +71,10 @@ public record ReceiverSpecModel(
 
 public record AntennaSpecModel(
     RfConnector Connector) : ComponentSpecModel;
+
+public record StackSpecModel(
+    MountPattern MountPattern,
+    int MinCells,
+    int MaxCells,
+    decimal ContinuousCurrentA,
+    BatteryConnector BatteryConnector) : ComponentSpecModel;

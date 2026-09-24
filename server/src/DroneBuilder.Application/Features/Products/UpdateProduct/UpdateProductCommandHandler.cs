@@ -17,6 +17,13 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
             return Result.Fail<ProductModel>(new NotFoundError($"Product with id {command.ProductId} not found."));
         }
 
+        if (command.Model.Category.HasValue && existingProduct.Spec is not null
+            && command.Model.Category.Value.ToComponentType() != existingProduct.Spec.Type)
+        {
+            return Result.Fail<ProductModel>(new BadRequestError(
+                $"Remove the {existingProduct.Spec.Type} spec before changing the category to {command.Model.Category.Value}."));
+        }
+
         command.Model.UpdateEntity(existingProduct);
 
         await productRepository.SaveChangesAsync(cancellationToken);

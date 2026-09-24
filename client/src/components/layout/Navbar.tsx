@@ -104,12 +104,6 @@ const Navbar: React.FC = () => {
                 <NavLink to="/admin/warehouse" id="nav-admin-warehouse" className={navLinkClass}>
                   Warehouse
                 </NavLink>
-                <NavLink to="/admin/properties" id="nav-admin-properties" className={navLinkClass}>
-                  Properties
-                </NavLink>
-                <NavLink to="/admin/values" id="nav-admin-values" className={navLinkClass}>
-                  Values
-                </NavLink>
                 <NavLink to="/admin/orders" id="nav-admin-orders" className={navLinkClass}>
                   Manage Orders
                 </NavLink>
@@ -216,12 +210,6 @@ const Navbar: React.FC = () => {
                 </NavLink>
                 <NavLink to="/admin/warehouse" className={navLinkClass} onClick={() => setMenuOpen(false)}>
                   <div className="py-2">Warehouse</div>
-                </NavLink>
-                <NavLink to="/admin/properties" className={navLinkClass} onClick={() => setMenuOpen(false)}>
-                  <div className="py-2">Properties</div>
-                </NavLink>
-                <NavLink to="/admin/values" className={navLinkClass} onClick={() => setMenuOpen(false)}>
-                  <div className="py-2">Values</div>
                 </NavLink>
                 <NavLink to="/admin/orders" className={navLinkClass} onClick={() => setMenuOpen(false)}>
                   <div className="py-2">Manage Orders</div>

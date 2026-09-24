@@ -20,6 +20,7 @@ public class SetProductSpecCommandValidator : AbstractValidator<SetProductSpecCo
                 .Add(new VideoTransmitterSpecModelValidator())
                 .Add(new CameraSpecModelValidator())
                 .Add(new ReceiverSpecModelValidator())
-                .Add(new AntennaSpecModelValidator()));
+                .Add(new AntennaSpecModelValidator())
+                .Add(new StackSpecModelValidator()));
     }
 }

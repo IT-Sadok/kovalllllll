@@ -8,7 +8,7 @@ public static class ComponentSpecMappingExtensions
     {
         FrameSpec s => new FrameSpecModel(s.MaxPropSizeInch, s.FcMountPatterns, s.MotorMountPatterns, s.CameraWidthMm),
         MotorSpec s => new MotorSpecModel(s.StatorSize, s.Kv, s.MountPattern, s.MinCells, s.MaxCells, s.MaxCurrentA,
-            s.ShaftMm),
+            s.ShaftMm, s.MaxThrustGrams),
         PropellerSpec s => new PropellerSpecModel(s.DiameterInch, s.PitchInch, s.BladeCount, s.HubMm),
         FlightControllerSpec s => new FlightControllerSpecModel(s.MountPattern, s.MinCells, s.MaxCells),
         EscSpec s => new EscSpecModel(s.MountPattern, s.MinCells, s.MaxCells, s.ContinuousCurrentA, s.BatteryConnector),
@@ -17,6 +17,8 @@ public static class ComponentSpecMappingExtensions
         CameraSpec s => new CameraSpecModel(s.VideoSystem, s.WidthMm),
         ReceiverSpec s => new ReceiverSpecModel(s.Protocol),
         AntennaSpec s => new AntennaSpecModel(s.Connector),
+        StackSpec s => new StackSpecModel(s.MountPattern, s.MinCells, s.MaxCells, s.ContinuousCurrentA,
+            s.BatteryConnector),
         _ => throw new ArgumentOutOfRangeException(nameof(spec), spec.GetType().Name, null)
     };
 
@@ -39,7 +41,8 @@ public static class ComponentSpecMappingExtensions
                 MinCells = m.MinCells,
                 MaxCells = m.MaxCells,
                 MaxCurrentA = m.MaxCurrentA,
-                ShaftMm = m.ShaftMm
+                ShaftMm = m.ShaftMm,
+                MaxThrustGrams = m.MaxThrustGrams
             },
             PropellerSpecModel m => new PropellerSpec
             {
@@ -82,6 +85,14 @@ public static class ComponentSpecMappingExtensions
             },
             ReceiverSpecModel m => new ReceiverSpec { Protocol = m.Protocol },
             AntennaSpecModel m => new AntennaSpec { Connector = m.Connector },
+            StackSpecModel m => new StackSpec
+            {
+                MountPattern = m.MountPattern,
+                MinCells = m.MinCells,
+                MaxCells = m.MaxCells,
+                ContinuousCurrentA = m.ContinuousCurrentA,
+                BatteryConnector = m.BatteryConnector
+            },
             _ => throw new ArgumentOutOfRangeException(nameof(model), model.GetType().Name, null)
         };
 
