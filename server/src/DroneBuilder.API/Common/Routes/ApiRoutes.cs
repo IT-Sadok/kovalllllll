@@ -30,6 +30,12 @@ public abstract class ApiRoutes
         public const string SetAttributes = BaseRoute + "/{productId}/attributes";
     }
 
+    public static class Builds
+    {
+        private const string BaseRoute = Base + "/builds";
+        public const string Check = BaseRoute + "/check";
+    }
+
     public static class Imports
     {
         private const string BaseRoute = Base + "/imports";
