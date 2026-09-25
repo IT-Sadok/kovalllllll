@@ -96,6 +96,7 @@ const Navbar: React.FC = () => {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
             <NavLink to="/" id="nav-home" className={navLinkClass} end>Catalog</NavLink>
+            <NavLink to="/builder" id="nav-builder" className={navLinkClass}>Builder</NavLink>
             {user?.role === 'Admin' && (
               <>
                 <NavLink to="/admin/products" id="nav-admin-products" className={navLinkClass}>
@@ -195,6 +196,9 @@ const Navbar: React.FC = () => {
           <div className="md:hidden border-t border-white/5 py-4 space-y-2">
             <NavLink to="/" className={navLinkClass} onClick={() => setMenuOpen(false)} end>
               <div className="py-2">Catalog</div>
+            </NavLink>
+            <NavLink to="/builder" className={navLinkClass} onClick={() => setMenuOpen(false)}>
+              <div className="py-2">Builder</div>
             </NavLink>
             {user && (
               <>

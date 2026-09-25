@@ -155,3 +155,18 @@ export const formatSpecValue = (field: SpecField, value: unknown): string => {
   }
   return String(value);
 };
+
+export const specSummary = (spec: ComponentSpec): string => {
+  const values = spec as Record<string, unknown>;
+  return SPEC_FIELDS[spec.type]
+    .filter((field) => field.key !== 'maxCells')
+    .map((field) => {
+      const value = values[field.key];
+      if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) return null;
+      if (field.key === 'minCells') return value === values.maxCells ? `${value}S` : `${value}–${values.maxCells}S`;
+      if (field.kind === 'enumList' || (field.kind === 'number' && !field.unit)) return `${field.label} ${formatSpecValue(field, value)}`;
+      return formatSpecValue(field, value);
+    })
+    .filter((part) => part !== null)
+    .join(' · ');
+};

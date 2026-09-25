@@ -272,3 +272,33 @@ export interface ImportRun {
   failed: number;
   error?: string | null;
 }
+
+// ─── Builds ───────────────────────────────────────────────────────────────────
+export interface BuildItem {
+  productId: string;
+  quantity: number;
+}
+
+export type IssueSeverity = 'Error' | 'Warning' | 'Info';
+
+export interface CompatibilityIssue {
+  severity: IssueSeverity;
+  code: string;
+  message: string;
+  productIds: string[];
+}
+
+export interface BuildWeight {
+  dryGrams: number;
+  allUpGrams: number | null;
+  thrustToWeight: number | null;
+  isComplete: boolean;
+  missingWeightProductIds: string[];
+}
+
+export interface BuildCheck {
+  isValid: boolean;
+  totalPrice: number;
+  weight: BuildWeight;
+  issues: CompatibilityIssue[];
+}

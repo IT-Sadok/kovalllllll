@@ -12,6 +12,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ConfirmEmailPage from './pages/ConfirmEmailPage';
 import ProductPage from './pages/ProductPage';
+import BuilderPage from './pages/BuilderPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
@@ -70,6 +71,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/confirm-email" element={<ConfirmEmailPage />} />
             <Route path="/products/:id" element={<ProductPage />} />
+            <Route path="/builder" element={<BuilderPage />} />
 
             {/* User (authenticated) */}
             <Route path="/cart" element={
