@@ -134,6 +134,16 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<ICollection<Product>> GetProductsWithSpecsByIdsAsync(ICollection<Guid> productIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .AsNoTracking()
+            .Include(p => p.Spec)
+            .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<ICollection<Product>> GetByExternalIdsAsync(string source, ICollection<string> externalIds,
         CancellationToken cancellationToken = default)
     {
