@@ -74,6 +74,11 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             query = query.Where(p => p.Manufacturer != null && p.Manufacturer.ToLower() == manufacturer);
         }
 
+        if (filter.NeedsReview.HasValue)
+        {
+            query = query.Where(p => p.NeedsReview == filter.NeedsReview.Value);
+        }
+
         if (filter.InStock == true)
         {
             query = query.Where(p => dbContext.WarehouseItems.Any(w => w.ProductId == p.Id && w.Quantity > 0));
@@ -207,9 +212,9 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .AsNoTracking()
             .Where(p => !p.IsDeleted && p.Manufacturer != null && p.Manufacturer != "")
             .Where(p => category == null || p.Category == category)
-            .Select(p => p.Manufacturer!)
-            .Distinct()
-            .OrderBy(m => m)
+            .GroupBy(p => p.Manufacturer!.ToLower())
+            .Select(g => g.Min(p => p.Manufacturer)!)
+            .OrderBy(m => m.ToLower())
             .ToListAsync(cancellationToken);
     }
 

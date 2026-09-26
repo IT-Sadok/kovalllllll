@@ -293,12 +293,15 @@ public static partial class RaceDayQuadsProductParser
     private static MountPattern? StackMount(ParseContext c)
         => c.Tag("Stack Size").SelectMany(SpecText.MountPatterns)
             .Concat(SpecText.MountPatterns(c.Value("mountinghole", "mountingpattern", "mounting")))
+            .Concat(SpecText.MountPatterns(c.Product.Title))
             .Cast<MountPattern?>().FirstOrDefault();
 
     private static (int Min, int Max)? Cells(ParseContext c, params string[] keys)
     {
         string? text = c.Value(keys);
-        return SpecText.CellRange(c.Tag("Input Voltage")) ?? SpecText.CellRange([text ?? string.Empty]);
+        return SpecText.CellRange(c.Tag("Input Voltage"))
+               ?? SpecText.CellRange([text ?? string.Empty])
+               ?? SpecText.CellRange([c.Product.Title]);
     }
 
     private static decimal? ContinuousCurrent(ParseContext c)

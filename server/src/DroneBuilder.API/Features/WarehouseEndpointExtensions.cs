@@ -9,6 +9,7 @@ using DroneBuilder.Application.Features.Warehouses.GetWarehouse;
 using DroneBuilder.Application.Features.Warehouses.GetWarehouseItemById;
 using DroneBuilder.Application.Features.Warehouses.GetWarehouseItems;
 using DroneBuilder.Application.Features.Warehouses.RemoveQuantityFromWarehouseItem;
+using DroneBuilder.Application.Features.Warehouses.RestockEmptyItems;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,6 +48,18 @@ public static class WarehouseEndpointExtensions
                 Result<WarehouseItemModel> result =
                     await mediator.ExecuteCommandAsync<AddQuantityToWarehouseItemCommand, WarehouseItemModel>(
                         new AddQuantityToWarehouseItemCommand(itemId, model),
+                        cancellationToken);
+                return result.ToHttpResult();
+            })
+            .WithTags("Warehouse")
+            .RequireAuthorization(PolicyNames.Admin);
+
+        app.MapPost(ApiRoutes.Warehouses.RestockEmptyItems, async (IMediator mediator,
+                [FromBody] RestockEmptyItemsCommand command,
+                CancellationToken cancellationToken) =>
+            {
+                Result<RestockResultModel> result =
+                    await mediator.ExecuteCommandAsync<RestockEmptyItemsCommand, RestockResultModel>(command,
                         cancellationToken);
                 return result.ToHttpResult();
             })

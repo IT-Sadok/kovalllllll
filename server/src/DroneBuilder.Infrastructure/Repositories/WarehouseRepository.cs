@@ -68,6 +68,13 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<ICollection<WarehouseItem>> GetEmptyWarehouseItemsAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.WarehouseItems
+            .Where(wi => wi.Quantity == 0 && !wi.Product!.IsDeleted)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<ICollection<WarehouseItem>> GetTrackedWarehouseItemsByProductIdsAsync(ICollection<Guid> productIds,
         CancellationToken cancellationToken = default)
     {

@@ -141,6 +141,7 @@ export interface ProductFilters {
   collapseVariants?: boolean;
   manufacturer?: string;
   inStock?: boolean;
+  needsReview?: boolean;
   sort?: ProductSort;
   cells?: number;
   mountPattern?: MountPattern;
