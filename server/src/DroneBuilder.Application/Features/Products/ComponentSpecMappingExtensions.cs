@@ -16,6 +16,7 @@ public static class ComponentSpecMappingExtensions
         VideoTransmitterSpec s => new VideoTransmitterSpecModel(s.VideoSystem, s.AntennaConnector, s.MountPattern),
         CameraSpec s => new CameraSpecModel(s.VideoSystem, s.WidthMm),
         ReceiverSpec s => new ReceiverSpecModel(s.Protocol),
+        RadioSpec s => new RadioSpecModel(s.Protocol),
         AntennaSpec s => new AntennaSpecModel(s.Connector),
         StackSpec s => new StackSpecModel(s.MountPattern, s.MinCells, s.MaxCells, s.ContinuousCurrentA,
             s.BatteryConnector),
@@ -84,6 +85,7 @@ public static class ComponentSpecMappingExtensions
                 WidthMm = m.WidthMm
             },
             ReceiverSpecModel m => new ReceiverSpec { Protocol = m.Protocol },
+            RadioSpecModel m => new RadioSpec { Protocol = m.Protocol },
             AntennaSpecModel m => new AntennaSpec { Connector = m.Connector },
             StackSpecModel m => new StackSpec
             {

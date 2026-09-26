@@ -126,6 +126,23 @@ public class CompatibilityCheckerTests
         Assert.Contains(Check(parts), i => i.Code == "missing_esc");
     }
 
+    [Theory]
+    [InlineData(RadioProtocol.ExpressLrs, false)]
+    [InlineData(RadioProtocol.Crossfire, true)]
+    public void Check_WhenRadioIsAdded_ShouldRequireTheReceiverProtocol(RadioProtocol protocol, bool expectError)
+    {
+        // Arrange
+        List<BuildPart> parts = ValidBuild();
+        parts.Add(Part(ProductCategory.Radio, new RadioSpec { Protocol = protocol }, 400m));
+
+        // Act
+        IReadOnlyList<CompatibilityIssue> issues = Check(parts);
+
+        // Assert
+        Assert.Equal(expectError, issues.Any(i => i is { Code: "radio_protocol", Severity: IssueSeverity.Error }));
+        Assert.Contains(issues, i => i.Code == "over_250g" && i.Message.Contains("about 516 g"));
+    }
+
     [Fact]
     public void Check_WhenStackAndSeparateFc_ShouldWarnAboutDuplicate()
     {

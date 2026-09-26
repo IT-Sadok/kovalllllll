@@ -40,5 +40,12 @@ public static class SpecLabels
         _ => connector.ToString().ToUpperInvariant()
     };
 
+    public static string Of(RadioProtocol protocol) => protocol switch
+    {
+        RadioProtocol.ExpressLrs => "ExpressLRS",
+        RadioProtocol.FrSky => "FrSky",
+        _ => protocol.ToString()
+    };
+
     public static string Cells(int min, int max) => min == max ? $"{min}S" : $"{min}-{max}S";
 }

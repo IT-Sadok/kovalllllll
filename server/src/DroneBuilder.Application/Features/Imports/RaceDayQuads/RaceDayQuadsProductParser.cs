@@ -71,6 +71,7 @@ public static partial class RaceDayQuadsProductParser
         ProductCategory.Camera => BuildCamera(c),
         ProductCategory.Receiver => BuildReceiver(c),
         ProductCategory.Antenna => BuildAntenna(c),
+        ProductCategory.Radio => BuildRadio(c),
         _ => null
     };
 
@@ -280,6 +281,13 @@ public static partial class RaceDayQuadsProductParser
     {
         RadioProtocol? protocol = SpecText.DetectRadioProtocol($"{c.Product.Title} {string.Join(' ', c.Product.Tags)}");
         return protocol is null ? null : new ReceiverSpec { Protocol = protocol.Value };
+    }
+
+    private static RadioSpec? BuildRadio(ParseContext c)
+    {
+        RadioProtocol? protocol =
+            SpecText.DetectRadioProtocol($"{c.VariantName} {c.Product.Title} {string.Join(' ', c.Product.Tags)}");
+        return protocol is null ? null : new RadioSpec { Protocol = protocol.Value };
     }
 
     private static AntennaSpec? BuildAntenna(ParseContext c)

@@ -102,6 +102,14 @@ public class ReceiverSpecModelValidator : AbstractValidator<ReceiverSpecModel>
     }
 }
 
+public class RadioSpecModelValidator : AbstractValidator<RadioSpecModel>
+{
+    public RadioSpecModelValidator()
+    {
+        RuleFor(x => x.Protocol).IsInEnum();
+    }
+}
+
 public class AntennaSpecModelValidator : AbstractValidator<AntennaSpecModel>
 {
     public AntennaSpecModelValidator()

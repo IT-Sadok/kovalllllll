@@ -111,6 +111,23 @@ public class RaceDayQuadsProductParserTests
         Assert.Equal(60m, spec.ContinuousCurrentA);
     }
 
+    [Theory]
+    [InlineData("RadioMaster Boxer Crush RC Transmitter - ELRS 2.4GHz", RadioProtocol.ExpressLrs)]
+    [InlineData("TBS Tango 2 Radio Controller - Crossfire", RadioProtocol.Crossfire)]
+    [InlineData("BETAFPV LiteRadio 2 SIM Controller (Mode 2)", null)]
+    public void Parse_WhenRadio_ShouldReadProtocolFromTitle(string title, RadioProtocol? expected)
+    {
+        // Arrange
+        ShopifyProduct product = Product(title, "", ["Manufacturer_RadioMaster"]);
+
+        // Act
+        ImportedProduct item = Assert.Single(
+            RaceDayQuadsProductParser.Parse(product, ProductCategory.Radio, new RaceDayQuadsCollection("radios"), 6, BaseUrl));
+
+        // Assert
+        Assert.Equal(expected, (item.Spec as RadioSpec)?.Protocol);
+    }
+
     [Fact]
     public void Parse_WhenBattery_ShouldReadCellsCapacityRatingAndConnector()
     {

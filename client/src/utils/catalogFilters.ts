@@ -43,6 +43,7 @@ export const CATEGORY_SPEC_FILTERS: Partial<Record<ProductCategory, SpecFilter[]
   Camera: ['videoSystem'],
   Receiver: ['protocol'],
   Antenna: ['rfConnector'],
+  Radio: ['protocol'],
 };
 
 const toNumber = (value: string) => (value === '' ? undefined : Number(value));

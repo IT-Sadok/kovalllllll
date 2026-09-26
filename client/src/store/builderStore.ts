@@ -4,7 +4,7 @@ import type { BuildItem, ComponentType, SavedBuild } from '../types';
 
 export const BUILD_SLOTS: ComponentType[] = [
   'Frame', 'Motor', 'Propeller', 'Stack', 'FlightController', 'Esc',
-  'Battery', 'VideoTransmitter', 'Camera', 'Receiver', 'Antenna',
+  'Battery', 'VideoTransmitter', 'Camera', 'Receiver', 'Antenna', 'Radio',
 ];
 
 export const DEFAULT_QUANTITY: Partial<Record<ComponentType, number>> = { Motor: 4 };

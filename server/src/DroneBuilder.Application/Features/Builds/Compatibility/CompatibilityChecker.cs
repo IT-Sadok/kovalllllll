@@ -17,6 +17,7 @@ public static class CompatibilityChecker
         new EscCurrentRule(),
         new BatteryConnectorRule(),
         new AntennaConnectorRule(),
+        new RadioProtocolRule(),
         new PropellerHubRule(),
         new MotorKvRule(),
         new WeightRule()

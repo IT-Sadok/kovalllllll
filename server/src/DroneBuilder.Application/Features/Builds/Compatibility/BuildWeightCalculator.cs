@@ -17,7 +17,7 @@ public static class BuildWeightCalculator
     public static BuildWeight Calculate(BuildParts build)
     {
         List<BuildPart> installed = build.All
-            .Where(p => p.Category.ToComponentType() is not null && p.Category != ProductCategory.Battery)
+            .Where(p => p.Category.ToComponentType() is not null && p.Category is not (ProductCategory.Battery or ProductCategory.Radio))
             .ToList();
         BuildPart? battery = build.InCategory(ProductCategory.Battery).FirstOrDefault();
         int motorCount = build.MotorCount > 0 ? build.MotorCount : DefaultMotorCount;
