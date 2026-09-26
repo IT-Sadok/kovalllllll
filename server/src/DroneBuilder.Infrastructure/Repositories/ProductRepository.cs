@@ -35,11 +35,17 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
     public async Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
         ProductFilterModel filter,
+        ICollection<Guid>? onlyProductIds,
         CancellationToken cancellationToken = default)
     {
         IQueryable<Product> query = dbContext.Products
             .AsNoTracking()
             .Where(p => !p.IsDeleted);
+
+        if (onlyProductIds is not null)
+        {
+            query = query.Where(p => onlyProductIds.Contains(p.Id));
+        }
 
         if (!string.IsNullOrWhiteSpace(filter.Name))
         {
@@ -255,6 +261,16 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             .AsNoTracking()
             .Include(p => p.Spec)
             .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ICollection<Product>> GetCategoryProductsWithSpecsAsync(ProductCategory category,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .AsNoTracking()
+            .Include(p => p.Spec)
+            .Where(p => p.Category == category && !p.IsDeleted)
             .ToListAsync(cancellationToken);
     }
 

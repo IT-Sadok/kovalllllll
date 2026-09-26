@@ -8,7 +8,8 @@ export const getProducts = (filters: ProductFilters = {}) => {
   params.set('pageSize', String(filters.pageSize ?? 20));
   for (const [key, value] of Object.entries(filters)) {
     if (key === 'page' || key === 'pageSize' || value === undefined || value === '' || value === false) continue;
-    params.set(key, String(value));
+    if (Array.isArray(value)) value.forEach((item) => params.append(key, String(item)));
+    else params.set(key, String(value));
   }
   return api.get<ApiResponse<Product[]>>(`/products?${params.toString()}`).then(unwrapPaged);
 };

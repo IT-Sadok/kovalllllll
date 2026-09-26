@@ -4,6 +4,7 @@ using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Application.Features.Products.GetProductById;
 using DroneBuilder.Application.Features.Products.GetProducts;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities.Components;
 using FluentResults;
 using NSubstitute;
 
@@ -74,7 +75,7 @@ public class ProductVariantQueriesTests
         var single = new Product { Name = "Frame" };
         var filter = new ProductFilterModel { CollapseVariants = true };
 
-        _productRepository.GetFilteredPagedProductsAsync(Arg.Any<PaginationParams>(), filter, Arg.Any<CancellationToken>())
+        _productRepository.GetFilteredPagedProductsAsync(Arg.Any<PaginationParams>(), filter, null, Arg.Any<CancellationToken>())
             .Returns(new PagedResult<Product> { Items = [grouped, single], TotalCount = 2, Page = 1, PageSize = 20 });
         _productRepository.GetGroupSummariesAsync(
                 Arg.Is<ICollection<Guid>>(ids => ids.Single() == GroupId), Arg.Any<CancellationToken>())
@@ -94,5 +95,50 @@ public class ProductVariantQueriesTests
         Assert.Equal(12, first.Group.TotalStock);
         Assert.Null(first.Group.Variants);
         Assert.Null(result.Value.Items.Last().Group);
+    }
+
+    [Fact]
+    public async Task GetProducts_WhenCompatibleWithIsSet_ShouldLimitTheCategoryToCompatibleParts()
+    {
+        // Arrange
+        var frame = new Product
+        {
+            Name = "Frame",
+            Category = ProductCategory.Frame,
+            Spec = new FrameSpec { MaxPropSizeInch = 5.1m, FcMountPatterns = [MountPattern.M20x20] }
+        };
+        var fits = new Product
+        {
+            Name = "20x20 stack",
+            Category = ProductCategory.Stack,
+            Spec = new StackSpec { MountPattern = MountPattern.M20x20, MinCells = 3, MaxCells = 6 }
+        };
+        var tooBig = new Product
+        {
+            Name = "30x30 stack",
+            Category = ProductCategory.Stack,
+            Spec = new StackSpec { MountPattern = MountPattern.M30_5x30_5, MinCells = 3, MaxCells = 6 }
+        };
+        var filter = new ProductFilterModel { Category = ProductCategory.Stack, CompatibleWith = [frame.Id] };
+
+        _productRepository.GetProductsWithSpecsByIdsAsync(Arg.Any<ICollection<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns([frame]);
+        _productRepository.GetCategoryProductsWithSpecsAsync(ProductCategory.Stack, Arg.Any<CancellationToken>())
+            .Returns([fits, tooBig]);
+        _productRepository.GetFilteredPagedProductsAsync(Arg.Any<PaginationParams>(), filter,
+                Arg.Any<ICollection<Guid>?>(), Arg.Any<CancellationToken>())
+            .Returns(new PagedResult<Product> { Items = [fits], TotalCount = 1, Page = 1, PageSize = 20 });
+        _warehouseRepository.GetAllWarehouseItemsByProductIdsAsync(Arg.Any<ICollection<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        var handler = new GetProductsQueryHandler(_productRepository, _warehouseRepository);
+
+        // Act
+        await handler.ExecuteAsync(new GetProductsQuery(new PaginationParams(1, 20), filter), CancellationToken.None);
+
+        // Assert
+        await _productRepository.Received(1).GetFilteredPagedProductsAsync(Arg.Any<PaginationParams>(), filter,
+            Arg.Is<ICollection<Guid>?>(ids => ids != null && ids.SequenceEqual(new[] { fits.Id })),
+            Arg.Any<CancellationToken>());
     }
 }

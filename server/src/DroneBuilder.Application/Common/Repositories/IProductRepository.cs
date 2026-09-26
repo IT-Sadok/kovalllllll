@@ -11,6 +11,7 @@ public interface IProductRepository
 
     Task<PagedResult<Product>> GetFilteredPagedProductsAsync(PaginationParams pagination,
         ProductFilterModel filter,
+        ICollection<Guid>? onlyProductIds,
         CancellationToken cancellationToken = default);
 
     Task<Product?> GetDelistedProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
@@ -22,6 +23,9 @@ public interface IProductRepository
         CancellationToken cancellationToken = default);
 
     Task<ICollection<Product>> GetProductsWithSpecsByIdsAsync(ICollection<Guid> productIds,
+        CancellationToken cancellationToken = default);
+
+    Task<ICollection<Product>> GetCategoryProductsWithSpecsAsync(ProductCategory category,
         CancellationToken cancellationToken = default);
 
     Task<ICollection<Product>> GetByExternalIdsAsync(string source, ICollection<string> externalIds,

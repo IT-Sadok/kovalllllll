@@ -13,17 +13,20 @@ const PAGE_SIZE = 8;
 interface PartPickerProps {
   slot: ComponentType | null;
   selectedId?: string;
+  otherPartIds: string[];
   onPick: (product: Product) => void;
   onClose: () => void;
 }
 
-const PartPicker: React.FC<PartPickerProps> = ({ slot, selectedId, onPick, onClose }) => {
+const PartPicker: React.FC<PartPickerProps> = ({ slot, selectedId, otherPartIds, onPick, onClose }) => {
   const [name, setName] = useState('');
   const [page, setPage] = useState(1);
+  const [onlyCompatible, setOnlyCompatible] = useState(true);
+  const compatibleWith = onlyCompatible && otherPartIds.length > 0 ? otherPartIds : undefined;
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['builder-parts', slot, name, page],
-    queryFn: () => getProducts({ category: slot!, name, page, pageSize: PAGE_SIZE, collapseVariants: true }),
+    queryKey: ['builder-parts', slot, name, page, compatibleWith],
+    queryFn: () => getProducts({ category: slot!, name, page, pageSize: PAGE_SIZE, collapseVariants: true, compatibleWith }),
     enabled: slot !== null,
     placeholderData: keepPreviousData,
   });
@@ -45,13 +48,33 @@ const PartPicker: React.FC<PartPickerProps> = ({ slot, selectedId, onPick, onClo
           setPage(1);
         }}
         placeholder="Search by name..."
-        className="w-full mb-4 bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50"
+        className="w-full mb-3 bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50"
       />
+      {otherPartIds.length > 0 && (
+        <label className="flex items-center gap-2 mb-4 text-sm text-slate-300 cursor-pointer">
+          <input
+            type="checkbox"
+            id="part-picker-compatible"
+            checked={onlyCompatible}
+            onChange={(e) => {
+              setOnlyCompatible(e.target.checked);
+              setPage(1);
+            }}
+            className="accent-cyan-400"
+          />
+          Only parts that fit my build
+          <span className="text-xs text-slate-500">(parts without specs are hidden)</span>
+        </label>
+      )}
 
       <div className="max-h-[60vh] overflow-y-auto space-y-2 pr-1">
         {isError && <p className="text-sm text-red-400">Failed to load parts.</p>}
         {isLoading && <Skeleton className="h-16 w-full" count={4} />}
-        {data?.items.length === 0 && <p className="text-sm text-slate-500 py-6 text-center">No parts found.</p>}
+        {data?.items.length === 0 && (
+          <p className="text-sm text-slate-500 py-6 text-center">
+            {compatibleWith ? 'No parts fit the rest of your build. Untick the filter to see everything.' : 'No parts found.'}
+          </p>
+        )}
         {data?.items.map((product) => {
           const image = product.images?.find((img) => img.isPrimary) ?? product.images?.[0];
           const group = product.group;

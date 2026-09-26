@@ -23,6 +23,10 @@ public class GetProductsQueryValidator : AbstractValidator<GetProductsQuery>
         RuleFor(x => x.Filter.CapacityMax).GreaterThanOrEqualTo(x => x.Filter.CapacityMin!.Value)
             .When(x => x.Filter.CapacityMin.HasValue && x.Filter.CapacityMax.HasValue)
             .WithMessage("Capacity max must not be lower than capacity min.");
+        RuleFor(x => x.Filter.Category).NotNull().When(x => x.Filter.CompatibleWith is { Length: > 0 })
+            .WithMessage("Choose a category to find compatible parts.");
+        RuleFor(x => x.Filter.CompatibleWith).Must(ids => ids!.Length <= 30).When(x => x.Filter.CompatibleWith != null)
+            .WithMessage("Compatibility can be checked against at most 30 parts.");
     }
 }
 

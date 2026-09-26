@@ -1,6 +1,7 @@
 using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Common.Pagination;
 using DroneBuilder.Application.Common.Repositories;
+using DroneBuilder.Application.Features.Builds.Compatibility;
 using DroneBuilder.Domain.Entities;
 using FluentResults;
 namespace DroneBuilder.Application.Features.Products.GetProducts;
@@ -10,12 +11,19 @@ public class GetProductsQueryHandler(
     IWarehouseRepository warehouseRepository)
     : IQueryHandler<GetProductsQuery, PagedResult<ProductModel>>
 {
+    private const int QuadMotorCount = 4;
+
     public async Task<Result<PagedResult<ProductModel>>> ExecuteAsync(GetProductsQuery query,
         CancellationToken cancellationToken)
     {
+        ICollection<Guid>? compatibleIds = query.Filter is { CompatibleWith.Length: > 0, Category: ProductCategory category }
+            ? await FindCompatibleAsync(query.Filter.CompatibleWith, category, cancellationToken)
+            : null;
+
         PagedResult<Product> products = await productRepository.GetFilteredPagedProductsAsync(
             query.Pagination,
             query.Filter,
+            compatibleIds,
             cancellationToken);
 
         List<ProductModel> mappedItems = products.Items.Select(x => x.ToModel()).ToList();
@@ -58,6 +66,20 @@ public class GetProductsQueryHandler(
             PageSize = products.PageSize
         });
     }
+
+    private async Task<ICollection<Guid>> FindCompatibleAsync(Guid[] selectedIds, ProductCategory category,
+        CancellationToken cancellationToken)
+    {
+        ICollection<Product> selected = await productRepository.GetProductsWithSpecsByIdsAsync(selectedIds, cancellationToken);
+        ICollection<Product> candidates = await productRepository.GetCategoryProductsWithSpecsAsync(category, cancellationToken);
+
+        return CompatiblePartFilter.Filter(selected.Select(ToBuildPart).ToList(), candidates.Select(ToBuildPart))
+            .ToList();
+    }
+
+    private static BuildPart ToBuildPart(Product product)
+        => new(product.Id, product.Name, product.Category, product.Spec, product.Price, product.WeightGrams,
+            product.Category == ProductCategory.Motor ? QuadMotorCount : 1);
 }
 
 public record GetProductsQuery(PaginationParams Pagination, ProductFilterModel Filter);
