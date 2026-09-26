@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { checkBuild } from '../api/builds';
 import { getErrorMessage } from '../api/errors';
 import PartPicker from '../components/builder/PartPicker';
 import PartSlot from '../components/builder/PartSlot';
+import SaveBuildModal from '../components/builder/SaveBuildModal';
+import Button from '../components/ui/Button';
+import { useAuthStore } from '../store/authStore';
 import { buildItems, useBuilderStore } from '../store/builderStore';
 import type { ComponentType, IssueSeverity } from '../types';
 import { CATEGORY_LABELS } from '../utils/componentSpecs';
@@ -35,9 +40,21 @@ const SEVERITY_STYLE: Record<IssueSeverity, string> = {
 };
 
 const BuilderPage: React.FC = () => {
-  const { parts, setPart, setQuantity, removePart, clear } = useBuilderStore();
+  const { parts, saved, setPart, setQuantity, removePart, clear } = useBuilderStore();
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [pickerSlot, setPickerSlot] = useState<ComponentType | null>(null);
+  const [saveOpen, setSaveOpen] = useState(false);
   const items = buildItems(parts);
+
+  const openSave = () => {
+    if (!user) {
+      toast.error('Sign in to save builds');
+      navigate('/login');
+      return;
+    }
+    setSaveOpen(true);
+  };
 
   const { data: check, isFetching, isError, error } = useQuery({
     queryKey: ['build-check', items],
@@ -76,11 +93,19 @@ const BuilderPage: React.FC = () => {
             Drone <span className="text-cyan-400 glow-text">Builder</span>
           </h1>
           <p className="text-slate-400">Pick the parts of your FPV quad. Compatibility is checked as you go.</p>
+          {saved && (
+            <p className="text-sm text-slate-500 mt-1" id="builder-saved-name">
+              Editing <Link to="/builds" className="text-cyan-400 hover:underline">{saved.name}</Link>
+            </p>
+          )}
         </div>
         {items.length > 0 && (
-          <button type="button" onClick={clear} id="builder-clear" className="text-sm text-slate-500 hover:text-red-400 cursor-pointer">
-            Clear build
-          </button>
+          <div className="flex items-center gap-4">
+            <button type="button" onClick={clear} id="builder-clear" className="text-sm text-slate-500 hover:text-red-400 cursor-pointer">
+              {saved ? 'Start a new build' : 'Clear build'}
+            </button>
+            <Button size="sm" onClick={openSave} id="builder-save">Save build</Button>
+          </div>
         )}
       </div>
 
@@ -183,6 +208,7 @@ const BuilderPage: React.FC = () => {
         onPick={(product) => setPart(pickerSlot!, product.id)}
         onClose={() => setPickerSlot(null)}
       />
+      {saveOpen && <SaveBuildModal isOpen onClose={() => setSaveOpen(false)} />}
     </div>
   );
 };

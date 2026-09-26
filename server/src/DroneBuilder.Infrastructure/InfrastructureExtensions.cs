@@ -71,6 +71,7 @@ public static class InfrastructureExtensions
         services.AddScoped<IImportRunRepository, ImportRunRepository>();
         services.AddScoped<IImageRepository, ImageRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<IBuildRepository, BuildRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();

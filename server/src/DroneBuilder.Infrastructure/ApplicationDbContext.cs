@@ -33,6 +33,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
+    public DbSet<Build> Builds { get; set; }
+    public DbSet<BuildItem> BuildItems { get; set; }
     public DbSet<Warehouse> Warehouses { get; set; }
     public DbSet<WarehouseItem> WarehouseItems { get; set; }
 }

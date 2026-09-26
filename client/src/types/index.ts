@@ -302,3 +302,22 @@ export interface BuildCheck {
   weight: BuildWeight;
   issues: CompatibilityIssue[];
 }
+
+export interface SavedBuildItem {
+  productId: string;
+  productName: string;
+  category: ProductCategory;
+  price: number;
+  quantity: number;
+  imageUrl?: string | null;
+  isAvailable: boolean;
+}
+
+export interface SavedBuild {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  totalPrice: number;
+  items: SavedBuildItem[];
+}
