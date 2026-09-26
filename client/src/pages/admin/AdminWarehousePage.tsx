@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../api/errors';
-import { getWarehouseItems, addWarehouseQuantity, removeWarehouseQuantity } from '../../api/admin';
+import { getWarehouseItems, addWarehouseQuantity, removeWarehouseQuantity, restockEmptyWarehouseItems } from '../../api/admin';
 import type { WarehouseItem } from '../../types';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -16,6 +16,7 @@ const AdminWarehousePage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [modalItem, setModalItem] = useState<{ item: WarehouseItem; type: 'add' | 'remove' } | null>(null);
   const [qty, setQty] = useState('');
+  const [restockQty, setRestockQty] = useState('10');
 
   const { data, isLoading } = useQuery({
     queryKey: ['warehouse', page],
@@ -48,6 +49,21 @@ const AdminWarehousePage: React.FC = () => {
     onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to remove quantity')),
   });
 
+  const restockMutation = useMutation({
+    mutationFn: (quantity: number) => restockEmptyWarehouseItems(quantity),
+    onSuccess: ({ restockedItems }) => {
+      queryClient.invalidateQueries({ queryKey: ['warehouse'] });
+      toast.success(restockedItems === 0 ? 'No empty items to restock' : `Restocked ${restockedItems} item${restockedItems === 1 ? '' : 's'}`);
+    },
+    onError: (error: unknown) => toast.error(getErrorMessage(error, 'Failed to restock')),
+  });
+
+  const handleRestock = () => {
+    const n = parseInt(restockQty);
+    if (!n || n <= 0) return;
+    if (window.confirm(`Set the stock of every out-of-stock product to ${n}?`)) restockMutation.mutate(n);
+  };
+
   const handleSubmit = () => {
     const n = parseInt(qty);
     if (!n || n <= 0 || !modalItem) return;
@@ -66,11 +82,28 @@ const AdminWarehousePage: React.FC = () => {
 
   return (
     <div className="page-enter max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white font-orbitron">
-          Warehouse <span className="text-cyan-400">Inventory</span>
-        </h1>
-        <p className="text-slate-400 text-sm mt-1">Manage stock levels — track inventory and adjust quantities</p>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white font-orbitron">
+            Warehouse <span className="text-cyan-400">Inventory</span>
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">Manage stock levels — track inventory and adjust quantities</p>
+        </div>
+        <div className="flex items-end gap-2">
+          <Input
+            label="Restock empty items to"
+            id="warehouse-restock-qty"
+            type="number"
+            min={1}
+            max={10000}
+            value={restockQty}
+            onChange={(e) => setRestockQty(e.target.value)}
+            className="w-28"
+          />
+          <Button onClick={handleRestock} loading={restockMutation.isPending} id="warehouse-restock">
+            Restock
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

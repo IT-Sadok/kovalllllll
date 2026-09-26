@@ -81,6 +81,7 @@ public abstract class ApiRoutes
         public const string GetItemById = BaseRoute + "/items/{itemId}";
         public const string AddQuantityToItem = BaseRoute + "/items/{itemId}";
         public const string RemoveQuantityFromItem = BaseRoute + "/items/{itemId}";
+        public const string RestockEmptyItems = BaseRoute + "/items/restock";
     }
 
     public static class Payments

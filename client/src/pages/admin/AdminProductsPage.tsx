@@ -14,7 +14,7 @@ import {
   adminGetDelistedProducts,
   adminRestoreProduct,
 } from '../../api/admin';
-import { PRODUCT_CATEGORIES, type Product, type CreateProductRequest, type UpdateProductRequest } from '../../types';
+import { PRODUCT_CATEGORIES, type Product, type ProductCategory, type CreateProductRequest, type UpdateProductRequest } from '../../types';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
@@ -55,10 +55,14 @@ const AdminProductsPage: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [showDelisted, setShowDelisted] = useState(false);
   const [search, setSearch] = useState('');
+  const [category, setCategory] = useState<ProductCategory | ''>('');
+  const [needsReview, setNeedsReview] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-products', page, search],
-    queryFn: () => getProducts({ page, pageSize: 15, name: search || undefined }),
+    queryKey: ['admin-products', page, search, category, needsReview],
+    queryFn: () => getProducts({
+      page, pageSize: 15, name: search || undefined, category: category || undefined, needsReview: needsReview || undefined,
+    }),
   });
 
   const createForm = useForm<CreateFormInput, unknown, CreateFormData>({
@@ -192,18 +196,39 @@ const AdminProductsPage: React.FC = () => {
       </div>
 
       {/* Search */}
-      <div className="mb-4 max-w-sm">
-        <Input
-          id="admin-product-search"
-          placeholder="Search products..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          icon={
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          }
-        />
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="w-full max-w-sm">
+          <Input
+            id="admin-product-search"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            }
+          />
+        </div>
+        <select
+          id="admin-product-category"
+          value={category}
+          onChange={(e) => { setCategory(e.target.value as ProductCategory | ''); setPage(1); }}
+          className="bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 cursor-pointer"
+        >
+          <option value="">All categories</option>
+          <CategoryOptions />
+        </select>
+        <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+          <input
+            type="checkbox"
+            id="admin-product-review"
+            checked={needsReview}
+            onChange={(e) => { setNeedsReview(e.target.checked); setPage(1); }}
+            className="accent-amber-400"
+          />
+          Needs review only
+        </label>
       </div>
 
       {/* Table */}

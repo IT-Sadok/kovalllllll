@@ -60,6 +60,10 @@ export const addWarehouseQuantity = (itemId: string, quantityToAdd: number) =>
 export const removeWarehouseQuantity = (itemId: string, quantityToRemove: number) =>
   api.delete<ApiResponse<WarehouseItem>>(`/warehouse/items/${itemId}`, { data: { quantityToRemove } }).then(unwrap);
 
+// POST /warehouse/items/restock body: { quantity } — sets every empty item to that quantity
+export const restockEmptyWarehouseItems = (quantity: number) =>
+  api.post<ApiResponse<{ restockedItems: number }>>('/warehouse/items/restock', { quantity }).then(unwrap);
+
 // ─── Images ──────────────────────────────────────────────────────────────────
 // POST /images/upload — multipart/form-data: file (IFormFile), productId (Guid)
 export const uploadImage = (file: File, productId: string) => {

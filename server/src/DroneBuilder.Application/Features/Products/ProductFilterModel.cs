@@ -12,6 +12,7 @@ public class ProductFilterModel
     public bool? CollapseVariants { get; set; }
     public string? Manufacturer { get; set; }
     public bool? InStock { get; set; }
+    public bool? NeedsReview { get; set; }
     public ProductSort? Sort { get; set; }
     public int? Cells { get; set; }
     public MountPattern? MountPattern { get; set; }

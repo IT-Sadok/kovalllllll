@@ -73,6 +73,45 @@ public class RaceDayQuadsProductParserTests
     }
 
     [Fact]
+    public void Parse_WhenStackListsCellsAndMountOnlyInTitle_ShouldReadThemFromTitle()
+    {
+        // Arrange
+        ShopifyProduct product = Product(
+            "iFlight BLITZ Mini F7 V1.2 E55S 2-6S 20x20 Stack/Combo (F7 FC / 55A BlheliS 4in1 ESC)",
+            "<p>Supports 2-6S Lipo input</p>",
+            ["Manufacturer_iFlight"]);
+
+        // Act
+        ImportedProduct item = Assert.Single(
+            RaceDayQuadsProductParser.Parse(product, ProductCategory.Stack, new RaceDayQuadsCollection("stacks"), 6, BaseUrl));
+
+        // Assert
+        StackSpec spec = Assert.IsType<StackSpec>(item.Spec);
+        Assert.Equal(MountPattern.M20x20, spec.MountPattern);
+        Assert.Equal((2, 6), (spec.MinCells, spec.MaxCells));
+    }
+
+    [Fact]
+    public void Parse_WhenEscMountIsOnlyInTitle_ShouldPreferTagsForCellsAndTitleForMount()
+    {
+        // Arrange
+        ShopifyProduct product = Product(
+            "HAKRC HK3220 32Bit 60A 2-8S 20x20 4in1 ESC",
+            "<p>Size: 34 x 42mm (20mm-20mm mounting hole)</p>",
+            ["Amp Rating_60A", "Input Voltage_2S", "Input Voltage_8S", "Manufacturer_HAKRC"]);
+
+        // Act
+        ImportedProduct item = Assert.Single(
+            RaceDayQuadsProductParser.Parse(product, ProductCategory.Esc, new RaceDayQuadsCollection("escs"), 6, BaseUrl));
+
+        // Assert
+        EscSpec spec = Assert.IsType<EscSpec>(item.Spec);
+        Assert.Equal(MountPattern.M20x20, spec.MountPattern);
+        Assert.Equal((2, 8), (spec.MinCells, spec.MaxCells));
+        Assert.Equal(60m, spec.ContinuousCurrentA);
+    }
+
+    [Fact]
     public void Parse_WhenBattery_ShouldReadCellsCapacityRatingAndConnector()
     {
         // Arrange
