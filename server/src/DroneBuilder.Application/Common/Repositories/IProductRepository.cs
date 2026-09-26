@@ -32,6 +32,9 @@ public interface IProductRepository
 
     Task AddGroupAsync(ProductGroup group, CancellationToken cancellationToken = default);
 
+    Task<ICollection<string>> GetManufacturersAsync(ProductCategory? category,
+        CancellationToken cancellationToken = default);
+
     Task<ICollection<ProductGroupSummary>> GetGroupSummariesAsync(ICollection<Guid> groupIds,
         CancellationToken cancellationToken = default);
 
