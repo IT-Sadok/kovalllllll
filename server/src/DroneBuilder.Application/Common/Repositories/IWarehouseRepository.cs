@@ -19,5 +19,8 @@ public interface IWarehouseRepository
     Task<ICollection<WarehouseItem>> GetAllWarehouseItemsByProductIdsAsync(ICollection<Guid> productIds,
         CancellationToken cancellationToken = default);
 
+    Task<ICollection<WarehouseItem>> GetTrackedWarehouseItemsByProductIdsAsync(ICollection<Guid> productIds,
+        CancellationToken cancellationToken = default);
+
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

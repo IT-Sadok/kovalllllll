@@ -8,6 +8,7 @@ import PartPicker from '../components/builder/PartPicker';
 import PartSlot from '../components/builder/PartSlot';
 import SaveBuildModal from '../components/builder/SaveBuildModal';
 import Button from '../components/ui/Button';
+import { useAddBuildToCart } from '../hooks/useAddBuildToCart';
 import { useAuthStore } from '../store/authStore';
 import { buildItems, useBuilderStore } from '../store/builderStore';
 import type { ComponentType, IssueSeverity } from '../types';
@@ -45,6 +46,7 @@ const BuilderPage: React.FC = () => {
   const navigate = useNavigate();
   const [pickerSlot, setPickerSlot] = useState<ComponentType | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
+  const { addBuildToCart, isPending: addingToCart } = useAddBuildToCart();
   const items = buildItems(parts);
 
   const openSave = () => {
@@ -179,6 +181,15 @@ const BuilderPage: React.FC = () => {
                 {missingWeight.length > 0 && (
                   <p className="text-xs text-slate-500">No weight data for: {missingWeight.join(', ')}.</p>
                 )}
+
+                <Button
+                  fullWidth
+                  loading={addingToCart}
+                  onClick={() => addBuildToCart(items)}
+                  id="builder-add-to-cart"
+                >
+                  Add build to cart
+                </Button>
 
                 {issues.length > 0 && (
                   <ul className="space-y-2" id="builder-issues">

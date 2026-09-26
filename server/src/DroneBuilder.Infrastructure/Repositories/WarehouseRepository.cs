@@ -68,6 +68,14 @@ public class WarehouseRepository(ApplicationDbContext dbContext) : IWarehouseRep
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<ICollection<WarehouseItem>> GetTrackedWarehouseItemsByProductIdsAsync(ICollection<Guid> productIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.WarehouseItems
+            .Where(wi => productIds.Contains(wi.ProductId))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.SaveChangesAsync(cancellationToken);
