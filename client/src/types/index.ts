@@ -153,6 +153,7 @@ export interface ProductFilters {
   batteryConnector?: BatteryConnector;
   protocol?: RadioProtocol;
   rfConnector?: RfConnector;
+  compatibleWith?: string[];
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────

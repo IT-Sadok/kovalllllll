@@ -24,4 +24,5 @@ public class ProductFilterModel
     public BatteryConnector? BatteryConnector { get; set; }
     public RadioProtocol? Protocol { get; set; }
     public RfConnector? RfConnector { get; set; }
+    public Guid[]? CompatibleWith { get; set; }
 }

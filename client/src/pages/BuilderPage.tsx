@@ -10,7 +10,7 @@ import SaveBuildModal from '../components/builder/SaveBuildModal';
 import Button from '../components/ui/Button';
 import { useAddBuildToCart } from '../hooks/useAddBuildToCart';
 import { useAuthStore } from '../store/authStore';
-import { buildItems, useBuilderStore } from '../store/builderStore';
+import { BUILD_SLOTS, buildItems, useBuilderStore } from '../store/builderStore';
 import type { ComponentType, IssueSeverity } from '../types';
 import { CATEGORY_LABELS } from '../utils/componentSpecs';
 import { formatMoney } from '../utils/money';
@@ -216,6 +216,7 @@ const BuilderPage: React.FC = () => {
       <PartPicker
         slot={pickerSlot}
         selectedId={pickerSlot ? parts[pickerSlot]?.productId : undefined}
+        otherPartIds={BUILD_SLOTS.filter((slot) => slot !== pickerSlot && parts[slot]).map((slot) => parts[slot]!.productId)}
         onPick={(product) => setPart(pickerSlot!, product.id)}
         onClose={() => setPickerSlot(null)}
       />
