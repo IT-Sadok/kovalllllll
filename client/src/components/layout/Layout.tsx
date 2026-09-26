@@ -22,10 +22,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </span>
           </div>
           <p className="text-xs text-slate-600">
-            © {new Date().getFullYear()} DroneBuilder. Professional UAV solutions.
+            © {new Date().getFullYear()} DroneBuilder. FPV parts and a quad builder.
           </p>
           <div className="flex gap-4">
             <Link to="/" className="text-xs text-slate-600 hover:text-slate-400 transition-colors">Catalog</Link>
+            <Link to="/builder" className="text-xs text-slate-600 hover:text-slate-400 transition-colors">Builder</Link>
             <Link to="/orders" className="text-xs text-slate-600 hover:text-slate-400 transition-colors">Orders</Link>
           </div>
         </div>

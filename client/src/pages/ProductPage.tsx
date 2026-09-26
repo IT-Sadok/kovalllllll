@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { getProduct } from '../api/products';
@@ -7,7 +7,8 @@ import { useAddToCart } from '../hooks/useAddToCart';
 import { useAuthStore } from '../store/authStore';
 import Skeleton from '../components/ui/Skeleton';
 import Button from '../components/ui/Button';
-import { CATEGORY_LABELS, SPEC_FIELDS, formatSpecValue } from '../utils/componentSpecs';
+import { CATEGORY_LABELS, SPEC_FIELDS, formatSpecValue, toComponentType } from '../utils/componentSpecs';
+import { useBuilderStore } from '../store/builderStore';
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,23 @@ const ProductPage: React.FC = () => {
       return;
     }
     addToCartMutation.mutate({ productId: id!, productName: product?.name ?? 'item', quantity });
+  };
+
+  const buildSlot = product ? toComponentType(product.category) : null;
+  const slotPart = useBuilderStore((state) => (buildSlot ? state.parts[buildSlot] : undefined));
+  const setBuildPart = useBuilderStore((state) => state.setPart);
+  const inBuild = slotPart?.productId === product?.id;
+
+  const handleAddToBuild = () => {
+    if (!product || !buildSlot) return;
+    setBuildPart(buildSlot, product.id);
+    const label = CATEGORY_LABELS[buildSlot].toLowerCase();
+    toast.success(
+      <span>
+        {slotPart ? `Replaced the ${label} in your build. ` : `Added to your build as the ${label}. `}
+        <Link to="/builder" className="underline text-cyan-400">Open builder</Link>
+      </span>,
+    );
   };
 
   if (isError) {
@@ -262,6 +280,17 @@ const ProductPage: React.FC = () => {
                   {product?.stockQuantity === 0 ? 'Temporarily Unavailable' : 'Add to Cart'}
                 </Button>
               </div>
+              {buildSlot && (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  onClick={handleAddToBuild}
+                  disabled={inBuild}
+                  id="product-add-to-build"
+                >
+                  {inBuild ? 'In your build' : slotPart ? `Swap into build as ${CATEGORY_LABELS[buildSlot].toLowerCase()}` : 'Add to build'}
+                </Button>
+              )}
             </>
           )}
 
