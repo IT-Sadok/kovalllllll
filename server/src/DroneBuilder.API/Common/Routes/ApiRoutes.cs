@@ -34,6 +34,11 @@ public abstract class ApiRoutes
     {
         private const string BaseRoute = Base + "/builds";
         public const string Check = BaseRoute + "/check";
+        public const string GetAll = BaseRoute;
+        public const string GetById = BaseRoute + "/{buildId:guid}";
+        public const string Create = BaseRoute;
+        public const string Update = BaseRoute + "/{buildId:guid}";
+        public const string Delete = BaseRoute + "/{buildId:guid}";
     }
 
     public static class Imports

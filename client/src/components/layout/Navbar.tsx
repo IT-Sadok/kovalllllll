@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between gap-4 h-16">
           {/* Logo */}
           <Link to="/" id="nav-logo" className="flex items-center gap-2 group">
             <DroneIcon />
@@ -94,7 +94,7 @@ const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6">
             <NavLink to="/" id="nav-home" className={navLinkClass} end>Catalog</NavLink>
             <NavLink to="/builder" id="nav-builder" className={navLinkClass}>Builder</NavLink>
             {user?.role === 'Admin' && (
@@ -127,6 +127,17 @@ const Navbar: React.FC = () => {
                   <CartIcon count={itemCount} />
                 </NavLink>
                 <NavLink
+                  to="/builds"
+                  id="nav-builds"
+                  className={({ isActive }) =>
+                    `hidden sm:block text-sm font-medium transition-colors ${
+                      isActive ? 'text-cyan-400' : 'text-slate-400 hover:text-white'
+                    }`
+                  }
+                >
+                  My builds
+                </NavLink>
+                <NavLink
                   to="/orders"
                   id="nav-orders"
                   className={({ isActive }) =>
@@ -138,7 +149,7 @@ const Navbar: React.FC = () => {
                   Orders
                 </NavLink>
                 <div className="flex items-center gap-2 pl-2 border-l border-white/10">
-                  <span className="hidden sm:block text-xs text-slate-500 max-w-[120px] truncate">
+                  <span className="hidden xl:block text-xs text-slate-500 max-w-[120px] truncate">
                     {user.email}
                   </span>
                   {user.role === 'Admin' && (
@@ -176,7 +187,7 @@ const Navbar: React.FC = () => {
 
             {/* Mobile hamburger */}
             <button
-              className="md:hidden text-slate-400 hover:text-white transition-colors"
+              className="lg:hidden text-slate-400 hover:text-white transition-colors"
               onClick={() => setMenuOpen(!menuOpen)}
               id="nav-mobile-toggle"
             >
@@ -193,7 +204,7 @@ const Navbar: React.FC = () => {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden border-t border-white/5 py-4 space-y-2">
+          <div className="lg:hidden border-t border-white/5 py-4 space-y-2">
             <NavLink to="/" className={navLinkClass} onClick={() => setMenuOpen(false)} end>
               <div className="py-2">Catalog</div>
             </NavLink>
@@ -204,6 +215,9 @@ const Navbar: React.FC = () => {
               <>
                 <NavLink to="/cart" className={navLinkClass} onClick={() => setMenuOpen(false)}>
                   <div className="py-2">Cart ({itemCount})</div>
+                </NavLink>
+                <NavLink to="/builds" className={navLinkClass} onClick={() => setMenuOpen(false)}>
+                  <div className="py-2">My builds</div>
                 </NavLink>
                 <NavLink to="/orders" className={navLinkClass} onClick={() => setMenuOpen(false)}>
                   <div className="py-2">Orders</div>

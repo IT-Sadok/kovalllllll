@@ -5,6 +5,7 @@ import Layout from './components/layout/Layout';
 import PrivateRoute from './components/PrivateRoute';
 import { useAuthStore } from './store/authStore';
 import { useCartStore } from './store/cartStore';
+import { useBuilderStore } from './store/builderStore';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -13,6 +14,7 @@ import RegisterPage from './pages/RegisterPage';
 import ConfirmEmailPage from './pages/ConfirmEmailPage';
 import ProductPage from './pages/ProductPage';
 import BuilderPage from './pages/BuilderPage';
+import MyBuildsPage from './pages/MyBuildsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
@@ -55,6 +57,7 @@ function App() {
         if (prev.status === 'authenticated' && state.status !== 'authenticated') {
           queryClient.clear();
           useCartStore.getState().setItemCount(0);
+          useBuilderStore.setState({ saved: null });
         }
       }),
     [],
@@ -82,6 +85,9 @@ function App() {
             } />
             <Route path="/orders" element={
               <PrivateRoute><OrdersPage /></PrivateRoute>
+            } />
+            <Route path="/builds" element={
+              <PrivateRoute><MyBuildsPage /></PrivateRoute>
             } />
 
             {/* Admin */}
