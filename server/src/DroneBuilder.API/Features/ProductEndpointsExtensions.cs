@@ -7,6 +7,7 @@ using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Application.Features.Products.CreateProduct;
 using DroneBuilder.Application.Features.Products.DeleteProduct;
 using DroneBuilder.Application.Features.Products.GetDelistedProducts;
+using DroneBuilder.Application.Features.Products.GetManufacturers;
 using DroneBuilder.Application.Features.Products.GetProductById;
 using DroneBuilder.Application.Features.Products.GetProducts;
 using DroneBuilder.Application.Features.Products.RemoveProductSpec;
@@ -14,6 +15,7 @@ using DroneBuilder.Application.Features.Products.RestoreProduct;
 using DroneBuilder.Application.Features.Products.SetProductAttributes;
 using DroneBuilder.Application.Features.Products.SetProductSpec;
 using DroneBuilder.Application.Features.Products.UpdateProduct;
+using DroneBuilder.Domain.Entities;
 using FluentResults;
 
 namespace DroneBuilder.API.Features;
@@ -82,6 +84,15 @@ public static class ProductEndpointsExtensions
                     Result<PagedResult<ProductModel>> result = await mediator.ExecuteQueryAsync<GetProductsQuery, PagedResult<ProductModel>>(
                         query,
                         cancellationToken);
+                    return result.ToHttpResult();
+                }).WithTags("Products");
+
+        app.MapGet(ApiRoutes.Products.GetManufacturers,
+                async (ProductCategory? category, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    Result<ICollection<string>> result =
+                        await mediator.ExecuteQueryAsync<GetManufacturersQuery, ICollection<string>>(
+                            new GetManufacturersQuery(category), cancellationToken);
                     return result.ToHttpResult();
                 }).WithTags("Products");
 

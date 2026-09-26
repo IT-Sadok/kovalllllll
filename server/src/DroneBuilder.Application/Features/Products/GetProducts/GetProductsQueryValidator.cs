@@ -12,6 +12,17 @@ public class GetProductsQueryValidator : AbstractValidator<GetProductsQuery>
             .GreaterThan(0).WithMessage("PageSize must be greater than 0.")
             .LessThanOrEqualTo(100).WithMessage("PageSize must not exceed 100.")
             .When(x => x.Pagination != null);
+
+        RuleFor(x => x.Filter.Cells).InclusiveBetween(1, 14).When(x => x.Filter.Cells.HasValue)
+            .WithMessage("Cells must be between 1 and 14.");
+        RuleFor(x => x.Filter.PropSizeInch).GreaterThan(0).When(x => x.Filter.PropSizeInch.HasValue)
+            .WithMessage("Prop size must be greater than 0.");
+        RuleFor(x => x.Filter.KvMax).GreaterThanOrEqualTo(x => x.Filter.KvMin!.Value)
+            .When(x => x.Filter.KvMin.HasValue && x.Filter.KvMax.HasValue)
+            .WithMessage("KV max must not be lower than KV min.");
+        RuleFor(x => x.Filter.CapacityMax).GreaterThanOrEqualTo(x => x.Filter.CapacityMin!.Value)
+            .When(x => x.Filter.CapacityMin.HasValue && x.Filter.CapacityMax.HasValue)
+            .WithMessage("Capacity max must not be lower than capacity min.");
     }
 }
 

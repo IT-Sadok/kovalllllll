@@ -1,12 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { getProducts } from '../api/products';
+import { getManufacturers, getProducts } from '../api/products';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { useAuthStore } from '../store/authStore';
-import type { Product, ProductCategory, ProductFilters } from '../types';
+import type { Product, ProductFilters, ProductSort } from '../types';
+import SpecFilters from '../components/catalog/SpecFilters';
+import { EMPTY_FILTERS, toSpecFilters, type CatalogFilterForm } from '../utils/catalogFilters';
 import { ProductCardSkeleton } from '../components/ui/Skeleton';
 import Pagination from '../components/ui/Pagination';
 import EmptyState from '../components/ui/EmptyState';
@@ -15,12 +17,11 @@ import Input from '../components/ui/Input';
 import CategoryOptions from '../components/CategoryOptions';
 import { CATEGORY_LABELS } from '../utils/componentSpecs';
 
-interface FilterForm {
-  name: string;
-  minPrice: string;
-  maxPrice: string;
-  category: ProductCategory | '';
-}
+const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
+  { value: 'Name', label: 'Name' },
+  { value: 'PriceAsc', label: 'Price: low to high' },
+  { value: 'PriceDesc', label: 'Price: high to low' },
+];
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const { user } = useAuthStore();
@@ -146,29 +147,39 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
 const HomePage: React.FC = () => {
   const [filters, setFilters] = useState<ProductFilters>({ page: 1, pageSize: 12 });
 
-  const { register, handleSubmit, reset } = useForm<FilterForm>({
-    defaultValues: { name: '', minPrice: '', maxPrice: '', category: '' },
+  const { register, handleSubmit, reset, control, setValue } = useForm<CatalogFilterForm>({
+    defaultValues: EMPTY_FILTERS,
   });
+  const category = useWatch({ control, name: 'category' });
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['products', filters],
     queryFn: () => getProducts({ ...filters, collapseVariants: true }),
   });
 
-  const onFilter = useCallback((form: FilterForm) => {
+  const { data: manufacturers } = useQuery({
+    queryKey: ['manufacturers', category],
+    queryFn: () => getManufacturers(category || undefined),
+  });
+
+  const onFilter = useCallback((form: CatalogFilterForm) => {
     setFilters((prev) => ({
-      ...prev,
       page: 1,
+      pageSize: prev.pageSize,
+      sort: prev.sort,
       name: form.name || undefined,
       minPrice: form.minPrice ? Number(form.minPrice) : '',
       maxPrice: form.maxPrice ? Number(form.maxPrice) : '',
       category: form.category || undefined,
+      manufacturer: form.manufacturer || undefined,
+      inStock: form.inStock || undefined,
+      ...toSpecFilters(form.category, form),
     }));
   }, []);
 
   const onReset = () => {
     reset();
-    setFilters({ page: 1, pageSize: 12 });
+    setFilters((prev) => ({ page: 1, pageSize: 12, sort: prev.sort }));
   };
 
   return (
@@ -188,7 +199,7 @@ const HomePage: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Filters sidebar */}
         <aside className="w-full lg:w-64 flex-shrink-0">
-          <div className="glass-card p-5 sticky top-24">
+          <div className="glass-card p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
             <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
               <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
@@ -225,13 +236,31 @@ const HomePage: React.FC = () => {
                 <label className="text-sm font-medium text-slate-300">Category</label>
                 <select
                   id="filter-category"
-                  {...register('category')}
+                  {...register('category', { onChange: () => setValue('manufacturer', '') })}
                   className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all appearance-none cursor-pointer"
                 >
                   <option value="">All categories</option>
                   <CategoryOptions />
                 </select>
               </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-300">Brand</label>
+                <select
+                  id="filter-manufacturer"
+                  {...register('manufacturer')}
+                  className="w-full bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="">All brands</option>
+                  {manufacturers?.map((manufacturer) => (
+                    <option key={manufacturer} value={manufacturer}>{manufacturer}</option>
+                  ))}
+                </select>
+              </div>
+              <SpecFilters category={category} register={register} />
+              <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                <input type="checkbox" id="filter-in-stock" {...register('inStock')} className="accent-cyan-400" />
+                In stock only
+              </label>
               <Button type="submit" fullWidth size="sm" id="filter-submit">Apply Filters</Button>
               <button
                 type="button"
@@ -248,11 +277,26 @@ const HomePage: React.FC = () => {
         {/* Products grid */}
         <div className="flex-1">
           {/* Count */}
-          {data && (
-            <p className="text-sm text-slate-500 mb-4">
-              Found <span className="text-white font-medium">{data.totalCount}</span> product{data.totalCount !== 1 ? 's' : ''}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <p className="text-sm text-slate-500">
+              {data && (
+                <>Found <span className="text-white font-medium">{data.totalCount}</span> product{data.totalCount !== 1 ? 's' : ''}</>
+              )}
             </p>
-          )}
+            <label className="flex items-center gap-2 text-sm text-slate-400">
+              Sort by
+              <select
+                id="catalog-sort"
+                value={filters.sort ?? 'Name'}
+                onChange={(e) => setFilters((prev) => ({ ...prev, page: 1, sort: e.target.value as ProductSort }))}
+                className="bg-[#111827] border border-[rgba(0,212,255,0.12)] rounded-xl px-3 py-1.5 text-sm text-slate-100 cursor-pointer"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           {isError && (
             <div className="glass-card p-6 text-center text-red-400">

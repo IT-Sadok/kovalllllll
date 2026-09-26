@@ -2,6 +2,7 @@ using DroneBuilder.Application.Common.Pagination;
 using DroneBuilder.Application.Common.Repositories;
 using DroneBuilder.Application.Features.Products;
 using DroneBuilder.Domain.Entities;
+using DroneBuilder.Domain.Entities.Components;
 using Microsoft.EntityFrameworkCore;
 
 namespace DroneBuilder.Infrastructure.Repositories;
@@ -61,6 +62,19 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             query = query.Where(p => p.Category == filter.Category.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.Manufacturer))
+        {
+            string manufacturer = filter.Manufacturer.Trim().ToLower();
+            query = query.Where(p => p.Manufacturer != null && p.Manufacturer.ToLower() == manufacturer);
+        }
+
+        if (filter.InStock == true)
+        {
+            query = query.Where(p => dbContext.WarehouseItems.Any(w => w.ProductId == p.Id && w.Quantity > 0));
+        }
+
+        query = ApplySpecFilters(query, filter);
+
         if (filter.CollapseVariants == true)
         {
             IQueryable<Product> matching = query;
@@ -74,12 +88,18 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
         int totalCount = await query.CountAsync(cancellationToken);
 
-        List<Product> items = await query
+        IOrderedQueryable<Product> ordered = filter.Sort switch
+        {
+            ProductSort.PriceAsc => query.OrderBy(p => p.Price).ThenBy(p => p.Name),
+            ProductSort.PriceDesc => query.OrderByDescending(p => p.Price).ThenBy(p => p.Name),
+            _ => query.OrderBy(p => p.Name)
+        };
+
+        List<Product> items = await ordered
+            .ThenBy(p => p.Id)
             .Include(p => p.Images)
             .Include(p => p.Spec)
             .Include(p => p.Attributes)
-            .OrderBy(p => p.Name)
-            .ThenBy(p => p.Id)
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);
@@ -91,6 +111,100 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
             Page = pagination.Page,
             PageSize = pagination.PageSize
         };
+    }
+
+    private static IQueryable<Product> ApplySpecFilters(IQueryable<Product> query, ProductFilterModel filter)
+    {
+        if (filter.Cells is int cells)
+        {
+            query = query.Where(p =>
+                (p.Spec is MotorSpec && ((MotorSpec)p.Spec).MinCells <= cells && ((MotorSpec)p.Spec).MaxCells >= cells) ||
+                (p.Spec is FlightControllerSpec && ((FlightControllerSpec)p.Spec).MinCells <= cells &&
+                 ((FlightControllerSpec)p.Spec).MaxCells >= cells) ||
+                (p.Spec is EscSpec && ((EscSpec)p.Spec).MinCells <= cells && ((EscSpec)p.Spec).MaxCells >= cells) ||
+                (p.Spec is StackSpec && ((StackSpec)p.Spec).MinCells <= cells && ((StackSpec)p.Spec).MaxCells >= cells) ||
+                (p.Spec is BatterySpec && ((BatterySpec)p.Spec).Cells == cells));
+        }
+
+        if (filter.MountPattern is MountPattern mount)
+        {
+            query = query.Where(p =>
+                (p.Spec is FrameSpec && (((FrameSpec)p.Spec).FcMountPatterns.Contains(mount) ||
+                                         ((FrameSpec)p.Spec).MotorMountPatterns.Contains(mount))) ||
+                (p.Spec is MotorSpec && ((MotorSpec)p.Spec).MountPattern == mount) ||
+                (p.Spec is FlightControllerSpec && ((FlightControllerSpec)p.Spec).MountPattern == mount) ||
+                (p.Spec is EscSpec && ((EscSpec)p.Spec).MountPattern == mount) ||
+                (p.Spec is StackSpec && ((StackSpec)p.Spec).MountPattern == mount) ||
+                (p.Spec is VideoTransmitterSpec && ((VideoTransmitterSpec)p.Spec).MountPattern == mount));
+        }
+
+        if (filter.VideoSystem is VideoSystem videoSystem)
+        {
+            query = query.Where(p =>
+                (p.Spec is CameraSpec && ((CameraSpec)p.Spec).VideoSystem == videoSystem) ||
+                (p.Spec is VideoTransmitterSpec && ((VideoTransmitterSpec)p.Spec).VideoSystem == videoSystem));
+        }
+
+        if (filter.KvMin.HasValue || filter.KvMax.HasValue)
+        {
+            int kvMin = filter.KvMin ?? 0;
+            int kvMax = filter.KvMax ?? int.MaxValue;
+            query = query.Where(p =>
+                p.Spec is MotorSpec && ((MotorSpec)p.Spec).Kv >= kvMin && ((MotorSpec)p.Spec).Kv <= kvMax);
+        }
+
+        if (filter.PropSizeInch is decimal propSize)
+        {
+            decimal nextSize = propSize + 1;
+            query = query.Where(p =>
+                (p.Spec is PropellerSpec && ((PropellerSpec)p.Spec).DiameterInch >= propSize &&
+                 ((PropellerSpec)p.Spec).DiameterInch < nextSize) ||
+                (p.Spec is FrameSpec && ((FrameSpec)p.Spec).MaxPropSizeInch >= propSize &&
+                 ((FrameSpec)p.Spec).MaxPropSizeInch < nextSize));
+        }
+
+        if (filter.CapacityMin.HasValue || filter.CapacityMax.HasValue)
+        {
+            int capacityMin = filter.CapacityMin ?? 0;
+            int capacityMax = filter.CapacityMax ?? int.MaxValue;
+            query = query.Where(p => p.Spec is BatterySpec && ((BatterySpec)p.Spec).CapacityMah >= capacityMin &&
+                                     ((BatterySpec)p.Spec).CapacityMah <= capacityMax);
+        }
+
+        if (filter.BatteryConnector is BatteryConnector batteryConnector)
+        {
+            query = query.Where(p =>
+                (p.Spec is BatterySpec && ((BatterySpec)p.Spec).Connector == batteryConnector) ||
+                (p.Spec is EscSpec && ((EscSpec)p.Spec).BatteryConnector == batteryConnector) ||
+                (p.Spec is StackSpec && ((StackSpec)p.Spec).BatteryConnector == batteryConnector));
+        }
+
+        if (filter.Protocol is RadioProtocol protocol)
+        {
+            query = query.Where(p => p.Spec is ReceiverSpec && ((ReceiverSpec)p.Spec).Protocol == protocol);
+        }
+
+        if (filter.RfConnector is RfConnector rfConnector)
+        {
+            query = query.Where(p =>
+                (p.Spec is AntennaSpec && ((AntennaSpec)p.Spec).Connector == rfConnector) ||
+                (p.Spec is VideoTransmitterSpec && ((VideoTransmitterSpec)p.Spec).AntennaConnector == rfConnector));
+        }
+
+        return query;
+    }
+
+    public async Task<ICollection<string>> GetManufacturersAsync(ProductCategory? category,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Products
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted && p.Manufacturer != null && p.Manufacturer != "")
+            .Where(p => category == null || p.Category == category)
+            .Select(p => p.Manufacturer!)
+            .Distinct()
+            .OrderBy(m => m)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Product?> GetDelistedProductByIdAsync(Guid id, CancellationToken cancellationToken = default)

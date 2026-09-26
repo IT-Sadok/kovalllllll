@@ -129,6 +129,8 @@ export interface ApiResponse<T = undefined> {
   pagination?: ApiPagination | null;
 }
 
+export type ProductSort = 'Name' | 'PriceAsc' | 'PriceDesc';
+
 export interface ProductFilters {
   page?: number;
   pageSize?: number;
@@ -136,6 +138,21 @@ export interface ProductFilters {
   minPrice?: number | '';
   maxPrice?: number | '';
   category?: ProductCategory;
+  collapseVariants?: boolean;
+  manufacturer?: string;
+  inStock?: boolean;
+  sort?: ProductSort;
+  cells?: number;
+  mountPattern?: MountPattern;
+  videoSystem?: VideoSystem;
+  kvMin?: number;
+  kvMax?: number;
+  propSizeInch?: number;
+  capacityMin?: number;
+  capacityMax?: number;
+  batteryConnector?: BatteryConnector;
+  protocol?: RadioProtocol;
+  rfConnector?: RfConnector;
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
