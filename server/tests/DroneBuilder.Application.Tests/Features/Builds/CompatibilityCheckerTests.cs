@@ -151,6 +151,21 @@ public class CompatibilityCheckerTests
         Assert.Contains("(7\") is larger than the 5.1\" props", issue.Message);
     }
 
+    [Theory]
+    [InlineData(3, true)]
+    [InlineData(4, true)]
+    [InlineData(4.5, false)]
+    public void Check_WhenPropIsMuchSmallerThanFrame_ShouldOnlyWarn(double diameter, bool expected)
+    {
+        // Act
+        IReadOnlyList<CompatibilityIssue> issues = Check(Replace(ProductCategory.Propeller,
+            Prop(new PropellerSpec { DiameterInch = (decimal)diameter, HubMm = 5m })));
+
+        // Assert
+        Assert.Equal(expected, issues.Any(i => i is { Code: "prop_undersized", Severity: IssueSeverity.Warning }));
+        Assert.DoesNotContain(issues, i => i.Code.StartsWith("prop_") && i.Severity == IssueSeverity.Error);
+    }
+
     [Fact]
     public void Check_WhenStackDoesNotFitFrame_ShouldReportError()
     {
