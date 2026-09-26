@@ -4,6 +4,7 @@ namespace DroneBuilder.Application.Features.Builds.Compatibility.Rules;
 
 public class PropellerFitsFrameRule : ICompatibilityRule
 {
+    private const decimal OversizeToleranceInch = 0.2m;
     private const decimal UndersizedMarginInch = 1m;
 
     public IEnumerable<CompatibilityIssue> Check(BuildParts build)
@@ -15,7 +16,7 @@ public class PropellerFitsFrameRule : ICompatibilityRule
                 decimal max = frame.Spec.MaxPropSizeInch;
                 decimal size = prop.Spec.DiameterInch;
 
-                if (size > max)
+                if (size > max + OversizeToleranceInch)
                 {
                     yield return new CompatibilityIssue(IssueSeverity.Error, "prop_too_large",
                         FormattableString.Invariant($"{prop.Name} ({size:0.#}\") is larger than the {max:0.#}\" props {frame.Name} takes."),

@@ -51,6 +51,21 @@ public class CompatiblePartFilterTests
     }
 
     [Fact]
+    public void Filter_ShouldHidePropsThatAreTooLargeOrMuchSmallerThanTheFrame()
+    {
+        // Arrange
+        BuildPart fiveInch = Part(ProductCategory.Propeller, new PropellerSpec { DiameterInch = 5.1m });
+        BuildPart threeInch = Part(ProductCategory.Propeller, new PropellerSpec { DiameterInch = 3m });
+        BuildPart sevenInch = Part(ProductCategory.Propeller, new PropellerSpec { DiameterInch = 7m });
+
+        // Act
+        IReadOnlyList<Guid> compatible = CompatiblePartFilter.Filter([Frame], [fiveInch, threeInch, sevenInch]);
+
+        // Assert
+        Assert.Equal([fiveInch.ProductId], compatible);
+    }
+
+    [Fact]
     public void Filter_WhenCandidateIsAlreadySelected_ShouldCheckItOnlyOnce()
     {
         // Arrange

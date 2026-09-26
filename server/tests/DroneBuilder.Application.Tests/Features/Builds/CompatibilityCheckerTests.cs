@@ -152,6 +152,19 @@ public class CompatibilityCheckerTests
     }
 
     [Theory]
+    [InlineData(5.3, false)]
+    [InlineData(5.4, true)]
+    public void Check_WhenPropIsSlightlyOverFrameSize_ShouldAllowSmallTolerance(double diameter, bool expected)
+    {
+        // Act
+        IReadOnlyList<CompatibilityIssue> issues = Check(Replace(ProductCategory.Propeller,
+            Prop(new PropellerSpec { DiameterInch = (decimal)diameter, HubMm = 5m })));
+
+        // Assert
+        Assert.Equal(expected, issues.Any(i => i.Code == "prop_too_large"));
+    }
+
+    [Theory]
     [InlineData(3, true)]
     [InlineData(4, true)]
     [InlineData(4.5, false)]
