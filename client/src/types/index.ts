@@ -66,11 +66,11 @@ export interface ProductGroup {
 // ─── Component specs ──────────────────────────────────────────────────────────
 export const COMPONENT_TYPES = [
   'Frame', 'Motor', 'Propeller', 'FlightController', 'Esc', 'Stack',
-  'Battery', 'VideoTransmitter', 'Camera', 'Receiver', 'Antenna',
+  'Battery', 'VideoTransmitter', 'Camera', 'Receiver', 'Antenna', 'Radio',
 ] as const;
 export type ComponentType = typeof COMPONENT_TYPES[number];
 
-export const OTHER_CATEGORIES = ['Goggles', 'Radio', 'Charger', 'Tool', 'ReadyToFly', 'Accessory'] as const;
+export const OTHER_CATEGORIES = ['Goggles', 'Charger', 'Tool', 'ReadyToFly', 'Accessory'] as const;
 export const PRODUCT_CATEGORIES = [...COMPONENT_TYPES, ...OTHER_CATEGORIES] as const;
 export type ProductCategory = typeof PRODUCT_CATEGORIES[number];
 
@@ -100,7 +100,8 @@ export type ComponentSpec =
   | { type: 'Camera'; videoSystem: VideoSystem; widthMm: number | null }
   | { type: 'Receiver'; protocol: RadioProtocol }
   | { type: 'Antenna'; connector: RfConnector }
-  | { type: 'Stack'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number | null; batteryConnector: BatteryConnector | null };
+  | { type: 'Stack'; mountPattern: MountPattern; minCells: number; maxCells: number; continuousCurrentA: number | null; batteryConnector: BatteryConnector | null }
+  | { type: 'Radio'; protocol: RadioProtocol };
 
 export interface PagedResult<T> {
   items: T[];

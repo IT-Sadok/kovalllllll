@@ -66,6 +66,21 @@ public class CompatiblePartFilterTests
     }
 
     [Fact]
+    public void Filter_ShouldKeepOnlyReceiversThatSpeakTheRadiosProtocol()
+    {
+        // Arrange
+        BuildPart radio = Part(ProductCategory.Radio, new RadioSpec { Protocol = RadioProtocol.ExpressLrs });
+        BuildPart elrs = Part(ProductCategory.Receiver, new ReceiverSpec { Protocol = RadioProtocol.ExpressLrs });
+        BuildPart crossfire = Part(ProductCategory.Receiver, new ReceiverSpec { Protocol = RadioProtocol.Crossfire });
+
+        // Act
+        IReadOnlyList<Guid> compatible = CompatiblePartFilter.Filter([Frame, radio], [elrs, crossfire]);
+
+        // Assert
+        Assert.Equal([elrs.ProductId], compatible);
+    }
+
+    [Fact]
     public void Filter_WhenCandidateIsAlreadySelected_ShouldCheckItOnlyOnce()
     {
         // Arrange

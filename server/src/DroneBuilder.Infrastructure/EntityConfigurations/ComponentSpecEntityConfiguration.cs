@@ -28,7 +28,8 @@ public class ComponentSpecEntityConfiguration : IEntityTypeConfiguration<Compone
             .HasValue<CameraSpec>(ComponentType.Camera)
             .HasValue<ReceiverSpec>(ComponentType.Receiver)
             .HasValue<AntennaSpec>(ComponentType.Antenna)
-            .HasValue<StackSpec>(ComponentType.Stack);
+            .HasValue<StackSpec>(ComponentType.Stack)
+            .HasValue<RadioSpec>(ComponentType.Radio);
 
         builder.HasIndex(s => s.Type);
     }

@@ -192,7 +192,9 @@ public class ProductRepository(ApplicationDbContext dbContext) : IProductReposit
 
         if (filter.Protocol is RadioProtocol protocol)
         {
-            query = query.Where(p => p.Spec is ReceiverSpec && ((ReceiverSpec)p.Spec).Protocol == protocol);
+            query = query.Where(p =>
+                (p.Spec is ReceiverSpec && ((ReceiverSpec)p.Spec).Protocol == protocol) ||
+                (p.Spec is RadioSpec && ((RadioSpec)p.Spec).Protocol == protocol));
         }
 
         if (filter.RfConnector is RfConnector rfConnector)

@@ -28,6 +28,7 @@ const SECTIONS: { title: string; slots: { slot: ComponentType; hint?: string }[]
   },
   { title: 'Power', slots: [{ slot: 'Battery' }] },
   { title: 'Video', slots: [{ slot: 'Camera' }, { slot: 'VideoTransmitter' }, { slot: 'Antenna' }] },
+  { title: 'Pilot gear', slots: [{ slot: 'Radio', hint: 'The controller you hold; its weight is not added to the drone' }] },
 ];
 
 const QUANTITY_SLOTS: ComponentType[] = ['Motor', 'Propeller', 'Battery'];

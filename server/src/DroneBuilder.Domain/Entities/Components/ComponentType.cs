@@ -15,5 +15,6 @@ public enum ComponentType
     Camera = 7,
     Receiver = 8,
     Antenna = 9,
-    Stack = 10
+    Stack = 10,
+    Radio = 101
 }

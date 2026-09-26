@@ -132,6 +132,9 @@ export const SPEC_FIELDS: Record<ComponentType, SpecField[]> = {
   Antenna: [
     { key: 'connector', label: 'Connector', kind: 'enum', options: RF_CONNECTORS },
   ],
+  Radio: [
+    { key: 'protocol', label: 'Protocol', kind: 'enum', options: RADIO_PROTOCOLS },
+  ],
 };
 
 export const emptySpec = (type: ComponentType): ComponentSpec => {

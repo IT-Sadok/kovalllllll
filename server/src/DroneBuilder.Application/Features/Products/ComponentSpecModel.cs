@@ -15,6 +15,7 @@ namespace DroneBuilder.Application.Features.Products;
 [JsonDerivedType(typeof(ReceiverSpecModel), nameof(ComponentType.Receiver))]
 [JsonDerivedType(typeof(AntennaSpecModel), nameof(ComponentType.Antenna))]
 [JsonDerivedType(typeof(StackSpecModel), nameof(ComponentType.Stack))]
+[JsonDerivedType(typeof(RadioSpecModel), nameof(ComponentType.Radio))]
 public abstract record ComponentSpecModel;
 
 public record FrameSpecModel(
@@ -71,6 +72,9 @@ public record ReceiverSpecModel(
 
 public record AntennaSpecModel(
     RfConnector Connector) : ComponentSpecModel;
+
+public record RadioSpecModel(
+    RadioProtocol Protocol) : ComponentSpecModel;
 
 public record StackSpecModel(
     MountPattern MountPattern,

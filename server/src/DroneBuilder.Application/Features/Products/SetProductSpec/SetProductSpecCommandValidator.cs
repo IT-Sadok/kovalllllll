@@ -21,6 +21,7 @@ public class SetProductSpecCommandValidator : AbstractValidator<SetProductSpecCo
                 .Add(new CameraSpecModelValidator())
                 .Add(new ReceiverSpecModelValidator())
                 .Add(new AntennaSpecModelValidator())
-                .Add(new StackSpecModelValidator()));
+                .Add(new StackSpecModelValidator())
+                .Add(new RadioSpecModelValidator()));
     }
 }
