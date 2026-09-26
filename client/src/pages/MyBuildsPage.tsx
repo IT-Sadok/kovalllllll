@@ -8,6 +8,7 @@ import Button from '../components/ui/Button';
 import EmptyState from '../components/ui/EmptyState';
 import Modal from '../components/ui/Modal';
 import Skeleton from '../components/ui/Skeleton';
+import { useAddBuildToCart } from '../hooks/useAddBuildToCart';
 import { buildItems, useBuilderStore } from '../store/builderStore';
 import type { SavedBuild } from '../types';
 import { CATEGORY_LABELS } from '../utils/componentSpecs';
@@ -20,6 +21,7 @@ const MyBuildsPage: React.FC = () => {
   const navigate = useNavigate();
   const { parts, saved, loadBuild, clear } = useBuilderStore();
   const [deleteTarget, setDeleteTarget] = useState<SavedBuild | null>(null);
+  const { addBuildToCart, isPending: addingToCart } = useAddBuildToCart();
 
   const { data: builds, isLoading, isError } = useQuery({ queryKey: ['builds'], queryFn: getBuilds });
 
@@ -94,6 +96,17 @@ const MyBuildsPage: React.FC = () => {
                   )}
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" onClick={() => open(build)} id={`build-open-${build.id}`}>Open in builder</Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={unavailable.length === build.items.length || addingToCart}
+                      onClick={() => addBuildToCart(
+                        build.items.filter((i) => i.isAvailable).map((i) => ({ productId: i.productId, quantity: i.quantity })),
+                      )}
+                      id={`build-cart-${build.id}`}
+                    >
+                      Add to cart
+                    </Button>
                     <Button size="sm" variant="danger" onClick={() => setDeleteTarget(build)} id={`build-delete-${build.id}`}>
                       Delete
                     </Button>

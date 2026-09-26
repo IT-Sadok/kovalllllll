@@ -2,6 +2,7 @@ using DroneBuilder.API.Common.Extensions;
 using DroneBuilder.API.Common.Routes;
 using DroneBuilder.Application.Common.Mediator.Interfaces;
 using DroneBuilder.Application.Features.Carts;
+using DroneBuilder.Application.Features.Carts.AddItemsToCart;
 using DroneBuilder.Application.Features.Carts.AddItemToCart;
 using DroneBuilder.Application.Features.Carts.ClearCart;
 using DroneBuilder.Application.Features.Carts.GetCart;
@@ -24,6 +25,17 @@ public static class CartEndpointExtensions
                 {
                     var command = new AddItemToCartCommand(model.ProductId, model.Quantity);
 
+                    Result result = await mediator.ExecuteCommandAsync(command, cancellationToken);
+                    return result.ToHttpResult();
+                })
+            .WithTags("Cart")
+            .RequireAuthorization();
+
+        app.MapPost(ApiRoutes.Cart.AddItemsToCart,
+                async (IMediator mediator,
+                    [FromBody] AddItemsToCartCommand command,
+                    CancellationToken cancellationToken) =>
+                {
                     Result result = await mediator.ExecuteCommandAsync(command, cancellationToken);
                     return result.ToHttpResult();
                 })

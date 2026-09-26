@@ -1,6 +1,6 @@
 import { api } from './axiosInstance';
 import { unwrap } from './response';
-import type { ApiResponse, CartItem } from '../types';
+import type { ApiResponse, BuildItem, CartItem } from '../types';
 
 // GET /carts/items — returns CartItem[] for authenticated user
 export const getCartItems = () =>
@@ -9,6 +9,10 @@ export const getCartItems = () =>
 // POST /carts/items
 export const addToCart = (productId: string, quantity: number = 1) =>
   api.post<ApiResponse<CartItem>>('/carts/items', { productId, quantity }).then(unwrap);
+
+// POST /carts/items/batch — reserves every item or none
+export const addItemsToCart = (items: BuildItem[]) =>
+  api.post<ApiResponse>('/carts/items/batch', { items });
 
 // DELETE /carts/items/{productId}
 export const removeCartItem = (productId: string) =>
