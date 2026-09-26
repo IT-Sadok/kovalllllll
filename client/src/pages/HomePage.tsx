@@ -191,9 +191,19 @@ const HomePage: React.FC = () => {
           <div className="absolute -top-10 right-1/4 w-72 h-72 rounded-full bg-violet-500/5 blur-3xl" />
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold font-orbitron text-white mb-3">
-          Professional <span className="text-cyan-400 glow-text">Drones</span>
+          Build your <span className="text-cyan-400 glow-text">FPV quad</span>
         </h1>
-        <p className="text-slate-400 text-lg">Configure and order professional UAVs for any mission</p>
+        <p className="text-slate-400 text-lg max-w-2xl">
+          Browse real parts with full specs, then put them together in the builder. Fit, weight and thrust to weight
+          are checked as you go.
+        </p>
+        <Link
+          to="/builder"
+          id="hero-open-builder"
+          className="relative inline-block mt-5 text-sm px-5 py-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition-all"
+        >
+          Open the builder →
+        </Link>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -210,7 +220,7 @@ const HomePage: React.FC = () => {
               <Input
                 label="Search"
                 id="filter-name"
-                placeholder="Drone name..."
+                placeholder="Part name..."
                 {...register('name')}
               />
               <div className="space-y-2">
@@ -312,7 +322,7 @@ const HomePage: React.FC = () => {
             </div>
           ) : data?.items.length === 0 ? (
             <EmptyState
-              title="No drones found"
+              title="No parts found"
               description="Try adjusting your search filters or browse all products."
               action={
                 <Button onClick={onReset} variant="outline" id="empty-reset-btn">Clear Filters</Button>
