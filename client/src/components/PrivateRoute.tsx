@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import PageSpinner from './ui/PageSpinner';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -14,15 +15,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requireAdmin = fa
   // Whether there is a session is only known once /users/me answers. Redirecting before that would
   // bounce every signed-in user to the login page on a page refresh.
   if (status === 'loading') {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-slate-700 border-t-cyan-400 animate-spin"
-          role="status"
-          aria-label="Loading"
-        />
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   if (status !== 'authenticated' || !user) {

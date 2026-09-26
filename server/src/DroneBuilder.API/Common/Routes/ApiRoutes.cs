@@ -19,16 +19,16 @@ public abstract class ApiRoutes
     {
         private const string BaseRoute = Base + "/products";
         public const string GetAll = BaseRoute;
-        public const string GetById = BaseRoute + "/{productId}";
+        public const string GetById = BaseRoute + "/{productId:guid}";
         public const string Create = BaseRoute;
-        public const string Update = BaseRoute + "/{productId}";
-        public const string Delete = BaseRoute + "/{productId}";
+        public const string Update = BaseRoute + "/{productId:guid}";
+        public const string Delete = BaseRoute + "/{productId:guid}";
         public const string GetDelisted = BaseRoute + "/delisted";
         public const string GetManufacturers = BaseRoute + "/manufacturers";
-        public const string Restore = BaseRoute + "/{productId}/restore";
-        public const string SetSpec = BaseRoute + "/{productId}/spec";
-        public const string RemoveSpec = BaseRoute + "/{productId}/spec";
-        public const string SetAttributes = BaseRoute + "/{productId}/attributes";
+        public const string Restore = BaseRoute + "/{productId:guid}/restore";
+        public const string SetSpec = BaseRoute + "/{productId:guid}/spec";
+        public const string RemoveSpec = BaseRoute + "/{productId:guid}/spec";
+        public const string SetAttributes = BaseRoute + "/{productId:guid}/attributes";
     }
 
     public static class Builds
@@ -46,7 +46,7 @@ public abstract class ApiRoutes
     {
         private const string BaseRoute = Base + "/imports";
         public const string GetAll = BaseRoute;
-        public const string GetById = BaseRoute + "/{importRunId}";
+        public const string GetById = BaseRoute + "/{importRunId:guid}";
         public const string StartRaceDayQuads = BaseRoute + "/racedayquads";
     }
 
@@ -54,11 +54,11 @@ public abstract class ApiRoutes
     {
         private const string BaseRoute = Base + "/images";
         public const string Upload = BaseRoute + "/upload";
-        public const string Delete = BaseRoute + "/{imageId}";
-        public const string GetById = BaseRoute + "/{imageId}";
+        public const string Delete = BaseRoute + "/{imageId:guid}";
+        public const string GetById = BaseRoute + "/{imageId:guid}";
         public const string GetAll = BaseRoute;
-        public const string GetImagesByProductId = BaseRoute + "/product/{productId}";
-        public const string SetPrimary = BaseRoute + "/{imageId}/set-primary";
+        public const string GetImagesByProductId = BaseRoute + "/product/{productId:guid}";
+        public const string SetPrimary = BaseRoute + "/{imageId:guid}/set-primary";
     }
 
     public static class Cart
@@ -68,8 +68,8 @@ public abstract class ApiRoutes
         public const string AddItemsToCart = BaseRoute + "/items/batch";
         public const string GetCart = BaseRoute;
         public const string GetCartItems = BaseRoute + "/items";
-        public const string UpdateItemQuantity = BaseRoute + "/items/{productId}";
-        public const string RemoveItemFromCart = BaseRoute + "/items/{productId}";
+        public const string UpdateItemQuantity = BaseRoute + "/items/{productId:guid}";
+        public const string RemoveItemFromCart = BaseRoute + "/items/{productId:guid}";
         public const string ClearCart = BaseRoute + "/clear";
     }
 
@@ -78,9 +78,9 @@ public abstract class ApiRoutes
         private const string BaseRoute = Base + "/warehouse";
         public const string Get = BaseRoute;
         public const string GetAllItems = BaseRoute + "/items";
-        public const string GetItemById = BaseRoute + "/items/{itemId}";
-        public const string AddQuantityToItem = BaseRoute + "/items/{itemId}";
-        public const string RemoveQuantityFromItem = BaseRoute + "/items/{itemId}";
+        public const string GetItemById = BaseRoute + "/items/{itemId:guid}";
+        public const string AddQuantityToItem = BaseRoute + "/items/{itemId:guid}";
+        public const string RemoveQuantityFromItem = BaseRoute + "/items/{itemId:guid}";
         public const string RestockEmptyItems = BaseRoute + "/items/restock";
     }
 
@@ -96,8 +96,8 @@ public abstract class ApiRoutes
         public const string CreateOrder = BaseRoute;
         public const string GetAllOrders = BaseRoute;
         public const string GetAllAdminOrders = BaseRoute + "/admin";
-        public const string StartPayment = BaseRoute + "/{orderId}/payment";
-        public const string CancelOrder = BaseRoute + "/{orderId}/cancel";
-        public const string UpdateStatus = BaseRoute + "/{orderId}/status";
+        public const string StartPayment = BaseRoute + "/{orderId:guid}/payment";
+        public const string CancelOrder = BaseRoute + "/{orderId:guid}/cancel";
+        public const string UpdateStatus = BaseRoute + "/{orderId:guid}/status";
     }
 }
