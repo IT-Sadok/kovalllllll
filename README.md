@@ -58,7 +58,7 @@ Errors mean the part will not work. Warnings and notes flag something worth a se
 │   ├── src/
 │   │   ├── DroneBuilder.API             Minimal API endpoints, auth, middleware, OpenAPI
 │   │   ├── DroneBuilder.Application     Commands and queries, validation, compatibility rules, import parsing
-│   │   ├── DroneBuilder.Domain          Entities, component specs, domain events
+│   │   ├── DroneBuilder.Domain          Entities, component specs, domain events, constants
 │   │   └── DroneBuilder.Infrastructure  EF Core (PostgreSQL), repositories, RabbitMQ, Azure Blob, Stripe, Resend, importer
 │   ├── tests/DroneBuilder.Application.Tests   xUnit + NSubstitute
 │   └── DroneBuilder.sln
@@ -76,7 +76,7 @@ Errors mean the part will not work. Warnings and notes flag something worth a se
 ### Prerequisites
 - Docker with Compose
 - .NET SDK 9.0.300 or newer, only for running the API outside Docker
-- Node.js 20 or newer, only for running the client outside Docker
+- Node.js 20.19+ or 22.12+ (required by Vite 8), only for running the client outside Docker
 
 ### Run everything with Docker
 
@@ -149,10 +149,12 @@ Other settings live in `server/src/DroneBuilder.API/appsettings.json`:
 | `RateLimiting` | Limits for sign-in and email endpoints |
 | `Cors`, `ForwardedHeaders` | Needed when the client and API run on different origins or behind a proxy |
 
-## Tests and code quality
+## Build, tests and code quality
 
 ```bash
 cd server
+dotnet restore DroneBuilder.sln
+dotnet build DroneBuilder.sln
 dotnet test DroneBuilder.sln
 dotnet format DroneBuilder.sln --verify-no-changes
 ```
